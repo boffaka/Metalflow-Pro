@@ -38,6 +38,29 @@ function assertRule(source, selector, declaration, message) {
   assert.match(source, pattern, message);
 }
 
+function extractRule(source, expectedSelector) {
+  for (const match of source.matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
+    const selector = match[1].replace(/\/\*[\s\S]*?\*\//g, "").trim();
+    if (selector === expectedSelector) {
+      return match[2];
+    }
+  }
+  return "";
+}
+
+function assertCaveatIsPdcScoped(source, label) {
+  for (const match of source.matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
+    if (!/font-family\s*:\s*Caveat\b/i.test(match[2])) {
+      continue;
+    }
+    const selector = match[1].replace(/\/\*[\s\S]*?\*\//g, "").trim();
+    assert.ok(
+      selector.startsWith(".pdc-canvas"),
+      `${label} Caveat font is outside PDC scope: ${selector}`,
+    );
+  }
+}
+
 const htmlRootBlocks = [...html.matchAll(/:root\s*\{[^}]*\}/gi)];
 assert.ok(htmlRootBlocks.length > 0, "HTML root token block is missing");
 const finalHtmlRoot = htmlRootBlocks.at(-1)[0];
@@ -82,6 +105,11 @@ for (const [name, value] of Object.entries({
   assertDeclaration(pdcBlock, name, value, `missing Tailwind pdc-${name}: ${value}`);
 }
 
+const htmlPdcCanvas = extractRule(html, ".pdc-canvas");
+const cssPdcCanvas = extractRule(css, ".pdc-canvas");
+assert.ok(htmlPdcCanvas, "HTML PDC canvas rule is missing");
+assert.ok(cssPdcCanvas, "CSS PDC canvas rule is missing");
+
 for (const [name, value] of Object.entries({
   "--bg": "#0B0F1A",
   "--bg1": "#0B0F1A",
@@ -109,8 +137,18 @@ const pdcTokens = {
 };
 
 for (const [name, value] of Object.entries(pdcTokens)) {
-  assertDeclaration(html, name, value, `missing HTML PDC token ${name}: ${value}`);
-  assertDeclaration(css, name, value, `missing CSS PDC token ${name}: ${value}`);
+  assertDeclaration(
+    htmlPdcCanvas,
+    name,
+    value,
+    `missing HTML .pdc-canvas token ${name}: ${value}`,
+  );
+  assertDeclaration(
+    cssPdcCanvas,
+    name,
+    value,
+    `missing CSS .pdc-canvas token ${name}: ${value}`,
+  );
 }
 
 for (const fontImport of [
@@ -175,6 +213,8 @@ assertRule(
   /font-family\s*:\s*Caveat(?:\s*,\s*cursive)?/i,
   "CSS Caveat font is not scoped to PDC annotations",
 );
+assertCaveatIsPdcScoped(html, "HTML");
+assertCaveatIsPdcScoped(css, "CSS");
 assertRule(
   html,
   ".pdc-canvas-grain::after",
