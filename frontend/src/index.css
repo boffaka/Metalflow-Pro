@@ -1,0 +1,253 @@
+@import "@fontsource-variable/inter";
+@import "@fontsource/ibm-plex-mono/400.css";
+@import "@fontsource/ibm-plex-mono/500.css";
+@import "@fontsource/ibm-plex-mono/600.css";
+@import "@fontsource/caveat/400.css";
+@import "@fontsource/caveat/600.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+    margin: 0;
+    font-family: "Inter Variable", Inter, system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+code,
+pre,
+.font-mono {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+}
+
+@layer base {
+    :root,
+    .dark {
+        color-scheme: dark;
+
+        /* ── Surfaces ─────────────────────────────────────────────────────────
+           Deep forge-steel navy, warmer than pure black, cooler than purple.
+           Card lifts 4 % from background; popover matches card.              */
+        --background: 222 38% 7%;
+        --foreground: 210 30% 94%;
+        --card: 220 36% 11%;
+        --card-foreground: 210 30% 94%;
+        --popover: 220 36% 11%;
+        --popover-foreground: 210 30% 94%;
+
+        /* ── Primary — Molten Gold ─────────────────────────────────────────────
+           Reduced saturation (92 → 80 %) for a refined, premium feel.
+           Foreground deepened to pure forge-dark for legibility on gold.     */
+        --primary: 38 80% 47%;
+        --primary-foreground: 222 45% 6%;
+
+        /* ── Secondary — Industrial Steel Blue ────────────────────────────────
+           Replaces over-saturated teal with a cool steel blue (210°).
+           Evokes cold-rolled steel and engineering blueprint aesthetics.     */
+        --secondary: 210 55% 35%;
+        --secondary-foreground: 210 75% 90%;
+
+        /* ── Muted / Accent ───────────────────────────────────────────────── */
+        --muted: 220 30% 14%;
+        --muted-foreground: 215 18% 58%;
+        --accent: 220 30% 14%;
+        --accent-foreground: 210 30% 94%;
+
+        /* ── Semantic ─────────────────────────────────────────────────────── */
+        --destructive: 2 65% 48%;
+        --destructive-foreground: 0 0% 97%;
+        --border: 218 28% 18%;
+        --input: 218 28% 18%;
+        --ring: 38 80% 47%;
+
+        /* ── Chart palette — Metal family ─────────────────────────────────────
+           1. Gold       — primary metal / main series
+           2. Steel blue — secondary / comparative
+           3. Copper     — non-ferrous / third series
+           4. Alloy green— heat treatment / status OK
+           5. Manganese  — special alloys / fifth series              */
+        --chart-1: 38 80% 50%;
+        --chart-2: 210 58% 45%;
+        --chart-3: 25 68% 50%;
+        --chart-4: 150 52% 38%;
+        --chart-5: 258 48% 55%;
+
+        --radius: 0.5rem;
+    }
+}
+
+@layer base {
+    * {
+        @apply border-border;
+        /* Steel-blue scrollbar thumb — matches new secondary palette */
+        scrollbar-color: #253550 transparent;
+    }
+    body {
+        @apply bg-background text-foreground;
+    }
+
+    *::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    *::-webkit-scrollbar-thumb {
+        background: #253550;
+    }
+}
+
+@layer base {
+    [data-debug-wrapper="true"] {
+        display: contents !important;
+    }
+
+    [data-debug-wrapper="true"] > * {
+        margin-left: inherit;
+        margin-right: inherit;
+        margin-top: inherit;
+        margin-bottom: inherit;
+        padding-left: inherit;
+        padding-right: inherit;
+        padding-top: inherit;
+        padding-bottom: inherit;
+        column-gap: inherit;
+        row-gap: inherit;
+        gap: inherit;
+        border-left-width: inherit;
+        border-right-width: inherit;
+        border-top-width: inherit;
+        border-bottom-width: inherit;
+        border-left-style: inherit;
+        border-right-style: inherit;
+        border-top-style: inherit;
+        border-bottom-style: inherit;
+        border-left-color: inherit;
+        border-right-color: inherit;
+        border-top-color: inherit;
+        border-bottom-color: inherit;
+    }
+}
+
+.pdc-canvas {
+    /* ── Canvas document theme — light, always ───────────────────────────────
+       Evokes aged technical paper / drafting vellum. Warmer and richer
+       than a plain white page, without the yellow-paille excess of #F5EFE2. */
+    color-scheme: light;
+
+    --background: 40 42% 90%;
+    --foreground: 217 32% 13%;
+    --card: 40 42% 90%;
+    --card-foreground: 217 32% 13%;
+    --popover: 40 42% 90%;
+    --popover-foreground: 217 32% 13%;
+
+    /* Primary gold: bronze-leaning, more metallurgical than lemon-yellow */
+    --primary: 40 56% 48%;
+    --primary-foreground: 217 32% 13%;
+
+    --muted: 42 34% 83%;
+    --muted-foreground: 215 14% 40%;
+    --accent: 42 34% 83%;
+    --accent-foreground: 217 32% 13%;
+
+    --destructive: 2 54% 49%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 44 14% 56%;
+    --input: 44 14% 56%;
+    --ring: 40 56% 48%;
+
+    /* ── Semantic canvas tokens ───────────────────────────────────────────── */
+    --pdc-canvas: #F2EAD8;       /* richer warm vellum — less yellow, more depth   */
+    --pdc-ink: #192230;          /* slightly deeper than before for WCAG AA        */
+    --pdc-ink-soft: #596474;     /* cooler mid-tone, better on warm background     */
+    --pdc-gold: #C49035;         /* refined bronze-gold, more ferrous character    */
+    --pdc-gold-hot: #F5C338;     /* vivid hot-metal highlight, slightly less neon  */
+    --pdc-alert: #C23535;        /* danger red, unchanged                          */
+
+    position: relative;
+    isolation: isolate;
+    background: var(--pdc-canvas);
+    color: var(--pdc-ink);
+}
+
+/* Canvas theme is forced light regardless of parent dark mode */
+.dark .pdc-canvas {
+    color-scheme: light;
+    --background: 40 42% 90%;
+    --foreground: 217 32% 13%;
+    --card: 40 42% 90%;
+    --card-foreground: 217 32% 13%;
+    --popover: 40 42% 90%;
+    --popover-foreground: 217 32% 13%;
+    --primary: 40 56% 48%;
+    --primary-foreground: 217 32% 13%;
+    --muted: 42 34% 83%;
+    --muted-foreground: 215 14% 40%;
+    --accent: 42 34% 83%;
+    --accent-foreground: 217 32% 13%;
+    --destructive: 2 54% 49%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 44 14% 56%;
+    --input: 44 14% 56%;
+    --ring: 40 56% 48%;
+    --pdc-canvas: #F2EAD8;
+    --pdc-ink: #192230;
+    --pdc-ink-soft: #596474;
+    --pdc-gold: #C49035;
+    --pdc-gold-hot: #F5C338;
+    --pdc-alert: #C23535;
+    background: var(--pdc-canvas);
+    color: var(--pdc-ink);
+}
+
+.pdc-canvas .pdc-annotation {
+    font-family: Caveat, cursive;
+}
+
+/* ── Data-source semantic tints ───────────────────────────────────────────────
+   Each tint identifies where a value originates. Opacity kept deliberately
+   low to stay readable over the warm parchment without competing with text.
+
+   LIMS       → steel blue   (instrument / lab measurement)
+   Calculated → indigo       (computed / derived value)
+   Manual     → amber-bronze (operator-entered value)
+   Project    → gold         (project-level specification)
+   Design     → warm taupe   (design assumption / engineering estimate)
+   Default    → neutral      (system default / not yet set)             */
+
+.pdc-canvas .pdc-source-lims {
+    background: rgba(50, 100, 170, 0.13);
+}
+
+.pdc-canvas .pdc-source-calculated {
+    background: rgba(110, 75, 170, 0.13);
+}
+
+.pdc-canvas .pdc-source-manual {
+    background: rgba(182, 100, 38, 0.12);
+}
+
+.pdc-canvas .pdc-source-project {
+    background: rgba(178, 132, 42, 0.13);
+}
+
+.pdc-canvas .pdc-source-design {
+    background: rgba(128, 112, 90, 0.09);
+}
+
+.pdc-canvas .pdc-source-default {
+    background: rgba(155, 140, 118, 0.07);
+}
+
+.pdc-canvas-grain::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 50;
+    pointer-events: none;
+    border-radius: inherit;
+    opacity: 0.04;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E");
+    mix-blend-mode: multiply;
+}
