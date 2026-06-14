@@ -14,7 +14,6 @@ const standalone = fs.readFileSync(standalonePath, "utf8");
 const css = fs.readFileSync(cssPath, "utf8");
 const tailwind = fs.readFileSync(tailwindPath, "utf8");
 const index = fs.readFileSync(indexPath, "utf8");
-const allStyles = `${html}\n${css}\n${tailwind}`;
 
 function escapeRegex(value) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -53,11 +52,14 @@ function assertCaveatIsPdcScoped(source, label) {
     if (!/font-family\s*:\s*Caveat\b/i.test(match[2])) {
       continue;
     }
-    const selector = match[1].replace(/\/\*[\s\S]*?\*\//g, "").trim();
-    assert.ok(
-      selector.startsWith(".pdc-canvas"),
-      `${label} Caveat font is outside PDC scope: ${selector}`,
-    );
+    const selectorGroup = match[1].replace(/\/\*[\s\S]*?\*\//g, "").trim();
+    for (const selector of selectorGroup.split(",").map((part) => part.trim())) {
+      assert.match(
+        selector,
+        /^\.pdc-canvas(?:\s|$|[.#:\[])/,
+        `${label} Caveat font is outside PDC scope: ${selector}`,
+      );
+    }
   }
 }
 
@@ -107,8 +109,15 @@ for (const [name, value] of Object.entries({
 
 const htmlPdcCanvas = extractRule(html, ".pdc-canvas");
 const cssPdcCanvas = extractRule(css, ".pdc-canvas");
+const cssRootDark = [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)].find(
+  (match) =>
+    match[1]
+      .replace(/\/\*[\s\S]*?\*\//g, "")
+      .replace(/\s+/g, "") === ":root,.dark",
+)?.[2] || "";
 assert.ok(htmlPdcCanvas, "HTML PDC canvas rule is missing");
 assert.ok(cssPdcCanvas, "CSS PDC canvas rule is missing");
+assert.ok(cssRootDark, "CSS :root, .dark token block is missing");
 
 for (const [name, value] of Object.entries({
   "--bg": "#0B0F1A",
@@ -159,8 +168,28 @@ for (const fontImport of [
   assert.ok(css.includes(fontImport), `missing ${fontImport}`);
 }
 
-assert.ok(index.includes('classList.add("dark")'), "dark class is not applied by default");
-assert.ok(allStyles.includes("color-scheme:dark") || allStyles.includes("color-scheme: dark"));
+assert.match(
+  index,
+  /document\s*\.\s*documentElement\s*\.\s*classList\s*\.\s*add\s*\(\s*["']dark["']\s*\)/,
+  "dark class is not applied to document.documentElement",
+);
+assert.match(
+  index,
+  /document\s*\.\s*documentElement\s*\.\s*style\s*\.\s*colorScheme\s*=\s*["']dark["']/,
+  "dark color scheme is not applied to document.documentElement",
+);
+assertDeclaration(
+  finalHtmlRoot,
+  "color-scheme",
+  "dark",
+  "final HTML :root color scheme is not dark",
+);
+assertDeclaration(
+  cssRootDark,
+  "color-scheme",
+  "dark",
+  "CSS :root, .dark color scheme is not dark",
+);
 assertDeclaration(
   finalHtmlRoot,
   "--border2",
