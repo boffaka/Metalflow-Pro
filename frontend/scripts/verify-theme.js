@@ -22,7 +22,7 @@ function escapeRegex(value) {
 
 function assertDeclaration(source, name, value, message) {
   const pattern = new RegExp(
-    `${escapeRegex(name)}\\s*:\\s*["']?${escapeRegex(value)}["']?\\s*[,;}]`,
+    `["']?${escapeRegex(name)}["']?\\s*:\\s*["']?${escapeRegex(value)}["']?\\s*[,;}]`,
     "i",
   );
   assert.match(source, pattern, message || `missing ${name}: ${value}`);
@@ -37,6 +37,10 @@ function assertRule(source, selector, declaration, message) {
   );
   assert.match(source, pattern, message);
 }
+
+const htmlRootBlocks = [...html.matchAll(/:root\s*\{[^}]*\}/gi)];
+assert.ok(htmlRootBlocks.length > 0, "HTML root token block is missing");
+const finalHtmlRoot = htmlRootBlocks.at(-1)[0];
 
 const goldBlock = tailwind.match(/gold\s*:\s*\{[^}]*\}/i)?.[0] || "";
 for (const [name, value] of Object.entries({
@@ -92,7 +96,7 @@ for (const [name, value] of Object.entries({
   "--teal": "#0D9488",
   "--teal2": "#2DD4BF",
 })) {
-  assertDeclaration(html, name, value, `missing HTML token ${name}: ${value}`);
+  assertDeclaration(finalHtmlRoot, name, value, `missing final HTML token ${name}: ${value}`);
 }
 
 const pdcTokens = {
@@ -119,7 +123,24 @@ for (const fontImport of [
 
 assert.ok(index.includes('classList.add("dark")'), "dark class is not applied by default");
 assert.ok(allStyles.includes("color-scheme:dark") || allStyles.includes("color-scheme: dark"));
-assertDeclaration(html, "--border2", "#2A3A54", "HTML scrollbar token is not canonical");
+assertDeclaration(
+  finalHtmlRoot,
+  "--border2",
+  "#2A3A54",
+  "final HTML scrollbar token is not canonical",
+);
+assertRule(
+  html,
+  "::-webkit-scrollbar-track",
+  /background\s*:\s*transparent/i,
+  "HTML scrollbar track is not transparent",
+);
+assertRule(
+  html,
+  "::-webkit-scrollbar-thumb",
+  /background\s*:\s*(?:#2A3A54|var\(\s*--border2\s*\))/i,
+  "HTML scrollbar thumb is not canonical",
+);
 assert.match(css, /scrollbar-color\s*:\s*#2A3A54\s+transparent/i);
 assertRule(html, ".pdc-canvas", /color-scheme\s*:\s*light/i, "HTML PDC scope is missing");
 assertRule(css, ".pdc-canvas", /color-scheme\s*:\s*light/i, "CSS PDC scope is missing");
