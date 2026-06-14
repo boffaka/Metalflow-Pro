@@ -1,0 +1,159 @@
+@import "@fontsource-variable/inter";
+@import "@fontsource/ibm-plex-mono/400.css";
+@import "@fontsource/ibm-plex-mono/500.css";
+@import "@fontsource/ibm-plex-mono/600.css";
+@import "@fontsource/caveat/400.css";
+@import "@fontsource/caveat/600.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+    margin: 0;
+    font-family: "Inter Variable", Inter, system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+code,
+pre,
+.font-mono {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+}
+
+@layer base {
+    :root,
+    .dark {
+        color-scheme: dark;
+        --background: 222 41% 7%;
+        --foreground: 210 40% 96%;
+        --card: 221 39% 11%;
+        --card-foreground: 210 40% 96%;
+        --popover: 221 39% 11%;
+        --popover-foreground: 210 40% 96%;
+        --primary: 38 92% 50%;
+        --primary-foreground: 222 47% 6%;
+        --secondary: 172 83% 32%;
+        --secondary-foreground: 166 76% 92%;
+        --muted: 222 34% 15%;
+        --muted-foreground: 215 20% 65%;
+        --accent: 222 34% 15%;
+        --accent-foreground: 210 40% 96%;
+        --destructive: 0 62% 50%;
+        --destructive-foreground: 0 0% 98%;
+        --border: 217 32% 20%;
+        --input: 217 32% 20%;
+        --ring: 38 92% 50%;
+        --chart-1: 38 92% 50%;
+        --chart-2: 172 83% 32%;
+        --chart-3: 43 74% 66%;
+        --chart-4: 220 70% 50%;
+        --chart-5: 280 65% 60%;
+        --radius: 0.5rem;
+    }
+}
+
+@layer base {
+    * {
+        @apply border-border;
+        scrollbar-color: #2A3A54 transparent;
+    }
+    body {
+        @apply bg-background text-foreground;
+    }
+
+    *::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    *::-webkit-scrollbar-thumb {
+        background: #2A3A54;
+    }
+}
+
+@layer base {
+    [data-debug-wrapper="true"] {
+        display: contents !important;
+    }
+
+    [data-debug-wrapper="true"] > * {
+        margin-left: inherit;
+        margin-right: inherit;
+        margin-top: inherit;
+        margin-bottom: inherit;
+        padding-left: inherit;
+        padding-right: inherit;
+        padding-top: inherit;
+        padding-bottom: inherit;
+        column-gap: inherit;
+        row-gap: inherit;
+        gap: inherit;
+        border-left-width: inherit;
+        border-right-width: inherit;
+        border-top-width: inherit;
+        border-bottom-width: inherit;
+        border-left-style: inherit;
+        border-right-style: inherit;
+        border-top-style: inherit;
+        border-bottom-style: inherit;
+        border-left-color: inherit;
+        border-right-color: inherit;
+        border-top-color: inherit;
+        border-bottom-color: inherit;
+    }
+}
+
+.pdc-canvas {
+    color-scheme: light;
+    --pdc-canvas: #F5EFE2;
+    --pdc-ink: #1A2330;
+    --pdc-ink-soft: #5D6878;
+    --pdc-gold: #C9A24A;
+    --pdc-gold-hot: #FFD063;
+    --pdc-alert: #C24545;
+    position: relative;
+    isolation: isolate;
+    background: var(--pdc-canvas);
+    color: var(--pdc-ink);
+}
+
+.pdc-canvas .pdc-annotation {
+    font-family: Caveat, cursive;
+}
+
+.pdc-canvas .pdc-source-lims {
+    background: rgba(63, 111, 168, 0.12);
+}
+
+.pdc-canvas .pdc-source-calculated {
+    background: rgba(126, 91, 168, 0.12);
+}
+
+.pdc-canvas .pdc-source-manual {
+    background: rgba(184, 106, 42, 0.10);
+}
+
+.pdc-canvas .pdc-source-project {
+    background: rgba(181, 138, 46, 0.12);
+}
+
+.pdc-canvas .pdc-source-design {
+    background: rgba(140, 124, 104, 0.08);
+}
+
+.pdc-canvas .pdc-source-default {
+    background: rgba(168, 154, 130, 0.06);
+}
+
+.pdc-canvas-grain::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 50;
+    pointer-events: none;
+    border-radius: inherit;
+    opacity: 0.04;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E");
+    mix-blend-mode: multiply;
+}
