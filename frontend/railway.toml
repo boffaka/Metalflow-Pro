@@ -1,9 +1,9 @@
 [build]
-builder = "RAILPACK"
-buildCommand = "mkdir -p build && cp public/index.html build/index.html"
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile"
 
 [deploy]
-startCommand = "npx serve -s build -l tcp://0.0.0.0:$PORT"
+healthcheckPath = "/"
 healthcheckPath = "/"
 healthcheckTimeout = 300
 restartPolicyType = "ON_FAILURE"
