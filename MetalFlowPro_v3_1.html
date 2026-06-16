@@ -16168,6 +16168,87 @@ const DC_SOURCE_COLORS = {
   X: { bg:'#fef9c3', fg:'#854d0e' }, // Default/TBD
 };
 
+const DC_GENERAL_DEFAULTS = Object.freeze({
+  comminution: Object.freeze({
+    crush_design_factor_pct: 25,
+    conc_design_factor_pct: 15,
+    crush_availability_pct: 75,
+    sag_availability_pct: 92,
+    plant_availability_pct: 92,
+  }),
+});
+
+const DC_GENERAL_FORMULAS = Object.freeze({
+  safetyFactor(designFactorPct) {
+    const pct = Number(designFactorPct);
+    return Number.isFinite(pct) ? 1 + pct / 100 : null;
+  },
+  designTphFromNominal(nominalTph, designFactorPct) {
+    const nominal = Number(nominalTph);
+    const factor = this.safetyFactor(designFactorPct);
+    return Number.isFinite(nominal) && factor ? nominal * factor : null;
+  },
+  nominalTphFromDesign(designTph, designFactorPct) {
+    const design = Number(designTph);
+    const factor = this.safetyFactor(designFactorPct);
+    return Number.isFinite(design) && factor ? design / factor : null;
+  },
+  tonnesPerCalendarDay(tph) {
+    const rate = Number(tph);
+    return Number.isFinite(rate) ? rate * 24 : null;
+  },
+  hoursPerDay(availabilityPct) {
+    const availability = Number(availabilityPct);
+    return Number.isFinite(availability) ? 24 * availability / 100 : null;
+  },
+  hoursPerYear(hoursPerDay) {
+    const hours = Number(hoursPerDay);
+    return Number.isFinite(hours) ? hours * 365 : null;
+  },
+});
+
+function dcBuildGeneralDesignBasis({ project, getParam, round }) {
+  const get = (cat, key, def) => getParam(cat, key, def);
+  const defaults = DC_GENERAL_DEFAULTS.comminution;
+  const projectTargetTph = Number(project?.target_tph);
+  const concDesignFactorPct = get('comminution', 'conc_design_factor_pct', defaults.conc_design_factor_pct);
+  const crushDesignFactorPct = get('comminution', 'crush_design_factor_pct', defaults.crush_design_factor_pct);
+  const crushAvailPct = get('comminution', 'crush_availability_pct', defaults.crush_availability_pct);
+  const sagAvailPct = get('comminution', 'sag_availability_pct', defaults.sag_availability_pct);
+  const plantAvailPct = get('comminution', 'plant_availability_pct',
+    project?.availability_pct ?? defaults.plant_availability_pct);
+
+  const storedNominalTph = get('comminution', 'dc_nominal_tph',
+    Number.isFinite(projectTargetTph) && projectTargetTph > 0 ? projectTargetTph : null);
+  const storedDesignTph = get('comminution', 'dc_design_tph', null);
+  const designTphRaw = storedDesignTph != null
+    ? Number(storedDesignTph)
+    : DC_GENERAL_FORMULAS.designTphFromNominal(storedNominalTph, concDesignFactorPct);
+  const nominalTphRaw = DC_GENERAL_FORMULAS.nominalTphFromDesign(designTphRaw, concDesignFactorPct);
+  const designTphCrushRaw = DC_GENERAL_FORMULAS.designTphFromNominal(nominalTphRaw, crushDesignFactorPct);
+
+  const crushHoursDayRaw = DC_GENERAL_FORMULAS.hoursPerDay(crushAvailPct);
+  const sagHoursDayRaw = DC_GENERAL_FORMULAS.hoursPerDay(sagAvailPct);
+  const plantHoursDayRaw = DC_GENERAL_FORMULAS.hoursPerDay(plantAvailPct);
+
+  return {
+    designTph: designTphRaw != null ? round(designTphRaw, 1) : null,
+    nominalTph: nominalTphRaw != null ? round(nominalTphRaw, 1) : null,
+    designTphCrush: designTphCrushRaw != null ? round(designTphCrushRaw, 1) : null,
+    crushDesignFactorPct,
+    concDesignFactorPct,
+    crushAvailPct,
+    sagAvailPct,
+    plantAvailPct,
+    crushHoursDay: crushHoursDayRaw != null ? round(crushHoursDayRaw, 1) : null,
+    sagHoursDay: sagHoursDayRaw != null ? round(sagHoursDayRaw, 1) : null,
+    plantHoursDay: plantHoursDayRaw != null ? round(plantHoursDayRaw, 1) : null,
+    crushHoursYear: crushHoursDayRaw != null ? round(DC_GENERAL_FORMULAS.hoursPerYear(crushHoursDayRaw), 0) : null,
+    sagHoursYear: sagHoursDayRaw != null ? round(DC_GENERAL_FORMULAS.hoursPerYear(sagHoursDayRaw), 0) : null,
+    plantHoursYear: plantHoursDayRaw != null ? round(DC_GENERAL_FORMULAS.hoursPerYear(plantHoursDayRaw), 0) : null,
+  };
+}
+
 function dcSetPhase(ph) { S.dcPhase = ph; rerenderSection(); }
 
 // ── DC Pipeline State ──────────────────────────────────────────────
@@ -17879,66 +17960,53 @@ function renderDesignCriteria() {
     return vals.length ? _r(vals.reduce((a,b)=>a+b,0)/vals.length, 2) : null;
   };
 
-  // ── Input parameters (user-editable, stored in simulation_params) ───────
-  const nominalTph = _sp('comminution','dc_nominal_tph', _p('target_tph'));
-  const crushDesignFactorPct = _sp('comminution','crush_design_factor_pct', 25);
-  const concDesignFactorPct  = _sp('comminution','conc_design_factor_pct', 15);
-  const crushAvailPct  = _sp('comminution','crush_availability_pct', 75);
-  const sagAvailPct    = _sp('comminution','sag_availability_pct', 92);
-  const plantAvailPct  = _sp('comminution','plant_availability_pct', _p('availability_pct') || 92);
-
-  // ── Calculated values (auto-cascade on any input change) ──────────────
-  const designTph      = nominalTph ? _r(nominalTph * (1 + concDesignFactorPct / 100), 1) : null;
-  const designTphCrush = nominalTph ? _r(nominalTph * (1 + crushDesignFactorPct / 100), 1) : null;
-  const crushHoursDay  = _r(24 * crushAvailPct / 100, 1);
-  const sagHoursDay    = _r(24 * sagAvailPct / 100, 1);
-  const plantHoursDay  = _r(24 * plantAvailPct / 100, 1);
-  const crushHoursYear = _r(crushHoursDay * 365, 0);
-  const sagHoursYear   = _r(sagHoursDay * 365, 0);
-  const plantHoursYear = _r(plantHoursDay * 365, 0);
+  const basis = dcBuildGeneralDesignBasis({ project: S.project, getParam: _sp, round: _r });
 
   const generalDC = [
     { type:'section', title:'General Plant Design Criteria' },
     { type:'subsection', title:'Design basis' },
     { ref:'1.1.1', item:'Design ore processing rate - Plant', unit:'tpcd',
-      design: designTph ? _r(designTph * 24, 1) : null, calc:true,
-      nominal: nominalTph ? _r(nominalTph * 24, 1) : null, source:'C' },
+      design: basis.designTph ? _r(DC_GENERAL_FORMULAS.tonnesPerCalendarDay(basis.designTph), 1) : null,
+      nominal: basis.nominalTph ? _r(DC_GENERAL_FORMULAS.tonnesPerCalendarDay(basis.nominalTph), 1) : null,
+      calc:true, source:'C',
+      formula: 'Design t/h × 24; Nominal t/h × 24' },
     { ref:'1.1.2', item:'Design ore processing rate - Plant', unit:'t/h',
-      design: designTph, calc:true, nominal: nominalTph,
-      nomKey:'comminution/dc_nominal_tph', source:'C' },
+      design: basis.designTph, nominal: basis.nominalTph,
+      designKey:'comminution/dc_design_tph', source:'C',
+      formula: `Nominal = Design / ${fmtAuto(DC_GENERAL_FORMULAS.safetyFactor(basis.concDesignFactorPct))}` },
     { ref:'1.1.3', item:'Operating hours per year - Crushing Circuit', unit:'h/yr',
-      design: crushHoursYear, calc:true, nominal: crushHoursYear, source:'C',
-      formula: `${crushHoursDay} h/d × 365` },
+      design: basis.crushHoursYear, calc:true, nominal: basis.crushHoursYear, source:'C',
+      formula: `${basis.crushHoursDay} h/d × 365` },
     { ref:'1.1.4', item:'Operating hours per year - HPGR or SAG Mill', unit:'h/yr',
-      design: sagHoursYear, calc:true, nominal: sagHoursYear, source:'C',
-      formula: `${sagHoursDay} h/d × 365` },
+      design: basis.sagHoursYear, calc:true, nominal: basis.sagHoursYear, source:'C',
+      formula: `${basis.sagHoursDay} h/d × 365` },
     { ref:'1.1.5', item:'Operating hours per year - Plant', unit:'h/yr',
-      design: plantHoursYear, calc:true, nominal: plantHoursYear, source:'C',
-      formula: `${plantHoursDay} h/d × 365` },
+      design: basis.plantHoursYear, calc:true, nominal: basis.plantHoursYear, source:'C',
+      formula: `${basis.plantHoursDay} h/d × 365` },
     { ref:'1.1.6', item:'Operating hours per day - Crushing Circuit', unit:'h/d',
-      design: crushHoursDay, calc:true, nominal: crushHoursDay, source:'C',
-      formula: `24 × ${crushAvailPct}%` },
+      design: basis.crushHoursDay, calc:true, nominal: basis.crushHoursDay, source:'C',
+      formula: `24 × ${basis.crushAvailPct}%` },
     { ref:'1.1.7', item:'Operating hours per day - HPGR or SAG Mill', unit:'h/d',
-      design: sagHoursDay, calc:true, nominal: sagHoursDay, source:'C',
-      formula: `24 × ${sagAvailPct}%` },
+      design: basis.sagHoursDay, calc:true, nominal: basis.sagHoursDay, source:'C',
+      formula: `24 × ${basis.sagAvailPct}%` },
     { ref:'1.1.8', item:'Operating hours per day - Plant', unit:'h/d',
-      design: plantHoursDay, calc:true, nominal: plantHoursDay, source:'C',
-      formula: `24 × ${plantAvailPct}%` },
+      design: basis.plantHoursDay, calc:true, nominal: basis.plantHoursDay, source:'C',
+      formula: `24 × ${basis.plantAvailPct}%` },
     { ref:'1.1.9', item:'Operating Percentage - Crushing Circuit', unit:'%',
-      design: crushAvailPct, nominal: crushAvailPct,
+      design: basis.crushAvailPct, nominal: basis.crushAvailPct,
       designKey:'comminution/crush_availability_pct', source:'O' },
     { ref:'1.1.10', item:'Operating Percentage - HPGR or SAG Mill', unit:'%',
-      design: sagAvailPct, nominal: sagAvailPct,
+      design: basis.sagAvailPct, nominal: basis.sagAvailPct,
       designKey:'comminution/sag_availability_pct', source:'O' },
     { ref:'1.1.11', item:'Operating Percentage - Plant', unit:'%',
-      design: plantAvailPct, nominal: plantAvailPct,
+      design: basis.plantAvailPct, nominal: basis.plantAvailPct,
       designKey:'comminution/plant_availability_pct', source:'O' },
     { type:'subsection', title:'Design Factors' },
     { ref:'1.2.1', item:'Crushing plant equipment design factor', unit:'%',
-      design: crushDesignFactorPct, nominal: crushDesignFactorPct,
+      design: basis.crushDesignFactorPct, nominal: basis.crushDesignFactorPct,
       designKey:'comminution/crush_design_factor_pct', source:'I' },
     { ref:'1.2.2', item:'Concentrator plant equipment design factor', unit:'%',
-      design: concDesignFactorPct, nominal: concDesignFactorPct,
+      design: basis.concDesignFactorPct, nominal: basis.concDesignFactorPct,
       designKey:'comminution/conc_design_factor_pct', source:'I' },
 
     { type:'section', title:'General Project Information' },
@@ -18045,6 +18113,7 @@ function renderDesignCriteria() {
       const minVal = spGet(fallbackCat, fallbackKey + '_min', undefined);
       const maxVal = spGet(fallbackCat, fallbackKey + '_max', undefined);
       const cmtVal = spGet(fallbackCat, fallbackKey + '_cmt', undefined);
+      const displayComment = cmtVal ?? row.formula ?? null;
 
       const src = row.source;
       const tdBase = 'padding:3px 4px;text-align:right;font-family:var(--mono);font-size:11px;';
@@ -18073,7 +18142,7 @@ function renderDesignCriteria() {
         <td style="padding:3px 4px;text-align:center;">${_dcSourceBadge(src)}</td>
         <td style="padding:3px 4px;text-align:center;font-size:10px;color:var(--txt3)">A</td>
         <td style="padding:3px 4px;text-align:center;font-size:10px;color:var(--txt3)">\u2014</td>
-        <td style="padding:3px 4px;font-size:10px;color:var(--txt3);cursor:pointer;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" onclick="dcEditGeneralCell(this,'${fallbackCat}','${fallbackKey}_cmt','text')" title="Cliquez pour ajouter">${cmtVal || '\u2014'}</td>
+        <td style="padding:3px 4px;font-size:10px;color:var(--txt3);cursor:pointer;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" onclick="dcEditGeneralCell(this,'${fallbackCat}','${fallbackKey}_cmt','text')" title="${displayComment ? String(displayComment).replace(/"/g,'&quot;') : 'Cliquez pour ajouter'}">${displayComment || '\u2014'}</td>
       </tr>`;
     }
     if (html) html += '</tbody></table></div>';
