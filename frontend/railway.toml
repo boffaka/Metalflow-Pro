@@ -1,6 +1,6 @@
 [build]
-builder = "NIXPACKS"
-buildCommand = "yarn install && yarn build"
+builder = "RAILPACK"
+buildCommand = "mkdir -p build && cp public/index.html build/index.html"
 
 [deploy]
 startCommand = "npx serve -s build -l tcp://0.0.0.0:$PORT"
