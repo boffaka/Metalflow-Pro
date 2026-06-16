@@ -2738,7 +2738,7 @@ function drawEconSensibiliteCharts() {
 function renderLoginPage() {
   const showRegister = S._showRegister || false;
   return `
-<div class="auth-shell" style="min-height:100vh;background:linear-gradient(135deg,#0F172A 0%,#1E293B 50%,#0F172A 100%);display:flex;flex-direction:column;">
+<div class="auth-shell" style="min-height:100vh;background:var(--app-bg,#06080E);display:flex;flex-direction:column;">
 
   <!-- ═══ HERO SECTION ═══ -->
   <div class="auth-hero" style="flex:1;display:flex;align-items:center;justify-content:center;padding:40px 20px;">
@@ -2767,52 +2767,52 @@ function renderLoginPage() {
 
         <!-- Feature cards -->
         <div class="auth-features" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-          <div style="background:rgba(245,166,35,0.08);border:1px solid rgba(245,166,35,0.2);border-radius:10px;padding:14px;">
-            <div style="font-size:20px;margin-bottom:4px;">⚙</div>
-            <div style="font-size:13px;font-weight:700;color:#F4F8FF;">60+ Opérations unitaires</div>
-            <div style="font-size:11px;color:#63758C;margin-top:2px;">Circuit composable avec critères de conception professionnels</div>
+          <div style="background:var(--gold4,rgba(245,166,35,.07));border:1px solid var(--gold3,rgba(245,166,35,.16));border-radius:12px;padding:16px;transition:border-color .2s,box-shadow .2s;" onmouseover="this.style.boxShadow='0 0 0 1px rgba(245,166,35,.25),0 8px 24px rgba(245,166,35,.08)'" onmouseout="this.style.boxShadow=''">
+            <div style="font-size:18px;margin-bottom:6px;color:var(--gold,#F5A623);">⚙</div>
+            <div style="font-size:13px;font-weight:700;color:var(--txt1,#F4F8FF);">60+ Opérations unitaires</div>
+            <div style="font-size:11px;color:var(--txt4,#63758C);margin-top:3px;line-height:1.5;">Circuit composable avec critères de conception professionnels</div>
           </div>
-          <div style="background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.2);border-radius:10px;padding:14px;">
-            <div style="font-size:20px;margin-bottom:4px;">📊</div>
-            <div style="font-size:13px;font-weight:700;color:#F4F8FF;">Bilan massique circuit par circuit</div>
-            <div style="font-size:11px;color:#63758C;margin-top:2px;">Monte Carlo 5 000 sims + empreinte carbone intégrée</div>
+          <div style="background:var(--blue3,rgba(91,164,245,.08));border:1px solid rgba(91,164,245,.18);border-radius:12px;padding:16px;transition:border-color .2s,box-shadow .2s;" onmouseover="this.style.boxShadow='0 0 0 1px rgba(91,164,245,.25),0 8px 24px rgba(91,164,245,.08)'" onmouseout="this.style.boxShadow=''">
+            <div style="font-size:18px;margin-bottom:6px;color:var(--blue,#5BA4F5);">📊</div>
+            <div style="font-size:13px;font-weight:700;color:var(--txt1,#F4F8FF);">Bilan massique circuit par circuit</div>
+            <div style="font-size:11px;color:var(--txt4,#63758C);margin-top:3px;line-height:1.5;">Monte Carlo 5 000 sims + empreinte carbone intégrée</div>
           </div>
-          <div style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);border-radius:10px;padding:14px;">
-            <div style="font-size:20px;margin-bottom:4px;">🏭</div>
-            <div style="font-size:13px;font-weight:700;color:#F4F8FF;">MER professionnel 400+ items</div>
-            <div style="font-size:11px;color:#63758C;margin-top:2px;">Registre mécanique avec WBS, vendeurs et CAPEX</div>
+          <div style="background:var(--teal3,rgba(0,196,176,.08));border:1px solid rgba(0,196,176,.18);border-radius:12px;padding:16px;transition:border-color .2s,box-shadow .2s;" onmouseover="this.style.boxShadow='0 0 0 1px rgba(0,196,176,.25),0 8px 24px rgba(0,196,176,.08)'" onmouseout="this.style.boxShadow=''">
+            <div style="font-size:18px;margin-bottom:6px;color:var(--teal,#00C4B0);">🏭</div>
+            <div style="font-size:13px;font-weight:700;color:var(--txt1,#F4F8FF);">MER professionnel 400+ items</div>
+            <div style="font-size:11px;color:var(--txt4,#63758C);margin-top:3px;line-height:1.5;">Registre mécanique avec WBS, vendeurs et CAPEX</div>
           </div>
-          <div style="background:rgba(139,92,246,0.08);border:1px solid rgba(139,92,246,0.2);border-radius:10px;padding:14px;">
-            <div style="font-size:20px;margin-bottom:4px;">⛏</div>
-            <div style="font-size:13px;font-weight:700;color:#F4F8FF;">Mine-to-Mill (Innovation)</div>
-            <div style="font-size:11px;color:#63758C;margin-top:2px;">Block Model → LOM 15 ans → NPV avec intervalles de confiance</div>
+          <div style="background:var(--purple3,rgba(157,120,240,.08));border:1px solid rgba(157,120,240,.18);border-radius:12px;padding:16px;transition:border-color .2s,box-shadow .2s;" onmouseover="this.style.boxShadow='0 0 0 1px rgba(157,120,240,.25),0 8px 24px rgba(157,120,240,.08)'" onmouseout="this.style.boxShadow=''">
+            <div style="font-size:18px;margin-bottom:6px;color:var(--purple,#9D78F0);">⛏</div>
+            <div style="font-size:13px;font-weight:700;color:var(--txt1,#F4F8FF);">Mine-to-Mill (Innovation)</div>
+            <div style="font-size:11px;color:var(--txt4,#63758C);margin-top:3px;line-height:1.5;">Block Model → LOM 15 ans → NPV avec intervalles de confiance</div>
           </div>
         </div>
 
-        <div class="auth-compliance" style="margin-top:24px;display:flex;gap:24px;align-items:center;">
+        <div class="auth-compliance" style="margin-top:24px;display:flex;gap:24px;align-items:center;flex-wrap:wrap;">
           <div style="display:flex;align-items:center;gap:6px;">
-            <div style="width:8px;height:8px;background:#10B981;border-radius:50%;"></div>
-            <span style="font-size:12px;color:#94A3B8;">NI 43-101 Compliant</span>
+            <div style="width:7px;height:7px;background:var(--teal,#00C4B0);border-radius:50%;box-shadow:0 0 6px rgba(0,196,176,.5);"></div>
+            <span style="font-size:12px;color:var(--txt3,#8896AE);">NI 43-101 Compliant</span>
           </div>
           <div style="display:flex;align-items:center;gap:6px;">
-            <div style="width:8px;height:8px;background:#3B82F6;border-radius:50%;"></div>
-            <span style="font-size:12px;color:#94A3B8;">Stage-Gate EPCM</span>
+            <div style="width:7px;height:7px;background:var(--blue,#5BA4F5);border-radius:50%;box-shadow:0 0 6px rgba(91,164,245,.5);"></div>
+            <span style="font-size:12px;color:var(--txt3,#8896AE);">Stage-Gate EPCM</span>
           </div>
           <div style="display:flex;align-items:center;gap:6px;">
-            <div style="width:8px;height:8px;background:#F5A623;border-radius:50%;"></div>
-            <span style="font-size:12px;color:#94A3B8;">ESG / Carbon Tracking</span>
+            <div style="width:7px;height:7px;background:var(--gold,#F5A623);border-radius:50%;box-shadow:0 0 6px rgba(245,166,35,.5);"></div>
+            <span style="font-size:12px;color:var(--txt3,#8896AE);">ESG / Carbon Tracking</span>
           </div>
         </div>
       </div>
 
       <!-- Right: Login / Register Card -->
       <div class="auth-form-column">
-        <div class="auth-panel" style="background:rgba(30,41,59,0.8);border:1px solid rgba(148,163,184,0.15);border-radius:16px;padding:32px;backdrop-filter:blur(20px);box-shadow:0 25px 50px rgba(0,0,0,0.4);">
+        <div class="auth-panel" style="background:var(--card,#0D121B);border:1px solid var(--gold3,rgba(245,166,35,.16));border-radius:16px;padding:32px;backdrop-filter:blur(24px);box-shadow:0 30px 60px rgba(0,0,0,.5),inset 0 1px rgba(255,255,255,.04);">
 
           <!-- Tab switcher -->
-          <div style="display:flex;margin-bottom:24px;background:rgba(15,23,42,0.5);border-radius:10px;padding:3px;">
+          <div style="display:flex;margin-bottom:24px;background:var(--bg,#06080E);border-radius:10px;padding:3px;border:1px solid var(--border,#16202E);">
             <button onclick="S._showRegister=false;render()" style="flex:1;padding:10px;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:.2s;${!showRegister ? 'background:rgba(245,166,35,0.15);color:#F5A623;' : 'background:transparent;color:#63758C;'}">Se connecter</button>
-            <button onclick="S._showRegister=true;render()" style="flex:1;padding:10px;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:.2s;${showRegister ? 'background:rgba(59,130,246,0.15);color:#3B82F6;' : 'background:transparent;color:#63758C;'}">Créer un compte</button>
+            <button onclick="S._showRegister=true;render()" style="flex:1;padding:10px;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:.2s;${showRegister ? 'background:rgba(0,196,176,0.15);color:#2EE8D8;' : 'background:transparent;color:#63758C;'}">Créer un compte</button>
           </div>
 
           <div id="login-error" style="display:none" class="alert alert-error mb12"><span class="alert-icon">⚠</span><span id="login-error-msg"></span></div>
@@ -2821,12 +2821,12 @@ function renderLoginPage() {
           ${!showRegister ? `
           <!-- LOGIN FORM -->
           <div class="form-group">
-            <label class="form-label" style="color:#94A3B8;">Adresse courriel</label>
-            <input class="input" type="email" id="login-email" placeholder="votre@email.com" autocomplete="email" style="background:rgba(15,23,42,0.6);border-color:rgba(148,163,184,0.2);color:#F4F8FF;">
+            <label class="form-label" style="color:var(--txt3,#8896AE);">Adresse courriel</label>
+            <input class="input" type="email" id="login-email" placeholder="votre@email.com" autocomplete="email" style="background:var(--bg,#06080E);border-color:var(--border2,#1D2C3E);color:var(--txt1,#F4F8FF);">
           </div>
           <div class="form-group">
-            <label class="form-label" style="color:#94A3B8;">Mot de passe</label>
-            <input class="input" type="password" id="login-pwd" placeholder="••••••••" autocomplete="current-password" style="background:rgba(15,23,42,0.6);border-color:rgba(148,163,184,0.2);color:#F4F8FF;">
+            <label class="form-label" style="color:var(--txt3,#8896AE);">Mot de passe</label>
+            <input class="input" type="password" id="login-pwd" placeholder="••••••••" autocomplete="current-password" style="background:var(--bg,#06080E);border-color:var(--border2,#1D2C3E);color:var(--txt1,#F4F8FF);">
           </div>
           <button class="btn" style="width:100%;margin-top:12px;justify-content:center;padding:12px;background:linear-gradient(135deg,#F5A623,#C98214);color:#06080E;font-weight:700;font-size:14px;border:none;border-radius:10px;" id="btn-login" onclick="doLogin()">
             <span id="login-spinner" style="display:none" class="spinner"></span>
@@ -2835,33 +2835,33 @@ function renderLoginPage() {
           ` : `
           <!-- REGISTER FORM -->
           <div class="form-group">
-            <label class="form-label" style="color:#94A3B8;">Nom complet</label>
-            <input class="input" type="text" id="reg-name" placeholder="Jean Dupont" style="background:rgba(15,23,42,0.6);border-color:rgba(148,163,184,0.2);color:#F4F8FF;">
+            <label class="form-label" style="color:var(--txt3,#8896AE);">Nom complet</label>
+            <input class="input" type="text" id="reg-name" placeholder="Jean Dupont" style="background:var(--bg,#06080E);border-color:var(--border2,#1D2C3E);color:var(--txt1,#F4F8FF);">
           </div>
           <div class="form-group">
-            <label class="form-label" style="color:#94A3B8;">Adresse courriel</label>
-            <input class="input" type="email" id="reg-email" placeholder="votre@email.com" autocomplete="email" style="background:rgba(15,23,42,0.6);border-color:rgba(148,163,184,0.2);color:#F4F8FF;">
+            <label class="form-label" style="color:var(--txt3,#8896AE);">Adresse courriel</label>
+            <input class="input" type="email" id="reg-email" placeholder="votre@email.com" autocomplete="email" style="background:var(--bg,#06080E);border-color:var(--border2,#1D2C3E);color:var(--txt1,#F4F8FF);">
           </div>
           <div class="form-group">
-            <label class="form-label" style="color:#94A3B8;">Mot de passe (min. 8 caractères)</label>
-            <input class="input" type="password" id="reg-pwd" placeholder="••••••••" autocomplete="new-password" style="background:rgba(15,23,42,0.6);border-color:rgba(148,163,184,0.2);color:#F4F8FF;">
+            <label class="form-label" style="color:var(--txt3,#8896AE);">Mot de passe (min. 8 caractères)</label>
+            <input class="input" type="password" id="reg-pwd" placeholder="••••••••" autocomplete="new-password" style="background:var(--bg,#06080E);border-color:var(--border2,#1D2C3E);color:var(--txt1,#F4F8FF);">
           </div>
           <div class="form-group">
-            <label class="form-label" style="color:#94A3B8;">Confirmer le mot de passe</label>
-            <input class="input" type="password" id="reg-pwd2" placeholder="••••••••" autocomplete="new-password" style="background:rgba(15,23,42,0.6);border-color:rgba(148,163,184,0.2);color:#F4F8FF;">
+            <label class="form-label" style="color:var(--txt3,#8896AE);">Confirmer le mot de passe</label>
+            <input class="input" type="password" id="reg-pwd2" placeholder="••••••••" autocomplete="new-password" style="background:var(--bg,#06080E);border-color:var(--border2,#1D2C3E);color:var(--txt1,#F4F8FF);">
           </div>
-          <button class="btn" style="width:100%;margin-top:12px;justify-content:center;padding:12px;background:linear-gradient(135deg,#3B82F6,#2563EB);color:#F4F8FF;font-weight:700;font-size:14px;border:none;border-radius:10px;" id="btn-register" onclick="doRegister()">
+          <button class="btn" style="width:100%;margin-top:12px;justify-content:center;padding:12px;background:linear-gradient(135deg,var(--teal,#00C4B0),#008A7C);color:#F9FAFB;font-weight:700;font-size:14px;border:none;border-radius:10px;box-shadow:0 4px 16px rgba(0,196,176,.25);" id="btn-register" onclick="doRegister()">
             <span id="reg-spinner" style="display:none" class="spinner"></span>
             Créer mon compte
           </button>
           `}
 
-          <div style="text-align:center;margin-top:20px;font-size:11px;color:#475569;">
-            ${!showRegister ? 'Pas encore de compte ? <a href="#" onclick="S._showRegister=true;render();return false" style="color:#3B82F6;text-decoration:none;">Inscrivez-vous</a>' : 'Déjà un compte ? <a href="#" onclick="S._showRegister=false;render();return false" style="color:#F5A623;text-decoration:none;">Connectez-vous</a>'}
+          <div style="text-align:center;margin-top:20px;font-size:11px;color:var(--txt4,#63758C);">
+            ${!showRegister ? 'Pas encore de compte ? <a href="#" onclick="S._showRegister=true;render();return false" style="color:var(--teal2,#2EE8D8);text-decoration:none;">Inscrivez-vous</a>' : 'Déjà un compte ? <a href="#" onclick="S._showRegister=false;render();return false" style="color:var(--gold,#F5A623);text-decoration:none;">Connectez-vous</a>'}
           </div>
         </div>
 
-        <div style="text-align:center;margin-top:16px;font-size:10px;color:#334155;">
+        <div style="text-align:center;margin-top:16px;font-size:10px;color:var(--txt4,#63758C);opacity:.6;">
           MetalFlow Pro · MPDPMS v4.0 · Metallurgical Process Design & Project Management System
         </div>
       </div>
@@ -2869,26 +2869,26 @@ function renderLoginPage() {
   </div>
 
   <!-- ═══ FOOTER STATS ═══ -->
-  <div class="auth-stats" style="border-top:1px solid rgba(148,163,184,0.1);padding:20px 40px;display:flex;justify-content:center;gap:48px;">
+  <div class="auth-stats" style="border-top:1px solid var(--border,#16202E);padding:20px 40px;display:flex;justify-content:center;gap:48px;background:var(--bg2,#0C1018);">
     <div style="text-align:center;">
-      <div style="font-size:22px;font-weight:800;color:#F5A623;">49</div>
-      <div style="font-size:10px;color:#63758C;text-transform:uppercase;letter-spacing:.5px;">API Endpoints</div>
+      <div style="font-size:22px;font-weight:800;color:var(--gold,#F5A623);">49</div>
+      <div style="font-size:10px;color:var(--txt4,#63758C);text-transform:uppercase;letter-spacing:.5px;">API Endpoints</div>
     </div>
     <div style="text-align:center;">
-      <div style="font-size:22px;font-weight:800;color:#3B82F6;">60+</div>
-      <div style="font-size:10px;color:#63758C;text-transform:uppercase;letter-spacing:.5px;">Opérations unitaires</div>
+      <div style="font-size:22px;font-weight:800;color:var(--blue,#5BA4F5);">60+</div>
+      <div style="font-size:10px;color:var(--txt4,#63758C);text-transform:uppercase;letter-spacing:.5px;">Opérations unitaires</div>
     </div>
     <div style="text-align:center;">
-      <div style="font-size:22px;font-weight:800;color:#10B981;">434</div>
-      <div style="font-size:10px;color:#63758C;text-transform:uppercase;letter-spacing:.5px;">Critères de conception</div>
+      <div style="font-size:22px;font-weight:800;color:var(--teal,#00C4B0);">434</div>
+      <div style="font-size:10px;color:var(--txt4,#63758C);text-transform:uppercase;letter-spacing:.5px;">Critères de conception</div>
     </div>
     <div style="text-align:center;">
-      <div style="font-size:22px;font-weight:800;color:#8B5CF6;">9</div>
-      <div style="font-size:10px;color:#63758C;text-transform:uppercase;letter-spacing:.5px;">Modèles cinétiques</div>
+      <div style="font-size:22px;font-weight:800;color:var(--purple,#9D78F0);">9</div>
+      <div style="font-size:10px;color:var(--txt4,#63758C);text-transform:uppercase;letter-spacing:.5px;">Modèles cinétiques</div>
     </div>
     <div style="text-align:center;">
-      <div style="font-size:22px;font-weight:800;color:#EF4444;">5 000</div>
-      <div style="font-size:10px;color:#63758C;text-transform:uppercase;letter-spacing:.5px;">Simulations Monte Carlo</div>
+      <div style="font-size:22px;font-weight:800;color:var(--red,#F06B6B);">5 000</div>
+      <div style="font-size:10px;color:var(--txt4,#63758C);text-transform:uppercase;letter-spacing:.5px;">Simulations Monte Carlo</div>
     </div>
   </div>
 </div>`;
