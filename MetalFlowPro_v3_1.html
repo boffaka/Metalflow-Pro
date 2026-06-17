@@ -16172,10 +16172,46 @@ const DC_GENERAL_DEFAULTS = Object.freeze({
   comminution: Object.freeze({
     crush_design_factor_pct: 25,
     conc_design_factor_pct: 15,
+    hydraulic_design_factor_pct: 20,
+    electrical_design_factor_pct: 10,
     crush_availability_pct: 75,
     sag_availability_pct: 92,
     plant_availability_pct: 92,
+    utilization_pct: 100,
   }),
+});
+
+const DC_PLANT_TEMPLATES = Object.freeze({
+  gold_cil: {
+    label: 'Or CIL/CIP',
+    sections: ['CRUSHING','HPGR','GRINDING','CLASSIFICATION','GRAVITY','FLOTATION','LEACHING_CIL','ADR','THICKENING'],
+  },
+  gold_heap: {
+    label: 'Or Heap Leach',
+    sections: ['CRUSHING','AGGLOMERATION','STACKING','HEAP_LEACH','ADR'],
+  },
+  copper_concentrate: {
+    label: 'Cuivre concentré',
+    sections: ['CRUSHING','GRINDING','FLOTATION','REGRIND','THICKENING','FILTRATION'],
+  },
+  copper_sxew: {
+    label: 'Cuivre SX-EW',
+    sections: ['CRUSHING','GRINDING','LEACHING','SX','EW'],
+  },
+  lithium_spodumene: {
+    label: 'Lithium spodumène',
+    sections: ['CRUSHING','DMS','CALCINATION','ACID_ROAST','LEACHING','PURIFICATION','PRECIPITATION'],
+  },
+  custom: {
+    label: 'Personnalisé',
+    sections: [],
+  },
+});
+
+const DC_DESIGN_SCENARIOS = Object.freeze({
+  low: { label:'LOW', throughput:0.95, hardness:0.90, residence:0.90, reagent:0.90 },
+  nominal: { label:'NOMINAL', throughput:1.00, hardness:1.00, residence:1.00, reagent:1.00 },
+  high: { label:'HIGH', throughput:1.15, hardness:1.15, residence:1.20, reagent:1.15 },
 });
 
 const DC_GENERAL_FORMULAS = Object.freeze({
@@ -16213,10 +16249,13 @@ function dcBuildGeneralDesignBasis({ project, getParam, round }) {
   const projectTargetTph = Number(project?.target_tph);
   const concDesignFactorPct = get('comminution', 'conc_design_factor_pct', defaults.conc_design_factor_pct);
   const crushDesignFactorPct = get('comminution', 'crush_design_factor_pct', defaults.crush_design_factor_pct);
+  const hydraulicDesignFactorPct = get('comminution', 'hydraulic_design_factor_pct', defaults.hydraulic_design_factor_pct);
+  const electricalDesignFactorPct = get('comminution', 'electrical_design_factor_pct', defaults.electrical_design_factor_pct);
   const crushAvailPct = get('comminution', 'crush_availability_pct', defaults.crush_availability_pct);
   const sagAvailPct = get('comminution', 'sag_availability_pct', defaults.sag_availability_pct);
   const plantAvailPct = get('comminution', 'plant_availability_pct',
     project?.availability_pct ?? defaults.plant_availability_pct);
+  const utilizationPct = get('comminution', 'utilization_pct', defaults.utilization_pct);
 
   const storedNominalTph = get('comminution', 'dc_nominal_tph',
     Number.isFinite(projectTargetTph) && projectTargetTph > 0 ? projectTargetTph : null);
@@ -16226,6 +16265,9 @@ function dcBuildGeneralDesignBasis({ project, getParam, round }) {
     : DC_GENERAL_FORMULAS.designTphFromNominal(storedNominalTph, concDesignFactorPct);
   const nominalTphRaw = DC_GENERAL_FORMULAS.nominalTphFromDesign(designTphRaw, concDesignFactorPct);
   const designTphCrushRaw = DC_GENERAL_FORMULAS.designTphFromNominal(nominalTphRaw, crushDesignFactorPct);
+  const nominalTpdRaw = nominalTphRaw != null ? nominalTphRaw * 24 * sagAvailPct / 100 * utilizationPct / 100 : null;
+  const annualTargetRaw = nominalTphRaw != null ? nominalTphRaw * 8760 * plantAvailPct / 100 * utilizationPct / 100 : null;
+  const designTpdGrindingRaw = designTphRaw != null ? designTphRaw * 24 * sagAvailPct / 100 : null;
 
   const crushHoursDayRaw = DC_GENERAL_FORMULAS.hoursPerDay(crushAvailPct);
   const sagHoursDayRaw = DC_GENERAL_FORMULAS.hoursPerDay(sagAvailPct);
@@ -16237,9 +16279,15 @@ function dcBuildGeneralDesignBasis({ project, getParam, round }) {
     designTphCrush: designTphCrushRaw != null ? round(designTphCrushRaw, 1) : null,
     crushDesignFactorPct,
     concDesignFactorPct,
+    hydraulicDesignFactorPct,
+    electricalDesignFactorPct,
     crushAvailPct,
     sagAvailPct,
     plantAvailPct,
+    utilizationPct,
+    nominalTpd: nominalTpdRaw != null ? round(nominalTpdRaw, 1) : null,
+    annualTargetTpy: annualTargetRaw != null ? round(annualTargetRaw, 0) : null,
+    designTpdGrinding: designTpdGrindingRaw != null ? round(designTpdGrindingRaw, 1) : null,
     crushHoursDay: crushHoursDayRaw != null ? round(crushHoursDayRaw, 1) : null,
     sagHoursDay: sagHoursDayRaw != null ? round(sagHoursDayRaw, 1) : null,
     plantHoursDay: plantHoursDayRaw != null ? round(plantHoursDayRaw, 1) : null,
@@ -16295,6 +16343,158 @@ function dcVolumetricSlurryFlow(solidsTph, solidsSg, solidsPct) {
   const tph = Number(solidsTph), sg = Number(solidsSg), pct = Number(solidsPct);
   if (![tph, sg, pct].every(v => Number.isFinite(v) && v > 0)) return null;
   return tph / sg + tph * (100 - pct) / pct;
+}
+
+function dcProjectScopedKey(suffix) {
+  return `metalflow:dc:${S.pid || 'no-project'}:${suffix}`;
+}
+
+function dcGetDesignScenario() {
+  const saved = localStorage.getItem(dcProjectScopedKey('scenario'));
+  return DC_DESIGN_SCENARIOS[saved] ? saved : 'nominal';
+}
+
+function dcSetDesignScenario(scenario) {
+  const next = DC_DESIGN_SCENARIOS[scenario] ? scenario : 'nominal';
+  localStorage.setItem(dcProjectScopedKey('scenario'), next);
+  rerenderSection();
+}
+
+function dcGetPlantTemplate() {
+  const saved = localStorage.getItem(dcProjectScopedKey('plant_template'));
+  return DC_PLANT_TEMPLATES[saved] ? saved : 'gold_cil';
+}
+
+function dcSetPlantTemplate(templateKey) {
+  const next = DC_PLANT_TEMPLATES[templateKey] ? templateKey : 'gold_cil';
+  localStorage.setItem(dcProjectScopedKey('plant_template'), next);
+  rerenderSection();
+}
+
+function dcBuildProjectSandbox({ projectId, scenarioKey, basis, ctx }) {
+  const scenario = DC_DESIGN_SCENARIOS[scenarioKey] || DC_DESIGN_SCENARIOS.nominal;
+  const scenarioCtx = {
+    ...ctx,
+    designTph: basis.designTph != null ? dcRound(basis.designTph * scenario.throughput, 1) : null,
+    nominalTph: basis.nominalTph,
+    cwi: ctx.cwi != null ? dcRound(ctx.cwi * scenario.hardness, 2) : null,
+    bwi: ctx.bwi != null ? dcRound(ctx.bwi * scenario.hardness, 2) : null,
+    scse: ctx.scse != null ? dcRound(ctx.scse * scenario.hardness, 2) : null,
+    leachTimeH: ctx.leachTimeH != null ? dcRound(ctx.leachTimeH * scenario.residence, 2) : null,
+  };
+  return Object.freeze({
+    projectId: String(projectId || 'local'),
+    scenarioKey,
+    scenario,
+    basis: Object.freeze({ ...basis }),
+    ctx: Object.freeze(scenarioCtx),
+  });
+}
+
+function dcBuildFormulaGraph(groups) {
+  const nodes = new Map();
+  const edges = new Map();
+  (groups || []).forEach(group => {
+    let previousCalculatedId = null;
+    (group.criteria || []).forEach(row => {
+    const id = String(row.id || `${group.op_code || group.section_title}:${row.ref || row.item}`);
+    nodes.set(id, { id, label: row.item || row.ref || id });
+      const explicitDeps = (row._formulaDeps || []).map(String);
+      const inferredDeps = (!explicitDeps.length && row._formula && previousCalculatedId) ? [previousCalculatedId] : [];
+      edges.set(id, explicitDeps.length ? explicitDeps : inferredDeps);
+      if (row._formula) previousCalculatedId = id;
+    });
+  });
+
+  const visiting = new Set();
+  const visited = new Set();
+  const cycles = [];
+  const visit = (id, stack = []) => {
+    if (visiting.has(id)) {
+      const pos = stack.indexOf(id);
+      cycles.push(pos >= 0 ? stack.slice(pos).concat(id) : stack.concat(id));
+      return;
+    }
+    if (visited.has(id)) return;
+    visiting.add(id);
+    (edges.get(id) || []).forEach(dep => visit(dep, stack.concat(id)));
+    visiting.delete(id);
+    visited.add(id);
+  };
+  nodes.forEach((_, id) => visit(id));
+  return { nodeCount: nodes.size, edgeCount: Array.from(edges.values()).reduce((a, e) => a + e.length, 0), cycles };
+}
+
+function dcValidateValue(label, unit, value) {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return null;
+  const l = dcNormalizeLabel(label);
+  const u = String(unit || '').toLowerCase();
+  if (/bwi|bond ball/.test(l) && (n < 5 || n > 30)) return { level:'warn', text:`BWi hors plage usuelle (${fmtAuto(n)} kWh/t)` };
+  if (/cwi|crushing/.test(l) && u.includes('kwh') && (n < 2 || n > 30)) return { level:'warn', text:`CWi hors plage usuelle (${fmtAuto(n)} kWh/t)` };
+  if (/densite|sg/.test(l) && (n < 1.2 || n > 5.5)) return { level:'warn', text:`Densité/SG atypique (${fmtAuto(n)})` };
+  if (u === '%' && (/disponibilite|rendement|recup|passant|solides|marge|facteur/.test(l)) && (n < 0 || n > 100)) {
+    return { level:'error', text:`Pourcentage invalide (${fmtAuto(n)}%)` };
+  }
+  if (/p80|f80|f100/.test(l) && n <= 0) return { level:'error', text:`Granulométrie non positive (${fmtAuto(n)})` };
+  if (/puissance|debit|volume|surface|diametre|nombre/.test(l) && n < 0) return { level:'error', text:`Valeur négative détectée (${fmtAuto(n)})` };
+  return null;
+}
+
+function dcValidateDesignModel({ generalDC, equipmentGroups, graph, sandbox }) {
+  const alerts = [];
+  const missing = [];
+  const inspectRow = (row, sectionTitle) => {
+    if (!row || row.type || row.is_header) return;
+    const value = row.design ?? row.design_value ?? row.nominal_value ?? row.design_value_text ?? null;
+    const isInputLike = !row.calc && !row._formula && !row.is_text_field;
+    if (isInputLike && (value == null || value === '')) {
+      missing.push(`${sectionTitle}: ${row.item || row.ref}`);
+      return;
+    }
+    const validation = dcValidateValue(row.item, row.unit, value);
+    if (validation) alerts.push({ ...validation, section: sectionTitle, item: row.item || row.ref });
+  };
+
+  let sectionTitle = 'Critères généraux';
+  (generalDC || []).forEach(row => {
+    if (row.type === 'section') sectionTitle = row.title;
+    inspectRow(row, sectionTitle);
+  });
+  (equipmentGroups || []).forEach(group => {
+    const sec = group.section_title || group.op_code || 'Équipement';
+    (group.criteria || []).forEach(row => inspectRow(row, sec));
+  });
+  if (missing.length) alerts.push({ level:'warn', section:'Inputs', item:'Paramètres manquants', text:`${missing.length} entrée(s) sans valeur` });
+  if (graph?.cycles?.length) alerts.push({ level:'error', section:'Moteur DAG', item:'Cycle détecté', text:`${graph.cycles.length} cycle(s) de dépendance détecté(s)` });
+  if (!sandbox?.projectId) alerts.push({ level:'error', section:'Sandbox', item:'Projet', text:'Aucun project_id actif pour isoler les calculs' });
+  return { alerts, missing };
+}
+
+function dcRenderValidationPanel(validation, graph, sandbox) {
+  const alerts = validation?.alerts || [];
+  const errors = alerts.filter(a => a.level === 'error').length;
+  const warnings = alerts.filter(a => a.level !== 'error').length;
+  const statusColor = errors ? '#EF4444' : warnings ? '#F5A623' : '#22C55E';
+  const statusText = errors ? `${errors} erreur(s)` : warnings ? `${warnings} alerte(s)` : 'Aucune alerte';
+  const rows = alerts.slice(0, 6).map(a => `
+    <div style="display:flex;gap:8px;align-items:flex-start;padding:6px 8px;border-radius:6px;background:${a.level === 'error' ? 'rgba(239,68,68,.08)' : 'rgba(245,166,35,.07)'};">
+      <span style="width:7px;height:7px;border-radius:50%;background:${a.level === 'error' ? '#EF4444' : '#F5A623'};margin-top:5px;flex-shrink:0"></span>
+      <div style="min-width:0">
+        <div style="font-size:11px;color:var(--txt2);font-weight:600">${esc(a.section || '')} · ${esc(a.item || '')}</div>
+        <div style="font-size:10px;color:var(--txt3);line-height:1.35">${esc(a.text || '')}</div>
+      </div>
+    </div>`).join('');
+  return `<div class="card mb12" style="padding:12px;border-left:3px solid ${statusColor};">
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+      <div>
+        <div style="font-size:12px;font-weight:700;color:var(--txt1)">Moteur de calcul isolé</div>
+        <div style="font-size:10px;color:var(--txt3);margin-top:2px">Projet ${esc(sandbox.projectId)} · scénario ${esc(sandbox.scenario.label)} · DAG ${graph.nodeCount} noeuds / ${graph.edgeCount} liens</div>
+      </div>
+      <span style="margin-left:auto;font-size:11px;color:${statusColor};font-weight:700">${statusText}</span>
+    </div>
+    ${rows ? `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:8px;margin-top:10px">${rows}</div>` : ''}
+  </div>`;
 }
 
 function dcManualOverride(row) {
@@ -18255,10 +18455,14 @@ function renderDesignCriteria() {
   };
 
   const basis = dcBuildGeneralDesignBasis({ project: S.project, getParam: _sp, round: _r });
+  const dcScenarioKey = dcGetDesignScenario();
+  const dcTemplateKey = dcGetPlantTemplate();
 
   const generalDC = [
     { type:'section', title:'General Plant Design Criteria' },
     { type:'subsection', title:'Design basis' },
+    { ref:'1.1.0', item:'Plant nominal production capacity', unit:'t/h',
+      design: basis.nominalTph, calc:true, nominal: basis.nominalTph, source:'C' },
     { ref:'1.1.1', item:'Design ore processing rate - Plant', unit:'tpcd',
       design: basis.designTph ? _r(DC_GENERAL_FORMULAS.tonnesPerCalendarDay(basis.designTph), 1) : null,
       nominal: basis.nominalTph ? _r(DC_GENERAL_FORMULAS.tonnesPerCalendarDay(basis.nominalTph), 1) : null,
@@ -18268,6 +18472,12 @@ function renderDesignCriteria() {
       design: basis.designTph, nominal: basis.nominalTph,
       designKey:'comminution/dc_design_tph', source:'C',
       formula: `Nominal = Design / ${fmtAuto(DC_GENERAL_FORMULAS.safetyFactor(basis.concDesignFactorPct))}` },
+    { ref:'1.1.2a', item:'Target annual production', unit:'t/an',
+      design: basis.annualTargetTpy, calc:true, nominal: basis.annualTargetTpy, source:'C' },
+    { ref:'1.1.2b', item:'Nominal daily tonnage', unit:'t/j',
+      design: basis.nominalTpd, calc:true, nominal: basis.nominalTpd, source:'C' },
+    { ref:'1.1.2c', item:'Design daily tonnage - Grinding', unit:'t/j',
+      design: basis.designTpdGrinding, calc:true, nominal: basis.designTpdGrinding, source:'C' },
     { ref:'1.1.3', item:'Operating hours per year - Crushing Circuit', unit:'h/yr',
       design: basis.crushHoursYear, calc:true, nominal: basis.crushHoursYear, source:'C',
       formula: `${basis.crushHoursDay} h/d × 365` },
@@ -18295,6 +18505,9 @@ function renderDesignCriteria() {
     { ref:'1.1.11', item:'Operating Percentage - Plant', unit:'%',
       design: basis.plantAvailPct, nominal: basis.plantAvailPct,
       designKey:'comminution/plant_availability_pct', source:'O' },
+    { ref:'1.1.12', item:'Effective utilisation - Plant', unit:'%',
+      design: basis.utilizationPct, nominal: basis.utilizationPct,
+      designKey:'comminution/utilization_pct', source:'O' },
     { type:'subsection', title:'Design Factors' },
     { ref:'1.2.1', item:'Crushing plant equipment design factor', unit:'%',
       design: basis.crushDesignFactorPct, nominal: basis.crushDesignFactorPct,
@@ -18302,6 +18515,12 @@ function renderDesignCriteria() {
     { ref:'1.2.2', item:'Concentrator plant equipment design factor', unit:'%',
       design: basis.concDesignFactorPct, nominal: basis.concDesignFactorPct,
       designKey:'comminution/conc_design_factor_pct', source:'I' },
+    { ref:'1.2.3', item:'Hydraulic design factor', unit:'%',
+      design: basis.hydraulicDesignFactorPct, nominal: basis.hydraulicDesignFactorPct,
+      designKey:'comminution/hydraulic_design_factor_pct', source:'I' },
+    { ref:'1.2.4', item:'Electrical design factor', unit:'%',
+      design: basis.electricalDesignFactorPct, nominal: basis.electricalDesignFactorPct,
+      designKey:'comminution/electrical_design_factor_pct', source:'I' },
 
     { type:'section', title:'General Project Information' },
     { type:'subsection', title:'Location' },
@@ -18342,6 +18561,14 @@ function renderDesignCriteria() {
     { ref:'3.3.8', item:'Mic', unit:'kWh/t', design: _b1Avg('mic_kwh_t'), source:'A' },
     { ref:'3.3.9', item:'Bond ball mill work index (BWi)', unit:'kWh/t', design: _b1Avg('bwi_kwh_t'), source:'A' },
     { ref:'3.3.10', item:'Abrasion Index (Ai)', unit:'—', design: _b1Avg('abrasion_index_ai'), source:'A' },
+    { type:'subsection', title:'Product size specifications' },
+    { ref:'3.4.1', item:'ROM F80', unit:'mm', design: _sp('ore','rom_f80_mm', null), source:'O' },
+    { ref:'3.4.2', item:'ROM top size F100', unit:'mm', design: _sp('ore','rom_f100_mm', null), source:'O' },
+    { ref:'3.4.3', item:'Primary crusher P80', unit:'mm', design: _sp('ore','primary_crusher_p80_mm', null), source:'O' },
+    { ref:'3.4.4', item:'Secondary crusher P80', unit:'mm', design: _sp('ore','secondary_crusher_p80_mm', null), source:'O' },
+    { ref:'3.4.5', item:'HPGR product P80', unit:'mm', design: _sp('ore','hpgr_p80_mm', null), source:'O' },
+    { ref:'3.4.6', item:'Ball mill product P80', unit:'µm', design: _sp('ore','ball_mill_p80_um', null), source:'O' },
+    { ref:'3.4.7', item:'Regrind / leach feed P80', unit:'µm', design: _sp('ore','regrind_p80_um', null), source:'O' },
   ];
 
   function _renderGeneralDCTable(items) {
@@ -18490,11 +18717,20 @@ function renderDesignCriteria() {
 
   // Build criteria tables HTML (skip general sections already rendered above)
   const _generalSections = new Set(['General Plant Design Criteria','General Project Information','Ore Characteristics']);
-  const dcEquipmentCtx = dcEquipmentFormulaContext({ basis, sp: _sp, b1Avg: _b1Avg, a1Avg: _a1Avg });
+  const dcBaseEquipmentCtx = dcEquipmentFormulaContext({ basis, sp: _sp, b1Avg: _b1Avg, a1Avg: _a1Avg });
+  const dcSandbox = dcBuildProjectSandbox({
+    projectId: S.pid,
+    scenarioKey: dcScenarioKey,
+    basis,
+    ctx: dcBaseEquipmentCtx,
+  });
   const equipmentGroups = dcApplyEquipmentFormulaEngine(
     groups.filter(g => !_generalSections.has(g.section_title)),
-    dcEquipmentCtx
+    dcSandbox.ctx
   );
+  const dcFormulaGraph = dcBuildFormulaGraph(equipmentGroups);
+  const dcValidation = dcValidateDesignModel({ generalDC, equipmentGroups, graph: dcFormulaGraph, sandbox: dcSandbox });
+  const dcTemplate = DC_PLANT_TEMPLATES[dcTemplateKey] || DC_PLANT_TEMPLATES.gold_cil;
   const activeGroups = equipmentGroups.filter(g => activeOpCodes.has(g.op_code));
   const groupsForTables = activeGroups;
   const tablesHtml = groupsForTables.map(g => {
@@ -18614,6 +18850,32 @@ ${renderActionBar('dc', ACTION_BAR_CONFIG.dc)}
 
   <!-- RIGHT PANEL: Criteria -->
   <div style="flex:1;min-width:0;">
+    <div class="card mb12" style="padding:12px;">
+      <div style="display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:12px;align-items:end;">
+        <div>
+          <div style="font-size:12px;font-weight:700;color:var(--txt1);margin-bottom:4px;">Architecture multi-projets</div>
+          <div style="font-size:10px;color:var(--txt3);line-height:1.5;">
+            Projet isolé: <span class="mono" style="color:var(--gold)">${esc(String(S.pid || '—'))}</span><br>
+            Template actif: <span style="color:var(--txt2)">${esc(dcTemplate.label)}</span> · ${dcTemplate.sections.length || 'sections personnalisées'} modules
+          </div>
+        </div>
+        <label style="display:block;">
+          <span style="display:block;font-size:10px;color:var(--txt3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px;">Template d'usine</span>
+          <select class="input" style="height:34px;font-size:12px;" onchange="dcSetPlantTemplate(this.value)">
+            ${Object.entries(DC_PLANT_TEMPLATES).map(([key,t]) => `<option value="${key}" ${key===dcTemplateKey?'selected':''}>${esc(t.label)}</option>`).join('')}
+          </select>
+        </label>
+        <label style="display:block;">
+          <span style="display:block;font-size:10px;color:var(--txt3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px;">Scénario design</span>
+          <select class="input" style="height:34px;font-size:12px;" onchange="dcSetDesignScenario(this.value)">
+            ${Object.entries(DC_DESIGN_SCENARIOS).map(([key,s]) => `<option value="${key}" ${key===dcScenarioKey?'selected':''}>${s.label}</option>`).join('')}
+          </select>
+        </label>
+      </div>
+    </div>
+
+    ${dcRenderValidationPanel(dcValidation, dcFormulaGraph, dcSandbox)}
+
     <!-- Summary bar -->
     <div class="card mb12" style="padding:10px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
       <span style="font-size:10px;color:var(--txt3);font-family:var(--mono);padding:2px 6px;border:1px solid var(--border);border-radius:4px;">${APP_BUILD_ID}</span>
