@@ -3049,14 +3049,15 @@ function renderProjectLayout() {
     { id: 'flowsheet',    label: 'Flowsheet Ingénierie',             ico: 'flowsheet'  },
     { id: 'balance',      label: 'Bilan massique & eau',              ico: 'balance'    },
     { id: 'equipment',    label: 'Équipements',                       ico: 'equipment'  },
-    /* 11-13 Optimisation */
+    /* 11-14 Optimisation */
     { id: 'circuit_strategy', label: 'Stratégie Circuit IA',          ico: 'simulation' },
     { id: 'sim_pro',      label: 'Simulation Pro',                    ico: 'simulation' },
     { id: 'geomet_intelligence', label: 'Intelligence Géométallurgique', ico: 'analysis'   },
-    /* 14-15  Économie & Risques */
+    { id: 'mineopt',      label: 'Mine & Optimisation',               ico: 'blockmodel' },
+    /* 15-16  Économie & Risques */
     { id: 'economics',    label: 'Modèle Économique (CAPEX/OPEX)',    ico: 'economics'  },
     { id: 'risks',        label: 'Registre des Risques',              ico: 'reports'    },
-    /* 16-17 Conformité & Rapports */
+    /* 17-18 Conformité & Rapports */
     { id: 'ni43101',      label: 'Rapport NI 43-101',                 ico: 'reports'    },
     { id: 'reports',      label: 'Rapport Interne et Externe',        ico: 'reports'    }
   ];
@@ -3079,11 +3080,11 @@ function renderProjectLayout() {
       <div class="nav-group">Design Procédé</div>
       ${nav_sections.slice(7,11).map(n => navItem(n, completeness)).join('')}
       <div class="nav-group">Optimisation</div>
-      ${nav_sections.slice(11,14).map(n => navItem(n, completeness)).join('')}
+      ${nav_sections.slice(11,15).map(n => navItem(n, completeness)).join('')}
       <div class="nav-group">Économie & Risques</div>
-      ${nav_sections.slice(14,16).map(n => navItem(n)).join('')}
+      ${nav_sections.slice(15,17).map(n => navItem(n)).join('')}
       <div class="nav-group">Conformité & Rapports</div>
-      ${nav_sections.slice(16).map(n => navItem(n)).join('')}
+      ${nav_sections.slice(17).map(n => navItem(n)).join('')}
 
       <div class="nav-group" style="margin-top:8px"></div>
       <div class="nav-item" onclick="S.page='projects';S.pid=null;render();loadProjects()">
@@ -3150,7 +3151,7 @@ function navItem(n, completeness) {
 }
 
 function sectionLabel(sid) {
-  const labels = { dashboard: 'Tableau de bord', stagegates: 'Stage-Gates & Checklists', lims: 'LIMS', analysis: 'Analyse & Interprétation', granulometry: 'Granulométrie & PSD', flowsheet: 'Flowsheet Ingénierie', dc: 'Critères de conception', circuit_strategy: 'Stratégie Circuit IA', circuit_ai: 'Optimiser circuit IA', tradeoff: 'Trade-off circuits', balance: 'Bilan massique & eau', equipment: 'Équipements', economics: 'Économie', ni43101: 'Rapport NI 43-101', reports: 'Rapport Interne et externe', simulation: 'Simulation & Optimisation', blockmodel: 'Block Model', analytics: 'Analytique Procédé', geotech: 'Géotechnique & TSF', geochem: 'Géochimie / ARD', automation: 'SCADA & Automatisation', closure: 'Plan de Clôture', risks: 'Registre des Risques', energybalance: 'Bilan Énergétique', equipmentsizing: 'Dimensionnement Équipements', audit: "Journal d'Audit", geomet_intelligence: 'Intelligence Géométallurgique' };
+  const labels = { dashboard: 'Tableau de bord', stagegates: 'Stage-Gates & Checklists', lims: 'LIMS', analysis: 'Analyse & Interprétation', granulometry: 'Granulométrie & PSD', flowsheet: 'Flowsheet Ingénierie', dc: 'Critères de conception', circuit_strategy: 'Stratégie Circuit IA', circuit_ai: 'Optimiser circuit IA', tradeoff: 'Trade-off circuits', balance: 'Bilan massique & eau', equipment: 'Équipements', economics: 'Économie', ni43101: 'Rapport NI 43-101', reports: 'Rapport Interne et externe', simulation: 'Simulation & Optimisation', blockmodel: 'Block Model', mineopt: 'Mine & Optimisation', analytics: 'Analytique Procédé', geotech: 'Géotechnique & TSF', geochem: 'Géochimie / ARD', automation: 'SCADA & Automatisation', closure: 'Plan de Clôture', risks: 'Registre des Risques', energybalance: 'Bilan Énergétique', equipmentsizing: 'Dimensionnement Équipements', audit: "Journal d'Audit", geomet_intelligence: 'Intelligence Géométallurgique' };
   const id = sid || S.section;
   return labels[id] || id;
 }
@@ -3160,6 +3161,7 @@ const NAV_GROUPS = {
   blockmodel:'Géologie & Caractérisation', lims:'Géologie & Caractérisation', geochem:'Géologie & Caractérisation', geotech:'Géologie & Caractérisation',
   analysis:'Analyse & Interprétation', granulometry:'Analyse & Interprétation', analytics:'Analyse & Interprétation',
   dc:'Ingénierie Procédé', circuit_strategy:'Ingénierie Procédé', circuit_ai:'Ingénierie Procédé', tradeoff:'Ingénierie Procédé', balance:'Ingénierie Procédé', flowsheet:'Ingénierie Procédé', equipment:'Ingénierie Procédé', simulation:'Ingénierie Procédé', automation:'Ingénierie Procédé',
+  mineopt:'Optimisation',
   economics:'Économie & Risques', risks:'Économie & Risques',
   ni43101:'Conformité & Rapports', reports:'Conformité & Rapports', closure:'Conformité & Rapports',
   commissioning:'Pilotage projet'
@@ -3219,7 +3221,8 @@ const ACTION_BAR_CONFIG = {
   equipmentsizing: { refresh:"loadEquipmentSizingModule().then(rerenderSection)", autoGen:"generateEquipmentSizingModule()" },
   audit:         { refresh:"loadAuditLog().then(rerenderSection)" },
   metallurgical_decision: { save: "mdSaveWorkspace()", delete: "deleteSimulationRuns()" },
-  geomet_intelligence: { save: "gmieSaveSnapshot()" }
+  geomet_intelligence: { save: "gmieSaveSnapshot()" },
+  mineopt: { refresh:"loadMineOptimization().then(rerenderSection)", save:"saveMineOptimizationScenario()", export:"exportMineOptimizationReport()" }
 };
 
 function renderSectionContent() {
@@ -3256,6 +3259,7 @@ ${renderBreadcrumb(S.section)}
     equipmentsizing: globalThis.renderEquipmentSizingModule,
     audit: globalThis.renderAuditTrail,
     geomet_intelligence: globalThis.renderGeometIntelligence,
+    mineopt: globalThis.renderMineOptimization,
     sim_pro: () => globalThis.renderSimPro ? globalThis.renderSimPro() : fallback(),
   };
   const renderer = sections[S.section] || globalThis.renderDashboard || fallback;
@@ -3276,8 +3280,8 @@ function navigateTo(section) {
   const topbarSub = document.querySelector('.topbar-sub');
   if (topbarSub) topbarSub.textContent = sectionLabel();
   rerenderSection();
-  const loaders = { dashboard: loadDashboardData, lims: loadLIMSAll, analysis: loadAnalysisData, granulometry: loadGranulometryData, flowsheet: loadFlowsheets, dc: loadDesignCriteria, circuit_strategy: runCircuitStrategyAnalysis, balance: loadMassBalance, equipment: loadEquipmentV2, economics: loadEconomics, ni43101: globalThis.loadNI43101, reports: globalThis.loadReports, stagegates: globalThis.loadStageGates, risks: globalThis.loadRisks, commissioning: globalThis.loadStageGates, simulation: loadSimulationSection, blockmodel: globalThis.loadBlockModel, analytics: loadAnalyticsDashboard, geotech: loadGeotech, geochem: loadGeochem, automation: loadAutomation, closure: loadClosure, energybalance: loadEnergyBalanceModule, equipmentsizing: loadEquipmentSizingModule, audit: loadAuditLog, geomet_intelligence: loadGeometIntelligence, sim_pro: () => globalThis.loadSimPro ? globalThis.loadSimPro() : Promise.resolve() };
-  const stateKeys = { dashboard: '_dashboardData', lims: 'samples', analysis: 'analysisData', granulometry: '_psdCharts', flowsheet: 'flowsheets', dc: 'dc', circuit_strategy: '_circuitStrategyResult', balance: 'mbData', equipment: 'merData', economics: 'capex', ni43101: 'ni43101', reports: 'reports', stagegates: 'gates', risks: 'risks', commissioning: 'gates', simulation: null, blockmodel: 'blockModel', analytics: 'analyticsKpis', geotech: 'geotechSlopes', geochem: 'geochemArd', automation: null, closure: 'closureCosts', energybalance: 'ebData', equipmentsizing: 'eqsData', audit: 'auditData', geomet_intelligence: '_geometData' };
+  const loaders = { dashboard: loadDashboardData, lims: loadLIMSAll, analysis: loadAnalysisData, granulometry: loadGranulometryData, flowsheet: loadFlowsheets, dc: loadDesignCriteria, circuit_strategy: runCircuitStrategyAnalysis, balance: loadMassBalance, equipment: loadEquipmentV2, economics: loadEconomics, ni43101: globalThis.loadNI43101, reports: globalThis.loadReports, stagegates: globalThis.loadStageGates, risks: globalThis.loadRisks, commissioning: globalThis.loadStageGates, simulation: loadSimulationSection, blockmodel: globalThis.loadBlockModel, analytics: loadAnalyticsDashboard, geotech: loadGeotech, geochem: loadGeochem, automation: loadAutomation, closure: loadClosure, energybalance: loadEnergyBalanceModule, equipmentsizing: loadEquipmentSizingModule, audit: loadAuditLog, geomet_intelligence: loadGeometIntelligence, mineopt: loadMineOptimization, sim_pro: () => globalThis.loadSimPro ? globalThis.loadSimPro() : Promise.resolve() };
+  const stateKeys = { dashboard: '_dashboardData', lims: 'samples', analysis: 'analysisData', granulometry: '_psdCharts', flowsheet: 'flowsheets', dc: 'dc', circuit_strategy: '_circuitStrategyResult', balance: 'mbData', equipment: 'merData', economics: 'capex', ni43101: 'ni43101', reports: 'reports', stagegates: 'gates', risks: 'risks', commissioning: 'gates', simulation: null, blockmodel: 'blockModel', analytics: 'analyticsKpis', geotech: 'geotechSlopes', geochem: 'geochemArd', automation: null, closure: 'closureCosts', energybalance: 'ebData', equipmentsizing: 'eqsData', audit: 'auditData', geomet_intelligence: '_geometData', mineopt: 'mineOpt' };
   const stateKey = stateKeys[section];
   const needsLoad = !projectDataIsCurrent() || (section === 'risks'
     ? (S._risksPid !== S.pid || !Array.isArray(S.risks))
@@ -24982,6 +24986,252 @@ function renderBlockModel() {
     ${tabs.map(t=>`<div class="tab${tab===t.id?' active':''}" onclick="switchBmTab('${t.id}')">${t.label}</div>`).join('')}
   </div>
   <div class="card">${tabContent}</div>`;
+}
+
+/* ════════════════════════════════════════════════════════
+   MINE & OPTIMISATION — MVP stratégique open pit
+════════════════════════════════════════════════════════ */
+const MINEOPT_DEFAULTS = {
+  activeTab: 'planning', price: 2400, miningCost: 3.8, processingCost: 21, gaCost: 4,
+  recovery: 89, payable: 99, discountRate: 8, slopeAngle: 48, shellCount: 8, selectedShell: 6,
+  horizonYears: 12, mineCapacityMt: 22, plantCapacityMt: 13, cutoff: 0.45,
+  dilution: 5, miningRecovery: 95, oreLoss: 2, stockpileEnabled: true, noGoPct: 0,
+};
+
+function mineOptStorageKey(suffix) { return `metalflow.mineopt.${S.pid || 'no-project'}.${suffix}`; }
+
+function getMineOptScenario() {
+  let saved = {};
+  try { saved = JSON.parse(localStorage.getItem(mineOptStorageKey('active')) || '{}'); } catch (_) {}
+  S.mineOpt = S.mineOpt || {};
+  S.mineOpt.scenario = { ...MINEOPT_DEFAULTS, ...saved, ...(S.mineOpt.scenario || {}) };
+  return S.mineOpt.scenario;
+}
+
+function saveMineOptimizationScenario() {
+  localStorage.setItem(mineOptStorageKey('active'), JSON.stringify(getMineOptScenario()));
+  toast('Scénario Mine & Optimisation sauvegardé.');
+}
+
+function mineOptReadNumber(id, fallback) {
+  const raw = document.getElementById(id)?.value;
+  if (raw == null || String(raw).trim() === '') return fallback;
+  const val = Number(String(raw).replace(',', '.'));
+  return Number.isFinite(val) ? val : fallback;
+}
+
+function readMineOptInputs() {
+  const sc = getMineOptScenario();
+  ['price','miningCost','processingCost','gaCost','recovery','payable','discountRate','slopeAngle','shellCount','selectedShell','horizonYears','mineCapacityMt','plantCapacityMt','cutoff','dilution','miningRecovery','oreLoss','noGoPct']
+    .forEach(k => sc[k] = mineOptReadNumber('mo-' + k, sc[k]));
+  sc.stockpileEnabled = !!document.getElementById('mo-stockpileEnabled')?.checked;
+  sc.shellCount = Math.max(3, Math.min(20, Math.round(sc.shellCount)));
+  sc.selectedShell = Math.max(1, Math.min(sc.shellCount, Math.round(sc.selectedShell)));
+  sc.horizonYears = Math.max(1, Math.min(40, Math.round(sc.horizonYears)));
+  localStorage.setItem(mineOptStorageKey('active'), JSON.stringify(sc));
+  return sc;
+}
+
+async function loadMineOptimization() {
+  S.mineOpt = S.mineOpt || {};
+  if (!S.blockModel && typeof loadBlockModel === 'function') await loadBlockModel();
+  if (bmModels && bmModels.length && !S.bmStats && typeof loadBmStats === 'function') {
+    try { await loadBmStats(); } catch (_) {}
+  }
+  S.mineOpt.scenario = getMineOptScenario();
+  S.mineOpt.result = computeMineOptimization(S.mineOpt.scenario);
+}
+
+function mineOptDataset() {
+  const summary = bmSummary || {};
+  const stats = S.bmStats || {};
+  const project = S.project || {};
+  const projectTph = Number(project.target_tph) || 1500;
+  const fallbackOreTonnage = projectTph * 24 * 365 * 10;
+  const totalTonnage = Number(summary.total_tonnage) || fallbackOreTonnage;
+  const avgGrade = Number(summary.avg_grade) || Number(project.gold_grade_g_t) || 1.1;
+  const blocks = Number(summary.total_blocks) || 120000;
+  return {
+    source: Number(summary.total_blocks) > 0 ? 'Block Model importé' : 'Cas de démonstration basé projet',
+    totalTonnage, avgGrade, blocks,
+    byRock: Array.isArray(stats.by_rock_type) && stats.by_rock_type.length ? stats.by_rock_type : [{ rock_type:'Minerai modèle', total_tonnage: totalTonnage, avg_grade: avgGrade, block_count: blocks }],
+  };
+}
+
+function computeMineOptimization(scenario = getMineOptScenario()) {
+  const ds = mineOptDataset();
+  const sc = { ...MINEOPT_DEFAULTS, ...scenario };
+  const noGoFactor = Math.max(0, Math.min(1, 1 - (Number(sc.noGoPct) || 0) / 100));
+  const eligibleOre = ds.totalTonnage * noGoFactor;
+  const grade = ds.avgGrade;
+  const revPerT = grade * (sc.recovery / 100) * (sc.payable / 100) * sc.price / 31.1034768;
+  const marginOre = revPerT - sc.processingCost - sc.gaCost;
+  const baseStrip = Math.max(0.25, 1.8 + (50 - sc.slopeAngle) * 0.055);
+  const shells = Array.from({ length: sc.shellCount }, (_, i) => {
+    const shellNo = i + 1;
+    const factor = 0.42 + (shellNo / sc.shellCount) * 0.78;
+    const oreT = eligibleOre * factor;
+    const strip = Math.max(0.15, baseStrip * (0.72 + factor * 0.48));
+    const wasteT = oreT * strip;
+    const value = oreT * marginOre - (oreT + wasteT) * sc.miningCost;
+    return { shellNo, revenueFactor: 0.45 + (shellNo - 1) * (0.9 / Math.max(1, sc.shellCount - 1)), oreT, wasteT, totalT: oreT + wasteT, grade, strip, metalKoz: oreT * grade * TROY_OZ_PER_GRAM / 1000, value };
+  });
+  const selected = shells[Math.min(sc.selectedShell, shells.length) - 1] || shells[shells.length - 1];
+  const schedule = [];
+  let oreRemaining = selected.oreT, wasteRemaining = selected.wasteT, stockpileT = 0, npv = 0;
+  for (let y = 1; y <= sc.horizonYears; y++) {
+    const mineCap = sc.mineCapacityMt * 1e6, plantCap = sc.plantCapacityMt * 1e6;
+    const targetMine = Math.min(mineCap, oreRemaining + wasteRemaining);
+    const oreShare = (oreRemaining + wasteRemaining) > 0 ? oreRemaining / (oreRemaining + wasteRemaining) : 0;
+    let oreMined = Math.min(oreRemaining, targetMine * oreShare);
+    let wasteMined = Math.min(wasteRemaining, Math.max(0, targetMine - oreMined));
+    if (oreMined + wasteMined < targetMine && oreRemaining > oreMined) oreMined = Math.min(oreRemaining, targetMine - wasteMined);
+    oreRemaining -= oreMined; wasteRemaining -= wasteMined;
+    const oreAvailable = oreMined + (sc.stockpileEnabled ? stockpileT : 0);
+    const plantFeed = Math.min(plantCap, oreAvailable);
+    const stockpileIn = sc.stockpileEnabled ? Math.max(0, oreMined - plantFeed) : 0;
+    const stockpileOut = sc.stockpileEnabled ? Math.max(0, plantFeed - oreMined) : 0;
+    stockpileT = sc.stockpileEnabled ? Math.max(0, stockpileT + stockpileIn - stockpileOut) : 0;
+    const metalOz = plantFeed * grade * (sc.recovery / 100) * (sc.payable / 100) * TROY_OZ_PER_GRAM;
+    const revenue = metalOz * sc.price;
+    const opex = (oreMined + wasteMined) * sc.miningCost + plantFeed * (sc.processingCost + sc.gaCost);
+    const cashFlow = revenue - opex;
+    const discounted = cashFlow / Math.pow(1 + sc.discountRate / 100, y);
+    npv += discounted;
+    schedule.push({ year: y, oreMined, wasteMined, plantFeed, stockpileT, grade, metalOz, cashFlow, discounted, capacityUse: plantCap > 0 ? plantFeed / plantCap * 100 : 0 });
+    if (oreRemaining <= 1 && wasteRemaining <= 1 && stockpileT <= 1) break;
+  }
+  const dil = sc.dilution / 100, mineRec = sc.miningRecovery / 100, oreLoss = sc.oreLoss / 100;
+  const dilutedT = selected.oreT * (1 + dil) * mineRec * (1 - oreLoss);
+  const dilutedGrade = selected.grade / (1 + dil);
+  const reserves = { dilutedT, dilutedGrade, recoveredKoz: dilutedT * dilutedGrade * (sc.recovery / 100) * TROY_OZ_PER_GRAM / 1000, conversionPct: ds.totalTonnage > 0 ? dilutedT / ds.totalTonnage * 100 : 0 };
+  return { scenario: sc, dataset: ds, shells, selected, schedule, reserves, npv, undiscounted: schedule.reduce((s, r) => s + r.cashFlow, 0) };
+}
+
+function mineOptKpi(result) {
+  const sel = result.selected || {};
+  return { npvM: result.npv / 1e6, oreMt: sel.oreT / 1e6, wasteMt: sel.wasteT / 1e6, strip: sel.strip, grade: sel.grade, metalKoz: sel.metalKoz, reserveMt: result.reserves.dilutedT / 1e6, recoveredKoz: result.reserves.recoveredKoz, lom: result.schedule.length };
+}
+
+function runMineOptimizationScenario() {
+  const sc = readMineOptInputs();
+  S.mineOpt = S.mineOpt || {};
+  S.mineOpt.result = computeMineOptimization(sc);
+  saveMineOptimizationScenario();
+  toast('Scénario Mine & Optimisation recalculé.');
+  rerenderSection();
+}
+
+function getMineOptRuns() {
+  try { return JSON.parse(localStorage.getItem(mineOptStorageKey('runs')) || '[]'); } catch (_) { return []; }
+}
+
+function duplicateMineOptimizationScenario() {
+  const sc = readMineOptInputs();
+  const result = computeMineOptimization(sc);
+  const runs = getMineOptRuns();
+  const name = document.getElementById('mo-run-name')?.value.trim() || `Scénario ${runs.length + 1}`;
+  runs.unshift({ id: 'mo-' + Date.now(), name, created_at: new Date().toISOString(), scenario: { ...sc }, kpi: mineOptKpi(result) });
+  localStorage.setItem(mineOptStorageKey('runs'), JSON.stringify(runs.slice(0, 12)));
+  toast('Scénario ajouté à la comparaison.');
+  rerenderSection();
+}
+
+function removeMineOptRun(id) {
+  localStorage.setItem(mineOptStorageKey('runs'), JSON.stringify(getMineOptRuns().filter(r => r.id !== id)));
+  rerenderSection();
+}
+
+function loadMineOptRun(id) {
+  const run = getMineOptRuns().find(r => r.id === id);
+  if (!run) return;
+  S.mineOpt = S.mineOpt || {};
+  S.mineOpt.scenario = { ...MINEOPT_DEFAULTS, ...run.scenario };
+  localStorage.setItem(mineOptStorageKey('active'), JSON.stringify(S.mineOpt.scenario));
+  S.mineOpt.result = computeMineOptimization(S.mineOpt.scenario);
+  toast('Scénario chargé.');
+  rerenderSection();
+}
+
+function setMineOptTab(tab) {
+  const sc = getMineOptScenario();
+  sc.activeTab = tab;
+  localStorage.setItem(mineOptStorageKey('active'), JSON.stringify(sc));
+  rerenderSection();
+}
+
+function exportMineOptimizationReport() {
+  const result = S.mineOpt?.result || computeMineOptimization(getMineOptScenario());
+  const rows = [
+    ['Mine & Optimisation - Rapport MVP'], ['Projet', S.project?.project_name || ''], ['Source données', result.dataset.source], ['VAN / NPV (M$)', (result.npv / 1e6).toFixed(2)], [],
+    ['Shell', 'RF', 'Ore Mt', 'Waste Mt', 'Strip', 'Au g/t', 'Valeur M$'],
+    ...result.shells.map(s => [s.shellNo, s.revenueFactor.toFixed(2), (s.oreT/1e6).toFixed(3), (s.wasteT/1e6).toFixed(3), s.strip.toFixed(2), s.grade.toFixed(3), (s.value/1e6).toFixed(2)]),
+    [], ['Annee', 'Ore mined Mt', 'Waste Mt', 'Plant feed Mt', 'Stockpile Mt', 'Metal oz', 'Cash-flow M$', 'Discounted M$'],
+    ...result.schedule.map(r => [r.year, (r.oreMined/1e6).toFixed(3), (r.wasteMined/1e6).toFixed(3), (r.plantFeed/1e6).toFixed(3), (r.stockpileT/1e6).toFixed(3), Math.round(r.metalOz), (r.cashFlow/1e6).toFixed(2), (r.discounted/1e6).toFixed(2)]),
+  ];
+  const ws = XLSX.utils.aoa_to_sheet(rows), wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Mine Optimization');
+  XLSX.writeFile(wb, `Mine_Optimisation_${S.project?.project_code || 'export'}.xlsx`);
+}
+
+function renderMineOptimization() {
+  const sc = getMineOptScenario();
+  const result = S.mineOpt?.result || computeMineOptimization(sc);
+  S.mineOpt = S.mineOpt || {}; S.mineOpt.result = result;
+  const tab = sc.activeTab || 'planning';
+  const k = mineOptKpi(result);
+  const tabBtn = (id, label) => `<button class="btn btn-sm ${tab===id?'btn-gold':''}" onclick="setMineOptTab('${id}')">${label}</button>`;
+  const numInput = (key, label, step='0.1', unit='') => `<div class="form-group"><label class="form-label">${label}${unit ? ` <span style="color:var(--txt4)">(${unit})</span>` : ''}</label><input class="input mono" id="mo-${key}" type="number" step="${step}" value="${escAttr(sc[key])}"></div>`;
+  return `
+${renderBreadcrumb('mineopt')}
+${renderActionBar('mineopt', ACTION_BAR_CONFIG.mineopt)}
+<div class="alert alert-info mb12"><span class="alert-icon">i</span><span>Module MVP stratégique : les résultats utilisent une optimisation économique simplifiée et un séquencement heuristique. Chaque scénario reste versionné localement pour comparaison et audit.</span></div>
+<div class="kpi-grid kpi-grid-4 mb16">
+  <div class="kpi"><div class="kpi-label">VAN / NPV</div><div class="kpi-val t-gold">${fmt(k.npvM,1)}<span class="unit">M$</span></div><div class="kpi-sub">${esc(result.dataset.source)}</div></div>
+  <div class="kpi"><div class="kpi-label">Ore in selected shell</div><div class="kpi-val">${fmt(k.oreMt,2)}<span class="unit">Mt</span></div><div class="kpi-sub">Shell ${result.selected.shellNo} · RF ${fmt(result.selected.revenueFactor,2)}</div></div>
+  <div class="kpi"><div class="kpi-label">Strip ratio</div><div class="kpi-val">${fmt(k.strip,2)}<span class="unit">t/t</span></div><div class="kpi-sub">${fmt(k.wasteMt,2)} Mt waste</div></div>
+  <div class="kpi"><div class="kpi-label">Réserves récupérables</div><div class="kpi-val">${fmt(k.recoveredKoz,0)}<span class="unit">koz</span></div><div class="kpi-sub">${fmt(k.reserveMt,2)} Mt après facteurs</div></div>
+</div>
+<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">
+  ${tabBtn('planning','Planification minière & Séquencement')}
+  ${tabBtn('pit','Optimisation de fosse')}
+  ${tabBtn('reserves','Réserves minières & Facteurs de modification')}
+  ${tabBtn('compare','Scénarios')}
+</div>
+<div class="g2" style="align-items:start;">
+  <div class="card" style="padding:14px;">
+    <div class="card-title">Hypothèses du scénario</div>
+    <div class="form-row form-row-3">${numInput('price','Prix Au','10','$/oz')}${numInput('discountRate','Taux actualisation','0.5','%')}${numInput('slopeAngle','Pente globale','1','°')}</div>
+    <div class="form-row form-row-3">${numInput('miningCost','Coût minage','0.1','$/t')}${numInput('processingCost','Coût traitement','0.1','$/t ore')}${numInput('gaCost','G&A','0.1','$/t ore')}</div>
+    <div class="form-row form-row-3">${numInput('recovery','Récupération procédé','0.5','%')}${numInput('payable','Payable','0.5','%')}${numInput('cutoff','Cut-off Au','0.05','g/t')}</div>
+    <div class="form-row form-row-3">${numInput('shellCount','Nb shells','1','')}${numInput('selectedShell','Shell retenu','1','')}${numInput('noGoPct','No-go zones','1','% blocs')}</div>
+    <div class="form-row form-row-3">${numInput('horizonYears','Horizon','1','ans')}${numInput('mineCapacityMt','Capacité mine','0.5','Mt/an')}${numInput('plantCapacityMt','Capacité usine','0.5','Mt/an')}</div>
+    <div class="form-row form-row-3">${numInput('dilution','Dilution','0.5','%')}${numInput('miningRecovery','Récupération minière','0.5','%')}${numInput('oreLoss','Pertes minerai','0.5','%')}</div>
+    <label style="display:flex;gap:8px;align-items:center;margin:6px 0 12px;color:var(--txt2);font-size:12px;"><input id="mo-stockpileEnabled" type="checkbox" ${sc.stockpileEnabled?'checked':''}> Activer stockpile tampon</label>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;"><button class="btn btn-gold" onclick="runMineOptimizationScenario()">${icon('bolt')} Recalculer</button><input class="input" id="mo-run-name" style="max-width:220px" placeholder="Nom scénario"><button class="btn" onclick="duplicateMineOptimizationScenario()">Ajouter à la comparaison</button></div>
+  </div>
+  <div>${tab === 'pit' ? renderMineOptPit(result) : tab === 'reserves' ? renderMineOptReserves(result) : tab === 'compare' ? renderMineOptCompare(result) : renderMineOptPlanning(result)}</div>
+</div>`;
+}
+
+function renderMineOptPit(result) {
+  const best = result.shells.reduce((a,b)=> b.value > a.value ? b : a, result.shells[0]);
+  return `<div class="card" style="padding:14px;"><div class="card-title">Optimisation de fosse (Pit Optimization)</div><div class="tbl-wrap"><table class="tbl" style="font-size:12px;"><thead><tr><th>Shell</th><th class="t-right">RF</th><th class="t-right">Ore Mt</th><th class="t-right">Waste Mt</th><th class="t-right">Strip</th><th class="t-right">Au g/t</th><th class="t-right t-gold">Valeur M$</th></tr></thead><tbody>${result.shells.map(s => `<tr style="${s.shellNo===result.selected.shellNo?'background:rgba(245,166,35,.10);':''}"><td class="mono">${s.shellNo}${s.shellNo===best.shellNo?' <span class="badge badge-teal">max</span>':''}</td><td class="mono t-right">${fmt(s.revenueFactor,2)}</td><td class="mono t-right">${fmt(s.oreT/1e6,2)}</td><td class="mono t-right">${fmt(s.wasteT/1e6,2)}</td><td class="mono t-right">${fmt(s.strip,2)}</td><td class="mono t-right">${fmt(s.grade,3)}</td><td class="mono t-right t-gold">${fmt(s.value/1e6,1)}</td></tr>`).join('')}</tbody></table></div><div style="font-size:11px;color:var(--txt3);margin-top:10px;">Contrôles MVP : shells imbriqués par revenue factor, pente globale, no-go zones appliquées en réduction de périmètre.</div></div>`;
+}
+
+function renderMineOptPlanning(result) {
+  return `<div class="card" style="padding:14px;"><div class="card-title">Planification minière & Séquencement</div><div class="tbl-wrap"><table class="tbl" style="font-size:12px;"><thead><tr><th>Année</th><th class="t-right">Ore mined Mt</th><th class="t-right">Waste Mt</th><th class="t-right">Plant feed Mt</th><th class="t-right">Stockpile Mt</th><th class="t-right">Util. usine</th><th class="t-right">Metal oz</th><th class="t-right t-gold">DCF M$</th></tr></thead><tbody>${result.schedule.map(r => `<tr><td class="mono">${r.year}</td><td class="mono t-right">${fmt(r.oreMined/1e6,2)}</td><td class="mono t-right">${fmt(r.wasteMined/1e6,2)}</td><td class="mono t-right">${fmt(r.plantFeed/1e6,2)}</td><td class="mono t-right">${fmt(r.stockpileT/1e6,2)}</td><td class="mono t-right">${fmt(r.capacityUse,0)}%</td><td class="mono t-right">${fmt(r.metalOz,0)}</td><td class="mono t-right t-gold">${fmt(r.discounted/1e6,1)}</td></tr>`).join('')}</tbody></table></div><div style="font-size:11px;color:var(--txt3);margin-top:10px;">Heuristique MVP : ordre par shell retenu, contrainte mine agrégée, alimentation usine lissée, stockpile optionnel.</div></div>`;
+}
+
+function renderMineOptReserves(result) {
+  const r = result.reserves;
+  return `<div class="card" style="padding:14px;"><div class="card-title">Réserves minières & Facteurs de modification</div><div class="kpi-grid kpi-grid-4"><div class="kpi"><div class="kpi-label">Ore shell</div><div class="kpi-val">${fmt(result.selected.oreT/1e6,2)}<span class="unit">Mt</span></div></div><div class="kpi"><div class="kpi-label">Réserve diluée</div><div class="kpi-val">${fmt(r.dilutedT/1e6,2)}<span class="unit">Mt</span></div></div><div class="kpi"><div class="kpi-label">Teneur diluée</div><div class="kpi-val">${fmt(r.dilutedGrade,3)}<span class="unit">g/t</span></div></div><div class="kpi"><div class="kpi-label">Métal récup.</div><div class="kpi-val t-gold">${fmt(r.recoveredKoz,0)}<span class="unit">koz</span></div></div></div><div class="tbl-wrap mt16"><table class="tbl" style="font-size:12px;"><thead><tr><th>Facteur</th><th class="t-right">Valeur</th><th>Effet</th></tr></thead><tbody><tr><td>Dilution</td><td class="mono t-right">${fmt(result.scenario.dilution,1)}%</td><td>Augmente le tonnage, baisse la teneur</td></tr><tr><td>Récupération minière</td><td class="mono t-right">${fmt(result.scenario.miningRecovery,1)}%</td><td>Réduit le tonnage exploitable</td></tr><tr><td>Pertes minerai</td><td class="mono t-right">${fmt(result.scenario.oreLoss,1)}%</td><td>Appliqué après récupération minière</td></tr><tr><td>Récupération procédé</td><td class="mono t-right">${fmt(result.scenario.recovery,1)}%</td><td>Convertit métal contenu en métal récupérable</td></tr></tbody></table></div><div style="font-size:11px;color:var(--txt3);margin-top:10px;">Audit : périmètre = shell ${result.selected.shellNo}, source = ${esc(result.dataset.source)}, scénario sauvegardable localement.</div></div>`;
+}
+
+function renderMineOptCompare(result) {
+  const runs = getMineOptRuns();
+  const rows = runs.length ? runs : [{ id:'active', name:'Scénario actif', kpi: mineOptKpi(result), scenario: result.scenario }];
+  return `<div class="card" style="padding:14px;"><div class="card-title">Comparaison de scénarios</div><div class="tbl-wrap"><table class="tbl" style="font-size:12px;"><thead><tr><th>Scénario</th><th class="t-right">NPV M$</th><th class="t-right">Ore Mt</th><th class="t-right">Strip</th><th class="t-right">LoM</th><th class="t-right">Réserve Mt</th><th class="t-right t-gold">Récup. koz</th><th></th></tr></thead><tbody>${rows.map(r => `<tr><td><strong>${esc(r.name)}</strong><div style="font-size:10px;color:var(--txt4)">${r.created_at ? new Date(r.created_at).toLocaleString('fr-CA') : 'actif'}</div></td><td class="mono t-right t-gold">${fmt(r.kpi.npvM,1)}</td><td class="mono t-right">${fmt(r.kpi.oreMt,2)}</td><td class="mono t-right">${fmt(r.kpi.strip,2)}</td><td class="mono t-right">${fmt(r.kpi.lom,0)}</td><td class="mono t-right">${fmt(r.kpi.reserveMt,2)}</td><td class="mono t-right t-gold">${fmt(r.kpi.recoveredKoz,0)}</td><td style="white-space:nowrap">${r.id !== 'active' ? `<button class="btn btn-sm" onclick="loadMineOptRun('${r.id}')">Charger</button> <button class="btn btn-sm btn-danger" onclick="removeMineOptRun('${r.id}')">${icon('trash')}</button>` : ''}</td></tr>`).join('')}</tbody></table></div><div style="font-size:11px;color:var(--txt3);margin-top:10px;">Utilisez “Ajouter à la comparaison” après modification des hypothèses pour créer une matrice prix/coûts/pentes/capacités/facteurs.</div></div>`;
 }
 
 /* ════════════════════════════════════════════════════════
