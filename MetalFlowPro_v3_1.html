@@ -1329,8 +1329,13 @@ a,.project-code,.logo-badge,.auth-intro h1 span,.t-gold{
 }
 
 .card::before,.project-card::before,.kpi::before,.sim-results-card::before{
+  content:""!important;
+  position:absolute!important;
+  inset:0 auto auto 0!important;
+  width:100%!important;
   height:1px!important;
   background:linear-gradient(90deg,transparent,rgba(244,248,255,.10),transparent)!important;
+  pointer-events:none!important;
 }
 
 .card:hover,.project-card:hover,.kpi:hover{
