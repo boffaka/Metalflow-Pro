@@ -19,20 +19,20 @@
 :root{
   color-scheme:dark;
   /* ── Surfaces (deep obsidian stack — premium dark palette) ── */
-  --bg:#06080E;--bg1:#06080E;--bg2:#0C1018;--bg3:#121A26;--bg4:#192333;--bg5:#202D42;
-  --card:#0C1018;--surface:#121A26;
+  --bg:#070A12;--bg1:#070A12;--bg2:#0B111C;--bg3:#111827;--bg4:#172238;--bg5:#223351;
+  --card:#0B111C;--surface:#111827;
   /* ── Brand accents (vivid amber-gold + electric teal) ── */
-  --gold:#F5A623;--gold2:#FFD166;--gold3:rgba(245,166,35,.16);--gold4:rgba(245,166,35,.07);
-  --teal:#00C4B0;--teal2:#2EE8D8;--teal3:rgba(0,196,176,.15);
+  --gold:#F59E0B;--gold2:#FBBF24;--gold3:rgba(245,158,11,.18);--gold4:rgba(245,158,11,.08);
+  --teal:#14B8A6;--teal2:#2DD4BF;--teal3:rgba(20,184,166,.16);
   --blue:#5BA4F5;--blue2:#BAD7FF;--blue3:rgba(91,164,245,.13);
   --purple:#9D78F0;--purple2:#D5C4FF;--purple3:rgba(157,120,240,.13);
   --red:#F06B6B;--red2:#FFD0D0;--red3:rgba(240,107,107,.14);
   --green:#2ECC8A;--green2:#A3F5CE;--green3:rgba(46,204,138,.13);
   --orange:#F88A44;--orange2:#FFD6B5;--orange3:rgba(248,138,68,.13);
   /* ── Text hierarchy (WCAG AA on dark surfaces) ── */
-  --txt:#E8EEF8;--txt1:#F4F8FF;--txt2:#C5CDD9;--txt3:#8896AE;--txt4:#63758C;
+  --txt:#DCE3EE;--txt1:#F4F7FB;--txt2:#B8C3D3;--txt3:#7F8DA3;--txt4:#56657A;
   /* ── Borders (refined depth separation) ── */
-  --border:#16202E;--border2:#1D2C3E;--border3:#283D56;
+  --border:#1E2A3D;--border2:#2B3C56;--border3:#5A6A80;--panel-border:#D1D5DB;--control-border:#314563;
   --mono:'IBM Plex Mono',ui-monospace,monospace;--sans:'Inter Variable','Inter',system-ui,sans-serif;
   --r2:2px;--r4:4px;--r6:6px;--r8:8px;--r10:10px;--r12:12px;
   --shadow:0 20px 50px rgba(0,0,0,.55),0 4px 16px rgba(0,0,0,.35);
@@ -41,7 +41,7 @@
   --glow-gold:0 0 20px rgba(245,166,35,.18),0 0 60px rgba(245,166,35,.07);
   --glow-teal:0 0 20px rgba(0,196,176,.15),0 0 60px rgba(0,196,176,.06);
 }
-html,body{height:100%;font-family:var(--sans);background:var(--bg);background-image:radial-gradient(ellipse 80% 50% at 10% -10%,rgba(245,166,35,.04) 0%,transparent 60%),radial-gradient(ellipse 60% 40% at 90% 110%,rgba(0,196,176,.03) 0%,transparent 55%);color:var(--txt);overflow:hidden;line-height:1.55;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility}
+html,body{height:100%;font-family:var(--sans);background:var(--bg);background-image:radial-gradient(ellipse 80% 50% at 10% -10%,rgba(245,158,11,.035) 0%,transparent 60%),radial-gradient(ellipse 60% 40% at 90% 110%,rgba(45,212,191,.028) 0%,transparent 55%);color:var(--txt);overflow:hidden;line-height:1.55;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility}
 /* ── Scrollbars ── */
 ::-webkit-scrollbar{width:4px;height:4px}
 ::-webkit-scrollbar-track{background:transparent}
@@ -1756,38 +1756,40 @@ button,.btn,[role="button"]{
   color:#06080E!important;
 }
 
-/* METALFLOW_EXECUTIVE_MINING_DARK_V2
-   A restrained premium dashboard layer: less glow, clearer hierarchy,
-   subtle metallic accents, and stronger depth between chrome, panels, and data. */
+/* METALFLOW_CAPTURE_DARK_THEME_V3
+   Screenshot-matched PLM dashboard layer: ink-dark shell, pale panel strokes,
+   amber actions, teal completion states, and quiet blue-gray controls. */
 :root{
-  --bg:#05070B;
-  --bg1:#080D14;
-  --bg2:#0D141D;
-  --bg3:#121B27;
-  --bg4:#182433;
-  --bg5:#203047;
+  --bg:#070A12;
+  --bg1:#080D16;
+  --bg2:#0B111C;
+  --bg3:#111827;
+  --bg4:#172238;
+  --bg5:#223351;
   --app-bg:
-    radial-gradient(circle at 12% -8%,rgba(214,168,74,.075),transparent 30%),
-    radial-gradient(circle at 88% 8%,rgba(24,184,170,.055),transparent 28%),
-    linear-gradient(135deg,#05070B 0%,#080D14 42%,#0B111A 100%);
-  --card:#0D141D;
-  --surface:#121B27;
-  --border:#121C29;
-  --border2:#1D2A3A;
-  --border3:#2C4058;
-  --gold:#D6A84A;
-  --gold2:#F0C978;
-  --gold3:rgba(214,168,74,.115);
-  --gold4:rgba(214,168,74,.055);
-  --teal:#18B8AA;
-  --teal2:#64E6DC;
-  --teal3:rgba(24,184,170,.105);
-  --txt:#EEF4FC;
+    radial-gradient(circle at 12% -8%,rgba(245,158,11,.055),transparent 30%),
+    radial-gradient(circle at 88% 8%,rgba(45,212,191,.04),transparent 28%),
+    linear-gradient(135deg,#070A12 0%,#090E17 46%,#070A12 100%);
+  --card:#0B111C;
+  --surface:#111827;
+  --border:#1E2A3D;
+  --border2:#2B3C56;
+  --border3:#5A6A80;
+  --panel-border:#D1D5DB;
+  --control-border:#314563;
+  --gold:#F59E0B;
+  --gold2:#FBBF24;
+  --gold3:rgba(245,158,11,.15);
+  --gold4:rgba(245,158,11,.065);
+  --teal:#14B8A6;
+  --teal2:#2DD4BF;
+  --teal3:rgba(20,184,166,.12);
+  --txt:#DCE3EE;
   --txt1:#F4F8FF;
-  --txt2:#D7E2EF;
-  --txt3:#AEBED0;
-  --txt4:#63758C;
-  --shadow:0 18px 42px rgba(0,0,0,.30);
+  --txt2:#B8C3D3;
+  --txt3:#7F8DA3;
+  --txt4:#56657A;
+  --shadow:0 18px 42px rgba(0,0,0,.34);
   --shadow-soft:0 8px 22px rgba(0,0,0,.20);
 }
 
@@ -1825,7 +1827,7 @@ h1,h2,h3,h4,h5,h6,strong,b,.page-title,.section-title,.logo-name,
 }
 
 .kpi-val,.mb-kpi-val,.to-ccard-npv{
-  color:var(--gold2)!important;
+  color:var(--txt1)!important;
   text-shadow:none!important;
 }
 
@@ -1838,15 +1840,15 @@ a,.project-code,.logo-badge,.auth-intro h1 span,.t-gold{
 }
 
 .sidebar{
-  background:linear-gradient(180deg,#0B111A 0%,#070B11 100%)!important;
-  border-color:var(--border)!important;
+  background:#0B1220!important;
+  border-color:var(--panel-border)!important;
   box-shadow:10px 0 28px rgba(0,0,0,.18)!important;
 }
 
 .topbar{
-  background:rgba(8,13,20,.88)!important;
-  border-color:var(--border)!important;
-  box-shadow:0 6px 22px rgba(0,0,0,.16)!important;
+  background:#0B111C!important;
+  border-color:var(--panel-border)!important;
+  box-shadow:none!important;
   backdrop-filter:blur(16px)!important;
 }
 
@@ -1854,8 +1856,8 @@ a,.project-code,.logo-badge,.auth-intro h1 span,.t-gold{
 .sheet,.dialog,.panel,.rf-palette,.sim-results-card,.sim-v2-panel,
 .gmie-config-card,.gmie-chart-area,.gmie-result-metric,.gmie-scatter-wrap,
 #ai-chat-widget #ai-chat-panel{
-  background:linear-gradient(145deg,rgba(16,24,35,.98),rgba(9,14,21,.98))!important;
-  border-color:var(--border2)!important;
+  background:#0B111C!important;
+  border-color:var(--panel-border)!important;
   box-shadow:var(--shadow-soft)!important;
 }
 
@@ -1865,7 +1867,7 @@ a,.project-code,.logo-badge,.auth-intro h1 span,.t-gold{
 }
 
 .card:hover,.project-card:hover,.kpi:hover{
-  border-color:#2C4058!important;
+  border-color:var(--panel-border)!important;
   box-shadow:var(--shadow)!important;
 }
 
@@ -1879,10 +1881,10 @@ a,.project-code,.logo-badge,.auth-intro h1 span,.t-gold{
 }
 
 .nav-item.active{
-  background:linear-gradient(90deg,rgba(214,168,74,.16),rgba(214,168,74,.035))!important;
+  background:#302922!important;
   border-left-color:var(--gold)!important;
-  color:var(--gold2)!important;
-  box-shadow:inset 0 0 0 1px rgba(214,168,74,.08)!important;
+  color:var(--gold)!important;
+  box-shadow:inset 0 0 0 1px rgba(245,158,11,.14)!important;
 }
 
 table{
@@ -1927,29 +1929,30 @@ button,.btn,[role="button"]{
 }
 
 .btn:not(.btn-primary):not(.btn-gold):not(.btn-teal){
-  background:linear-gradient(180deg,#172231,#101822)!important;
+  background:#172238!important;
   color:var(--txt2)!important;
+  border-color:var(--control-border)!important;
   box-shadow:0 1px 2px rgba(0,0,0,.18)!important;
 }
 
 .btn:not(.btn-primary):not(.btn-gold):not(.btn-teal):hover{
-  background:linear-gradient(180deg,#1C2A3B,#121B27)!important;
-  border-color:var(--border3)!important;
+  background:#1B2942!important;
+  border-color:#3B5578!important;
 }
 
 .btn-primary,.btn-gold,button.btn-primary,button.btn-gold,
 #btn-login{
-  background:linear-gradient(135deg,#F0C978 0%,#D6A84A 52%,#B8862D 100%)!important;
-  border-color:rgba(240,201,120,.78)!important;
+  background:#F59E0B!important;
+  border-color:#F59E0B!important;
   color:#081018!important;
-  box-shadow:0 8px 20px rgba(214,168,74,.18),inset 0 1px rgba(244,248,255,.24)!important;
+  box-shadow:0 8px 20px rgba(245,158,11,.18),inset 0 1px rgba(244,248,255,.24)!important;
 }
 
 #btn-register,.btn-teal,button.btn-teal{
-  background:linear-gradient(135deg,#64E6DC 0%,#18B8AA 55%,#0B8C82 100%)!important;
-  border-color:rgba(100,230,220,.70)!important;
+  background:#14B8A6!important;
+  border-color:#2DD4BF!important;
   color:#041012!important;
-  box-shadow:0 8px 20px rgba(24,184,170,.15)!important;
+  box-shadow:0 8px 20px rgba(20,184,166,.15)!important;
 }
 
 .btn-primary *,.btn-gold *,button.btn-primary *,button.btn-gold *,
@@ -2006,6 +2009,93 @@ button,.btn,[role="button"]{
 ::selection{
   background:var(--gold)!important;
   color:#05070B!important;
+}
+
+.breadcrumb{
+  background:#111827!important;
+  border-bottom:0!important;
+  margin:0 0 12px!important;
+  color:var(--txt3)!important;
+}
+
+.action-bar{
+  border-bottom:0!important;
+  padding:0 0 12px!important;
+}
+
+.content{
+  background:#070A12!important;
+}
+
+.pipeline{
+  background:#0B111C!important;
+  border-color:var(--panel-border)!important;
+  border-radius:8px!important;
+}
+
+.pipeline-step{
+  border-right-color:var(--panel-border)!important;
+  color:var(--txt4)!important;
+  background:#0B111C!important;
+}
+
+.pipeline-step.done{
+  background:#112A31!important;
+  color:var(--teal2)!important;
+}
+
+.pipeline-step.active{
+  background:#2D2724!important;
+  color:var(--gold)!important;
+}
+
+.alert{
+  border-color:var(--panel-border)!important;
+  border-radius:8px!important;
+}
+
+.alert-warn{
+  background:linear-gradient(90deg,rgba(239,68,68,.12),rgba(245,158,11,.045))!important;
+  border-left:6px solid #EF4444!important;
+  color:#FCA5A5!important;
+}
+
+.alert-info{
+  background:rgba(37,99,235,.11)!important;
+  color:#93C5FD!important;
+}
+
+.alert-success,.step-circle.done,.lims-test-badge.has-data,.mb-pill.ok{
+  background:#102D2D!important;
+  border-color:#1E5E54!important;
+  color:#86EFAC!important;
+}
+
+.kpi,.mb-kpi-card,.cai-metric,.to-ccard,.mb-aside-card,.mb-table-card,
+.lims-test-badge,.step-row,.toast,.dc-drawer-section .dc-drawer-comments{
+  background:#172238!important;
+  border-color:#2B3C56!important;
+}
+
+.kpi:hover,.mb-kpi-card:hover,.lims-test-badge:hover,.step-row:hover{
+  border-color:#5A6A80!important;
+}
+
+.progress,.cai-bar,.to-bar,.tb-track{
+  background:#E5E7EB!important;
+}
+
+.progress-bar,.cai-bar>i,.to-bar>i{
+  background:var(--gold)!important;
+}
+
+div[style*="border:1px solid var(--border2)"]{
+  border-color:var(--panel-border)!important;
+}
+
+div[style*="border:1px solid rgba(245,166,35"],
+div[style*="border:1px solid rgba(245,158,11"]{
+  border-color:var(--gold)!important;
 }
 
 .pdc-canvas{
@@ -3852,6 +3942,12 @@ function _hasCircuitCatalogData() {
 async function loadDesignCriteriaV2() {
   if (!S.pid) return;
   try {
+    if (!Array.isArray(S.simParams) || S.simParams.length === 0) await loadSimulationParams();
+    if (!S.tests) S.tests = {};
+    await Promise.all(['a1','a2','a3','b1','m1'].map(code => S.tests[code] ? Promise.resolve() : loadTests(code)));
+    if (!S.analysisData) {
+      try { S.analysisData = await api('GET', `/projects/${S.pid}/analysis`); } catch (_) {}
+    }
     // 1. Load catalog if not cached
     if (!_hasCircuitCatalogData()) {
       try {
@@ -16233,6 +16329,23 @@ const DC_GENERAL_FORMULAS = Object.freeze({
     const rate = Number(tph);
     return Number.isFinite(rate) ? rate * 24 : null;
   },
+  designTpcdFromNominal(nominalTpcd, concentratorDesignFactorPct) {
+    const nominal = Number(nominalTpcd);
+    const factor = this.safetyFactor(concentratorDesignFactorPct);
+    return Number.isFinite(nominal) && factor ? nominal * factor : null;
+  },
+  minTpcdFromNominal(nominalTpcd, concentratorDesignFactorPct) {
+    const nominal = Number(nominalTpcd);
+    const pct = Number(concentratorDesignFactorPct);
+    return Number.isFinite(nominal) && Number.isFinite(pct) ? nominal * (1 - pct / 100) : null;
+  },
+  tphFromTpcd(tpcd, plantAvailabilityPct) {
+    const tonnes = Number(tpcd);
+    const availability = Number(plantAvailabilityPct);
+    return Number.isFinite(tonnes) && Number.isFinite(availability) && availability > 0
+      ? tonnes / (24 * availability / 100)
+      : null;
+  },
   hoursPerDay(availabilityPct) {
     const availability = Number(availabilityPct);
     return Number.isFinite(availability) ? 24 * availability / 100 : null;
@@ -16257,13 +16370,18 @@ function dcBuildGeneralDesignBasis({ project, getParam, round }) {
     project?.availability_pct ?? defaults.plant_availability_pct);
   const utilizationPct = get('comminution', 'utilization_pct', defaults.utilization_pct);
 
-  const storedNominalTph = get('comminution', 'dc_nominal_tph',
-    Number.isFinite(projectTargetTph) && projectTargetTph > 0 ? projectTargetTph : null);
-  const storedDesignTph = get('comminution', 'dc_design_tph', null);
-  const designTphRaw = storedDesignTph != null
-    ? Number(storedDesignTph)
-    : DC_GENERAL_FORMULAS.designTphFromNominal(storedNominalTph, concDesignFactorPct);
-  const nominalTphRaw = DC_GENERAL_FORMULAS.nominalTphFromDesign(designTphRaw, concDesignFactorPct);
+  const projectNominalTpcd = Number.isFinite(projectTargetTph) && projectTargetTph > 0
+    ? projectTargetTph * 24 * plantAvailPct / 100
+    : null;
+  const nominalTpcdRaw = get('comminution', 'dc_nominal_tpcd',
+    projectNominalTpcd != null ? projectNominalTpcd : 33500);
+  const designTpcdRaw = DC_GENERAL_FORMULAS.designTpcdFromNominal(nominalTpcdRaw, concDesignFactorPct);
+  const minTpcdRaw = DC_GENERAL_FORMULAS.minTpcdFromNominal(nominalTpcdRaw, concDesignFactorPct);
+  const maxTpcdRaw = designTpcdRaw;
+  const nominalTphRaw = DC_GENERAL_FORMULAS.tphFromTpcd(nominalTpcdRaw, plantAvailPct);
+  const designTphRaw = DC_GENERAL_FORMULAS.tphFromTpcd(designTpcdRaw, plantAvailPct);
+  const minTphRaw = DC_GENERAL_FORMULAS.tphFromTpcd(minTpcdRaw, plantAvailPct);
+  const maxTphRaw = DC_GENERAL_FORMULAS.tphFromTpcd(maxTpcdRaw, plantAvailPct);
   const designTphCrushRaw = DC_GENERAL_FORMULAS.designTphFromNominal(nominalTphRaw, crushDesignFactorPct);
   const nominalTpdRaw = nominalTphRaw != null ? nominalTphRaw * 24 * sagAvailPct / 100 * utilizationPct / 100 : null;
   const annualTargetRaw = nominalTphRaw != null ? nominalTphRaw * 8760 * plantAvailPct / 100 * utilizationPct / 100 : null;
@@ -16274,8 +16392,14 @@ function dcBuildGeneralDesignBasis({ project, getParam, round }) {
   const plantHoursDayRaw = DC_GENERAL_FORMULAS.hoursPerDay(plantAvailPct);
 
   return {
+    nominalTpcd: nominalTpcdRaw != null ? round(nominalTpcdRaw, 1) : null,
+    designTpcd: designTpcdRaw != null ? round(designTpcdRaw, 1) : null,
+    minTpcd: minTpcdRaw != null ? round(minTpcdRaw, 1) : null,
+    maxTpcd: maxTpcdRaw != null ? round(maxTpcdRaw, 1) : null,
     designTph: designTphRaw != null ? round(designTphRaw, 1) : null,
     nominalTph: nominalTphRaw != null ? round(nominalTphRaw, 1) : null,
+    minTph: minTphRaw != null ? round(minTphRaw, 1) : null,
+    maxTph: maxTphRaw != null ? round(maxTphRaw, 1) : null,
     designTphCrush: designTphCrushRaw != null ? round(designTphCrushRaw, 1) : null,
     crushDesignFactorPct,
     concDesignFactorPct,
@@ -16294,6 +16418,77 @@ function dcBuildGeneralDesignBasis({ project, getParam, round }) {
     crushHoursYear: crushHoursDayRaw != null ? round(DC_GENERAL_FORMULAS.hoursPerYear(crushHoursDayRaw), 0) : null,
     sagHoursYear: sagHoursDayRaw != null ? round(DC_GENERAL_FORMULAS.hoursPerYear(sagHoursDayRaw), 0) : null,
     plantHoursYear: plantHoursDayRaw != null ? round(DC_GENERAL_FORMULAS.hoursPerYear(plantHoursDayRaw), 0) : null,
+  };
+}
+
+function dcBuildOreCharacteristicsContext({ getParam, round }) {
+  const avg = (rows, field, digits = 2) => {
+    const vals = (rows || []).map(r => parseFloat(r[field])).filter(v => Number.isFinite(v) && v > 0);
+    return vals.length ? round(vals.reduce((a, b) => a + b, 0) / vals.length, digits) : null;
+  };
+  const vals = (rows, field) => (rows || []).map(r => parseFloat(r[field])).filter(v => Number.isFinite(v) && v > 0);
+  const calcP80FromSieve = (test) => {
+    const p80raw = parseFloat(test?.p80_um);
+    if (Number.isFinite(p80raw) && p80raw > 0) return p80raw;
+    const sieve = [
+      { um: 500, ret: parseFloat(test?.ret_plus500_pct) },
+      { um: 212, ret: parseFloat(test?.ret_plus212_pct) },
+      { um: 150, ret: parseFloat(test?.ret_plus150_pct) },
+      { um: 106, ret: parseFloat(test?.ret_plus106_pct) },
+      { um: 75,  ret: parseFloat(test?.ret_plus75_pct) },
+      { um: 53,  ret: parseFloat(test?.ret_plus53_pct) },
+      { um: 38,  ret: parseFloat(test?.ret_plus38_pct) },
+    ].filter(d => Number.isFinite(d.ret));
+    if (sieve.length < 2) return null;
+    let cumRet = 0;
+    const pts = sieve.map(d => {
+      cumRet += d.ret;
+      return { um: d.um, pass: 100 - cumRet };
+    });
+    for (let i = 0; i < pts.length - 1; i++) {
+      if (pts[i].pass >= 80 && pts[i + 1].pass < 80) {
+        const ratio = (80 - pts[i + 1].pass) / (pts[i].pass - pts[i + 1].pass);
+        return pts[i + 1].um + ratio * (pts[i].um - pts[i + 1].um);
+      }
+    }
+    return pts[0].pass <= 80 ? pts[0].um : null;
+  };
+
+  const a1 = S.tests?.a1 || [];
+  const a2 = S.tests?.a2 || [];
+  const a3 = S.tests?.a3 || [];
+  const b1 = S.tests?.b1 || S.analysisData?.b1 || [];
+  const m1 = S.tests?.m1 || [];
+
+  const a2p80 = a2.map(calcP80FromSieve).filter(v => Number.isFinite(v) && v > 0);
+  const b1p80 = vals(b1, 'p80_target_um');
+  const a3p80 = vals(a3, 'p80_broyage_um');
+  const m1k80 = vals(m1, 'k80_um');
+  const grindP80 = a3p80.length ? round(a3p80.reduce((a,b)=>a+b,0) / a3p80.length, 0)
+    : b1p80.length ? round(b1p80.reduce((a,b)=>a+b,0) / b1p80.length, 1)
+    : a2p80.length ? round(a2p80.reduce((a,b)=>a+b,0) / a2p80.length, 1)
+    : null;
+  const regrindP80 = m1k80.length ? round(m1k80.reduce((a,b)=>a+b,0) / m1k80.length, 0)
+    : grindP80 ? round(grindP80 * 0.5, 0)
+    : null;
+
+  return {
+    a1,
+    a2,
+    a3,
+    b1,
+    m1,
+    avg,
+    psd: {
+      romF80Mm: getParam('comminution', 'sag_f80', null),
+      measuredP80Um: a2p80.length ? round(a2p80.reduce((a,b)=>a+b,0) / a2p80.length, 1) : null,
+      measuredP80MinUm: a2p80.length ? round(Math.min(...a2p80), 1) : null,
+      measuredP80MaxUm: a2p80.length ? round(Math.max(...a2p80), 1) : null,
+      grindP80Um: grindP80,
+      grindP80Source: a3p80.length ? 'LIMS A3 libération' : (b1p80.length ? 'LIMS B1 Bond' : (a2p80.length ? 'PSD A2 tamisage' : null)),
+      regrindP80Um: regrindP80,
+      regrindP80Source: m1k80.length ? 'LIMS M1 minéralogie' : (grindP80 ? 'PSD estimé 50% P80 broyage' : null),
+    },
   };
 }
 
@@ -18455,125 +18650,106 @@ function renderDesignCriteria() {
   };
 
   const basis = dcBuildGeneralDesignBasis({ project: S.project, getParam: _sp, round: _r });
+  const oreCtx = dcBuildOreCharacteristicsContext({ getParam: _sp, round: _r });
   const dcScenarioKey = dcGetDesignScenario();
   const dcTemplateKey = dcGetPlantTemplate();
 
   const generalDC = [
     { type:'section', title:'General Plant Design Criteria' },
     { type:'subsection', title:'Design basis' },
-    { ref:'1.1.0', item:'Plant nominal production capacity', unit:'t/h',
-      design: basis.nominalTph, calc:true, nominal: basis.nominalTph, source:'C' },
-    { ref:'1.1.1', item:'Design ore processing rate - Plant', unit:'tpcd',
-      design: basis.designTph ? _r(DC_GENERAL_FORMULAS.tonnesPerCalendarDay(basis.designTph), 1) : null,
-      nominal: basis.nominalTph ? _r(DC_GENERAL_FORMULAS.tonnesPerCalendarDay(basis.nominalTph), 1) : null,
+    { item:'Design ore processing rate', unit:'tpcd',
+      design: basis.designTpcd, nominal: basis.nominalTpcd, min: basis.minTpcd, max: basis.maxTpcd,
+      nomKey:'comminution/dc_nominal_tpcd', nominalEditable:true, source:'C',
+      formula:'Design = Nominal × (100 + concentrator design factor)%; Min = Nominal × (1 − factor%); Max = Design' },
+    { item:'Design ore processing rate - Plant', unit:'tph',
+      design: basis.designTph, nominal: basis.nominalTph, min: basis.minTph, max: basis.maxTph,
       calc:true, source:'C',
-      formula: 'Design t/h × 24; Nominal t/h × 24' },
-    { ref:'1.1.2', item:'Design ore processing rate - Plant', unit:'t/h',
-      design: basis.designTph, nominal: basis.nominalTph,
-      designKey:'comminution/dc_design_tph', source:'C',
-      formula: `Nominal = Design / ${fmtAuto(DC_GENERAL_FORMULAS.safetyFactor(basis.concDesignFactorPct))}` },
-    { ref:'1.1.2a', item:'Target annual production', unit:'t/an',
-      design: basis.annualTargetTpy, calc:true, nominal: basis.annualTargetTpy, source:'C' },
-    { ref:'1.1.2b', item:'Nominal daily tonnage', unit:'t/j',
-      design: basis.nominalTpd, calc:true, nominal: basis.nominalTpd, source:'C' },
-    { ref:'1.1.2c', item:'Design daily tonnage - Grinding', unit:'t/j',
-      design: basis.designTpdGrinding, calc:true, nominal: basis.designTpdGrinding, source:'C' },
-    { ref:'1.1.3', item:'Operating hours per year - Crushing Circuit', unit:'h/yr',
-      design: basis.crushHoursYear, calc:true, nominal: basis.crushHoursYear, source:'C',
-      formula: `${basis.crushHoursDay} h/d × 365` },
-    { ref:'1.1.4', item:'Operating hours per year - HPGR or SAG Mill', unit:'h/yr',
-      design: basis.sagHoursYear, calc:true, nominal: basis.sagHoursYear, source:'C',
-      formula: `${basis.sagHoursDay} h/d × 365` },
-    { ref:'1.1.5', item:'Operating hours per year - Plant', unit:'h/yr',
-      design: basis.plantHoursYear, calc:true, nominal: basis.plantHoursYear, source:'C',
-      formula: `${basis.plantHoursDay} h/d × 365` },
-    { ref:'1.1.6', item:'Operating hours per day - Crushing Circuit', unit:'h/d',
-      design: basis.crushHoursDay, calc:true, nominal: basis.crushHoursDay, source:'C',
-      formula: `24 × ${basis.crushAvailPct}%` },
-    { ref:'1.1.7', item:'Operating hours per day - HPGR or SAG Mill', unit:'h/d',
-      design: basis.sagHoursDay, calc:true, nominal: basis.sagHoursDay, source:'C',
-      formula: `24 × ${basis.sagAvailPct}%` },
-    { ref:'1.1.8', item:'Operating hours per day - Plant', unit:'h/d',
-      design: basis.plantHoursDay, calc:true, nominal: basis.plantHoursDay, source:'C',
-      formula: `24 × ${basis.plantAvailPct}%` },
-    { ref:'1.1.9', item:'Operating Percentage - Crushing Circuit', unit:'%',
-      design: basis.crushAvailPct, nominal: basis.crushAvailPct,
-      designKey:'comminution/crush_availability_pct', source:'O' },
-    { ref:'1.1.10', item:'Operating Percentage - HPGR or SAG Mill', unit:'%',
-      design: basis.sagAvailPct, nominal: basis.sagAvailPct,
-      designKey:'comminution/sag_availability_pct', source:'O' },
-    { ref:'1.1.11', item:'Operating Percentage - Plant', unit:'%',
-      design: basis.plantAvailPct, nominal: basis.plantAvailPct,
-      designKey:'comminution/plant_availability_pct', source:'O' },
-    { ref:'1.1.12', item:'Effective utilisation - Plant', unit:'%',
-      design: basis.utilizationPct, nominal: basis.utilizationPct,
-      designKey:'comminution/utilization_pct', source:'O' },
+      formula:'tpcd ÷ (24 × plant operating percentage)' },
+    { item:'Operating hours per year - Crushing Circuit', unit:'h/y',
+      design: basis.crushHoursYear, calc:true, source:'C',
+      formula:'24 × 365 × crushing operating percentage' },
+    { item:'Operating hours per year - HPGR', unit:'h/y',
+      design: basis.sagHoursYear, calc:true, source:'C',
+      formula:'HPGR hours/day × 365' },
+    { item:'Operating hours per year - Plant', unit:'h/y',
+      design: basis.plantHoursYear, calc:true, source:'C',
+      formula:'24 × 365 × plant operating percentage' },
+    { item:'Operating hours per day - Crushing Circuit', unit:'h/d',
+      design: basis.crushHoursDay, calc:true, source:'C',
+      formula:'24 × crushing operating percentage' },
+    { item:'Operating hours per day - HPGR', unit:'h/d',
+      design: basis.sagHoursDay, calc:true, source:'C',
+      formula:'24 × HPGR operating percentage' },
+    { item:'Operating hours per day - Plant', unit:'h/d',
+      design: basis.plantHoursDay, calc:true, source:'C',
+      formula:'24 × plant operating percentage' },
+    { item:'Operating Percentage - Crushing Circuit', unit:'%',
+      design: basis.crushAvailPct,
+      designKey:'comminution/crush_availability_pct', designEditable:true, source:'O' },
+    { item:'Operating Percentage - HPGR', unit:'%',
+      design: basis.sagAvailPct,
+      designKey:'comminution/sag_availability_pct', designEditable:true, source:'O' },
+    { item:'Operating Percentage - Plant', unit:'%',
+      design: basis.plantAvailPct,
+      designKey:'comminution/plant_availability_pct', designEditable:true, source:'O' },
     { type:'subsection', title:'Design Factors' },
-    { ref:'1.2.1', item:'Crushing plant equipment design factor', unit:'%',
-      design: basis.crushDesignFactorPct, nominal: basis.crushDesignFactorPct,
-      designKey:'comminution/crush_design_factor_pct', source:'I' },
-    { ref:'1.2.2', item:'Concentrator plant equipment design factor', unit:'%',
-      design: basis.concDesignFactorPct, nominal: basis.concDesignFactorPct,
-      designKey:'comminution/conc_design_factor_pct', source:'I' },
-    { ref:'1.2.3', item:'Hydraulic design factor', unit:'%',
-      design: basis.hydraulicDesignFactorPct, nominal: basis.hydraulicDesignFactorPct,
-      designKey:'comminution/hydraulic_design_factor_pct', source:'I' },
-    { ref:'1.2.4', item:'Electrical design factor', unit:'%',
-      design: basis.electricalDesignFactorPct, nominal: basis.electricalDesignFactorPct,
-      designKey:'comminution/electrical_design_factor_pct', source:'I' },
+    { item:'Crushing plant equipment design factor', unit:'%',
+      design: basis.crushDesignFactorPct,
+      designKey:'comminution/crush_design_factor_pct', designEditable:true, source:'I' },
+    { item:'Concentrator plant equipment design factor', unit:'%',
+      design: basis.concDesignFactorPct,
+      designKey:'comminution/conc_design_factor_pct', designEditable:true, source:'I' },
 
     { type:'section', title:'General Project Information' },
     { type:'subsection', title:'Location' },
-    { ref:'2.1.1', item:'Project location', unit:'—', design: _p('location') || null, source:'O', textVal:true },
-    { ref:'2.1.2', item:'Site Elevation', unit:'m.a.s.l.', design: _sp('project','site_elevation', null), source:'O' },
-    { ref:'2.1.3', item:'Location, latitude', unit:'°', design: _sp('project','latitude', null), source:'O' },
-    { ref:'2.1.4', item:'Location, longitude', unit:'°', design: _sp('project','longitude', null), source:'O' },
+    { item:'Project location', unit:'—', design: _sp('project','project_location', _p('location') || null), designKey:'project/project_location', source:'O', textVal:true },
+    { item:'Site Elevation', unit:'m.a.s.l.', design: _sp('project','site_elevation', null), designKey:'project/site_elevation', source:'O' },
+    { item:'Location, latitude', unit:'°', design: _sp('project','latitude', null), designKey:'project/latitude', source:'O' },
+    { item:'Location, longitude', unit:'°', design: _sp('project','longitude', null), designKey:'project/longitude', source:'O' },
     { type:'subsection', title:'Climate' },
-    { ref:'2.2.1', item:'Minimum design temperature', unit:'°C', design: _sp('project','min_design_temp_c', null), source:'O' },
-    { ref:'2.2.2', item:'Maximum design temperature', unit:'°C', design: _sp('project','max_design_temp_c', null), source:'O' },
-    { ref:'2.2.3', item:'Estimated process water temperature', unit:'°C', design: _sp('project','process_water_temp_c', null), source:'O' },
+    { item:'Minimum design temperature', unit:'°C', design: _sp('project','min_design_temp_c', null), designKey:'project/min_design_temp_c', source:'O' },
+    { item:'Maximum design temperature', unit:'°C', design: _sp('project','max_design_temp_c', null), designKey:'project/max_design_temp_c', source:'O' },
+    { item:'Estimated process water temperature', unit:'°C', design: _sp('project','process_water_temp_c', null), designKey:'project/process_water_temp_c', source:'O' },
 
     { type:'section', title:'Ore Characteristics' },
     { type:'subsection', title:'Mill feed head grades' },
-    { ref:'3.1.1', item:'Gold', unit:'g/t', design: _p('gold_grade_g_t'), source:'O' },
-    { ref:'3.1.2', item:'Silver', unit:'g/t', design: _a1Avg('ag_ppm'), source:'A' },
-    { ref:'3.1.3', item:'Arsenic', unit:'ppm', design: _a1Avg('as_ppm'), source:'A' },
-    { ref:'3.1.4', item:'Sulphur', unit:'%', design: _a1Avg('s_total_pct'), source:'A' },
-    { ref:'3.1.5', item:'Carbon', unit:'%', design: _a1Avg('c_total_pct'), source:'A' },
-    { ref:'3.1.6', item:'Organic carbon', unit:'%', design: _a1Avg('c_organic_pct'), source:'A' },
+    { item:'Gold', unit:'g/t', design: oreCtx.avg(oreCtx.a1, 'au_g_t', 2), source:'L' },
+    { item:'Silver', unit:'g/t', design: oreCtx.avg(oreCtx.a1, 'ag_ppm', 2), source:'L' },
+    { item:'Arsenic', unit:'ppm', design: oreCtx.avg(oreCtx.a1, 'as_ppm', 2), source:'L' },
+    { item:'Sulphur', unit:'%', design: oreCtx.avg(oreCtx.a1, 's_total_pct', 2), source:'L' },
+    { item:'Carbon', unit:'%', design: oreCtx.avg(oreCtx.a1, 'c_total_pct', 2), source:'L' },
+    { item:'Organic carbon', unit:'%', design: oreCtx.avg(oreCtx.a1, 'c_organic_pct', 2), source:'L' },
     { type:'subsection', title:'Mill feed characteristics' },
-    { ref:'3.2.1', item:'Domain 1', unit:'—', design: _sp('ore','domain_1', null), source:'O', textVal:true },
-    { ref:'3.2.2', item:'Domain 2', unit:'—', design: _sp('ore','domain_2', null), source:'O', textVal:true },
-    { ref:'3.2.3', item:'Domain 3', unit:'—', design: _sp('ore','domain_3', null), source:'O', textVal:true },
-    { ref:'3.2.4', item:'Average density', unit:'t/m³', design: _b1Avg('bulk_density_t_m3'), source:'A' },
-    { ref:'3.2.5', item:'Average bulk density for volume calculations (dry)', unit:'t/m³', design: _sp('ore','bulk_density_dry_vol', null), source:'O' },
-    { ref:'3.2.6', item:'Average bulk density for weight calculations (dry)', unit:'t/m³', design: _sp('ore','bulk_density_dry_wt', null), source:'O' },
-    { ref:'3.2.7', item:'Humidity', unit:'%', design: _sp('ore','humidity_pct', null), source:'O' },
-    { ref:'3.2.8', item:'Angle of Repose', unit:'°', design: _sp('ore','angle_of_repose', null), source:'O' },
+    { item:'Average density', unit:'t/m³', design: oreCtx.avg(oreCtx.b1, 'bulk_density_t_m3', 2), source:'L' },
+    { item:'Humidity', unit:'%', design: oreCtx.avg(oreCtx.a1, 'moisture_pct', 2), source:'L' },
     { type:'subsection', title:'Mill Feed Grindability and Crushability' },
-    { ref:'3.3.1', item:'Crushing work index (CWi)', unit:'kWh/t', design: _b1Avg('crushing_wi_kwh_t'), source:'A' },
-    { ref:'3.3.2', item:'JK Drop Weight : Axb', unit:'—', design: _b1Avg('a_x_b'), source:'A' },
-    { ref:'3.3.3', item:'JK Drop Weight : ta', unit:'—', design: _b1Avg('ta'), source:'A' },
-    { ref:'3.3.4', item:'Drop Weight Index (DWi)', unit:'kWh/m³', design: _b1Avg('dwi_kwh_m3'), source:'A' },
-    { ref:'3.3.5', item:'Rod Mill Index (RWi)', unit:'kWh/t', design: _b1Avg('brwi_kwh_t'), source:'A' },
-    { ref:'3.3.6', item:'Mia', unit:'kWh/t', design: _b1Avg('mia_kwh_t'), source:'A' },
-    { ref:'3.3.7', item:'Min', unit:'kWh/t', design: _b1Avg('mih_kwh_t'), source:'A' },
-    { ref:'3.3.8', item:'Mic', unit:'kWh/t', design: _b1Avg('mic_kwh_t'), source:'A' },
-    { ref:'3.3.9', item:'Bond ball mill work index (BWi)', unit:'kWh/t', design: _b1Avg('bwi_kwh_t'), source:'A' },
-    { ref:'3.3.10', item:'Abrasion Index (Ai)', unit:'—', design: _b1Avg('abrasion_index_ai'), source:'A' },
+    { item:'Crushing work index (CWi)', unit:'kWh/t', design: oreCtx.avg(oreCtx.b1, 'crushing_wi_kwh_t', 2), source:'L' },
+    { item:'JK Drop Weight : Axb', unit:'—', design: oreCtx.avg(oreCtx.b1, 'a_x_b', 1), source:'L' },
+    { item:'JK Drop Weight : ta', unit:'—', design: oreCtx.avg(oreCtx.b1, 'ta', 2), source:'L' },
+    { item:'Drop Weight Index (DWi)', unit:'kWh/m³', design: oreCtx.avg(oreCtx.b1, 'dwi_kwh_m3', 2), source:'L' },
+    { item:'Rod Mill Index (RWi)', unit:'kWh/t', design: oreCtx.avg(oreCtx.b1, 'brwi_kwh_t', 2), source:'L' },
+    { item:'Mia', unit:'kWh/t', design: oreCtx.avg(oreCtx.b1, 'mia_kwh_t', 2), source:'L' },
+    { item:'Mih', unit:'kWh/t', design: oreCtx.avg(oreCtx.b1, 'mih_kwh_t', 2), source:'L' },
+    { item:'Mic', unit:'kWh/t', design: oreCtx.avg(oreCtx.b1, 'mic_kwh_t', 2), source:'L' },
+    { item:'Bond ball mill work index (BWi)', unit:'kWh/t', design: oreCtx.avg(oreCtx.b1, 'bwi_kwh_t', 2), source:'L' },
+    { item:'Abrasion Index (Ai)', unit:'—', design: oreCtx.avg(oreCtx.b1, 'abrasion_index_ai', 2), source:'L' },
     { type:'subsection', title:'Product size specifications' },
-    { ref:'3.4.1', item:'ROM F80', unit:'mm', design: _sp('ore','rom_f80_mm', null), source:'O' },
-    { ref:'3.4.2', item:'ROM top size F100', unit:'mm', design: _sp('ore','rom_f100_mm', null), source:'O' },
-    { ref:'3.4.3', item:'Primary crusher P80', unit:'mm', design: _sp('ore','primary_crusher_p80_mm', null), source:'O' },
-    { ref:'3.4.4', item:'Secondary crusher P80', unit:'mm', design: _sp('ore','secondary_crusher_p80_mm', null), source:'O' },
-    { ref:'3.4.5', item:'HPGR product P80', unit:'mm', design: _sp('ore','hpgr_p80_mm', null), source:'O' },
-    { ref:'3.4.6', item:'Ball mill product P80', unit:'µm', design: _sp('ore','ball_mill_p80_um', null), source:'O' },
-    { ref:'3.4.7', item:'Regrind / leach feed P80', unit:'µm', design: _sp('ore','regrind_p80_um', null), source:'O' },
+    { item:'ROM F80', unit:'mm', design: oreCtx.psd.romF80Mm, source:'S', formula:'Granulométrie / PSD: paramètre ROM F80' },
+    { item:'Measured feed P80', unit:'µm', design: oreCtx.psd.measuredP80Um, min: oreCtx.psd.measuredP80MinUm, max: oreCtx.psd.measuredP80MaxUm, source:'L', formula:'PSD A2: interpolation 80% passant' },
+    { item:'Ball mill product P80', unit:'µm', design: oreCtx.psd.grindP80Um, source:'L', formula: oreCtx.psd.grindP80Source },
+    { item:'Regrind / leach feed P80', unit:'µm', design: oreCtx.psd.regrindP80Um, source:'L', formula: oreCtx.psd.regrindP80Source },
   ];
 
   function _renderGeneralDCTable(items) {
     const thStyle = 'padding:6px 8px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;color:var(--txt3)';
     const _v = (val) => val != null ? (typeof val === 'number' ? fmtAuto(val) : val) : '\u2014';
+    const tdBase = 'padding:4px 6px;text-align:right;font-family:var(--mono);font-size:11px;';
+    const tdCalc = tdBase + 'color:var(--teal2,#00C4B0);font-weight:600;';
+    const tdReadonly = tdBase + 'color:var(--txt2);';
+    const tdInput = tdBase + 'cursor:pointer;background:rgba(34,197,94,.14);border:1px solid rgba(34,197,94,.38);color:#86EFAC;font-weight:700;';
+    const valueCell = (row, field, val, editable, cat, key, type) => editable
+      ? `<td style="${tdInput}" onclick="dcEditGeneralCell(this,'${cat}','${key}','${type || 'number'}')" title="Entrée utilisateur">${_v(val)}</td>`
+      : `<td style="${row.calc || field === 'design' ? tdCalc : tdReadonly}" title="${row.formula ? _dcEscapeHtml(row.formula) : 'Calculé / importé'}">${_v(val)}</td>`;
     let html = '';
 
     for (const row of items) {
@@ -18581,7 +18757,6 @@ function renderDesignCriteria() {
         if (html) html += '</tbody></table></div>';
         html += `<div class="card mb12"><table style="width:100%;border-collapse:collapse;font-size:12px;">
           <thead><tr style="background:var(--bg3);border-bottom:2px solid var(--border);">
-            <th style="${thStyle};width:70px">REF</th>
             <th style="${thStyle}">ITEM</th>
             <th style="${thStyle};width:60px">UNITS</th>
             <th style="${thStyle};text-align:right;width:80px">DESIGN</th>
@@ -18589,40 +18764,29 @@ function renderDesignCriteria() {
             <th style="${thStyle};text-align:right;width:60px">MIN</th>
             <th style="${thStyle};text-align:right;width:60px">MAX</th>
             <th style="${thStyle};text-align:center;width:55px">SOURCE</th>
-            <th style="${thStyle};text-align:center;width:35px">Rev</th>
-            <th style="${thStyle};text-align:center;width:45px">Author</th>
-            <th style="${thStyle}">COMMENTS</th>
+            <th style="${thStyle}">FORMULE / ORIGINE</th>
           </tr></thead><tbody>
-          <tr style="background:var(--bg3);"><td colspan="11" style="padding:8px 10px;font-weight:700;font-size:13px;color:var(--gold);border-bottom:1px solid var(--border);">${row.title}</td></tr>`;
+          <tr style="background:var(--bg3);"><td colspan="8" style="padding:8px 10px;font-weight:700;font-size:13px;color:var(--gold);border-bottom:1px solid var(--border);">${row.title}</td></tr>`;
         continue;
       }
       if (row.type === 'subsection') {
-        html += `<tr style="background:var(--bg3);"><td colspan="11" style="padding:6px 10px;font-weight:700;font-size:12px;color:var(--txt);border-bottom:1px solid var(--border);">${row.title}</td></tr>`;
+        html += `<tr style="background:var(--bg3);"><td colspan="8" style="padding:6px 10px;font-weight:700;font-size:12px;color:var(--txt);border-bottom:1px solid var(--border);">${row.title}</td></tr>`;
         continue;
       }
 
-      // Resolve keys for editable cells
-      const fallbackCat = row.ref.startsWith('1.') ? 'comminution' : (row.ref.startsWith('2.') ? 'project' : 'ore');
-      const fallbackKey = 'dc_' + row.ref.replace(/\./g, '_');
-
-      // DESIGN column
       let designVal = row.design;
-      let designEditable = !row.calc;
-      let designCat = fallbackCat, designParamKey = fallbackKey;
+      let designEditable = !!row.designEditable || !!row.designKey;
+      let designCat = null, designParamKey = null;
       if (row.designKey) {
         const [c, k] = row.designKey.split('/');
         designCat = c; designParamKey = k;
         const saved = spGet(c, k, undefined);
         if (saved !== undefined) designVal = saved;
-      } else if (!row.calc) {
-        const saved = spGet(fallbackCat, fallbackKey, undefined);
-        if (saved !== undefined) designVal = saved;
       }
 
-      // NOMINAL column
       let nomVal = row.nominal !== undefined ? row.nominal : null;
-      let nomEditable = !!row.nomKey;
-      let nomCat = fallbackCat, nomParamKey = fallbackKey + '_nom';
+      let nomEditable = !!row.nominalEditable && !!row.nomKey;
+      let nomCat = null, nomParamKey = null;
       if (row.nomKey) {
         const [c, k] = row.nomKey.split('/');
         nomCat = c; nomParamKey = k;
@@ -18630,39 +18794,24 @@ function renderDesignCriteria() {
         if (saved !== undefined) nomVal = saved;
       }
 
-      // MIN / MAX / COMMENTS
-      const minVal = spGet(fallbackCat, fallbackKey + '_min', undefined);
-      const maxVal = spGet(fallbackCat, fallbackKey + '_max', undefined);
-      const cmtVal = spGet(fallbackCat, fallbackKey + '_cmt', undefined);
-
-      const src = row.source;
-      const tdBase = 'padding:3px 4px;text-align:right;font-family:var(--mono);font-size:11px;';
-      const tdEdit = tdBase + 'cursor:pointer;';
-      const tdCalc = tdBase + 'color:var(--teal2,#00C4B0);font-weight:600;';
       const isText = row.textVal ? 'text' : 'number';
+      const src = row.source || 'C';
+      const minVal = row.min ?? null;
+      const maxVal = row.max ?? null;
 
-      // DESIGN cell
-      const designTd = row.calc
-        ? `<td style="${tdCalc}" title="Calculé">${_v(designVal)}</td>`
-        : `<td style="${tdEdit}" onclick="dcEditGeneralCell(this,'${designCat}','${designParamKey}','${isText}')" title="Cliquez pour modifier">${_v(designVal)}</td>`;
-
-      // NOMINAL cell
-      const nomTd = nomEditable
-        ? `<td style="${tdEdit}" onclick="dcEditGeneralCell(this,'${nomCat}','${nomParamKey}','${isText}')" title="Cliquez pour modifier">${_v(nomVal)}</td>`
-        : `<td style="${tdBase}">${_v(nomVal)}</td>`;
+      const designTd = valueCell(row, 'design', designVal, designEditable, designCat, designParamKey, isText);
+      const nomTd = valueCell(row, 'nominal', nomVal, nomEditable, nomCat, nomParamKey, isText);
+      const formula = row.formula || (src === 'L' ? 'Import automatique LIMS / Échantillons' : (src === 'S' ? 'Import automatique Granulométrie / PSD' : ''));
 
       html += `<tr style="border-bottom:1px solid var(--border);">
-        <td style="padding:3px 6px;font-family:var(--mono);font-size:10px;color:var(--txt3)">${row.ref}</td>
-        <td style="padding:3px 6px;font-size:11px;font-weight:500">${row.item}</td>
-        <td style="padding:3px 6px;font-family:var(--mono);font-size:10px;color:var(--txt3)">${row.unit}</td>
+        <td style="padding:4px 8px;font-size:11px;font-weight:500">${row.item}</td>
+        <td style="padding:4px 6px;font-family:var(--mono);font-size:10px;color:var(--txt3)">${row.unit}</td>
         ${designTd}
         ${nomTd}
-        <td style="${tdEdit}" onclick="dcEditGeneralCell(this,'${fallbackCat}','${fallbackKey}_min','number')" title="Cliquez pour modifier">${_v(minVal)}</td>
-        <td style="${tdEdit}" onclick="dcEditGeneralCell(this,'${fallbackCat}','${fallbackKey}_max','number')" title="Cliquez pour modifier">${_v(maxVal)}</td>
-        <td style="padding:3px 4px;text-align:center;">${_dcSourceBadge(src)}</td>
-        <td style="padding:3px 4px;text-align:center;font-size:10px;color:var(--txt3)">A</td>
-        <td style="padding:3px 4px;text-align:center;font-size:10px;color:var(--txt3)">\u2014</td>
-        <td style="padding:3px 4px;font-size:10px;color:var(--txt3);cursor:pointer;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" onclick="dcEditGeneralCell(this,'${fallbackCat}','${fallbackKey}_cmt','text')" title="${cmtVal ? String(cmtVal).replace(/"/g,'&quot;') : 'Cliquez pour ajouter'}">${cmtVal || '\u2014'}</td>
+        <td style="${tdReadonly}">${_v(minVal)}</td>
+        <td style="${tdReadonly}">${_v(maxVal)}</td>
+        <td style="padding:4px 4px;text-align:center;">${_dcSourceBadge(src)}</td>
+        <td style="padding:4px 6px;font-size:10px;color:var(--txt3);line-height:1.35;">${formula ? _dcEscapeHtml(formula) : '\u2014'}</td>
       </tr>`;
     }
     if (html) html += '</tbody></table></div>';
