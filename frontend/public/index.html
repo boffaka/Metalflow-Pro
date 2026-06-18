@@ -2186,7 +2186,53 @@ function markProjectDataLoaded() {
 /** Affiche tout de suite le nom/code du projet depuis la liste (évite l'écran bloqué). */
 function hydrateProjectFromList(id) {
   const stub = (S.projects || []).find(p => p.id === id);
-  if (stub) S.project = { ...stub };
+  if (stub) S.project = applyLocalProjectOverride({ ...stub });
+}
+
+function projectOverrideStorageKey(id = S.pid) {
+  return id ? `metalflow.project.override.${id}` : null;
+}
+
+function getLocalProjectOverride(id = S.pid) {
+  const key = projectOverrideStorageKey(id);
+  if (!key) return null;
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : null;
+  } catch (_) {
+    return null;
+  }
+}
+
+function saveLocalProjectOverride(project) {
+  const id = project?.id || S.pid;
+  const key = projectOverrideStorageKey(id);
+  if (!key) return;
+  const existing = getLocalProjectOverride(id) || {};
+  const next = { ...existing, ...project, id, updated_locally_at: new Date().toISOString() };
+  localStorage.setItem(key, JSON.stringify(next));
+}
+
+function clearLocalProjectOverride(id = S.pid) {
+  const key = projectOverrideStorageKey(id);
+  if (key) localStorage.removeItem(key);
+}
+
+function applyLocalProjectOverride(project) {
+  if (!project) return project;
+  const override = getLocalProjectOverride(project.id || S.pid);
+  return override ? { ...project, ...override } : project;
+}
+
+function applyLocalProjectOverrides(projects) {
+  return Array.isArray(projects) ? projects.map(p => applyLocalProjectOverride(p)) : projects;
+}
+
+function parseProjectNumberInput(id) {
+  const raw = document.getElementById(id)?.value;
+  if (raw == null || String(raw).trim() === '') return null;
+  const value = parseFloat(String(raw).replace(',', '.'));
+  return Number.isFinite(value) ? value : null;
 }
 
 /* ════════════════════════════════════════════════════════
@@ -2800,7 +2846,10 @@ function bindLoginEvents() {
    PAGE: PROJECTS
 ═══════════════════════════════════════════════════════ */
 async function loadProjects() {
-  try { const resp = await api('GET', '/projects'); S.projects = resp.items || resp; } catch(e) { S.projects = []; toast(e.message, 'error'); }
+  try {
+    const resp = await api('GET', '/projects');
+    S.projects = applyLocalProjectOverrides(resp.items || resp);
+  } catch(e) { S.projects = []; toast(e.message, 'error'); }
 }
 
 function renderProjectsPage() {
@@ -3341,7 +3390,7 @@ async function loadDashboardData() {
 
 async function loadProjectDetail() {
   if (!S.pid) return;
-  try { S.project = await api('GET', `/projects/${S.pid}`); } catch(e) { toast(e.message,'error'); }
+  try { S.project = applyLocalProjectOverride(await api('GET', `/projects/${S.pid}`)); } catch(e) { toast(e.message,'error'); }
 }
 
 async function loadLIMSCompleteness() {
@@ -23197,19 +23246,33 @@ function openEditProject() {
 async function doEditProject(id) {
   const name = document.getElementById('ep-name')?.value.trim();
   const code = document.getElementById('ep-code')?.value.trim();
-  const tph = parseFloat(document.getElementById('ep-tph')?.value);
-  const grade = parseFloat(document.getElementById('ep-grade')?.value);
+  const tph = parseProjectNumberInput('ep-tph');
+  const grade = parseProjectNumberInput('ep-grade');
   const phase = document.getElementById('ep-phase')?.value;
   const errEl = document.getElementById('ep-error');
   if (!name || !code) { errEl.textContent = 'Nom et code requis.'; errEl.style.display='flex'; return; }
   const btn = document.getElementById('btn-ep'); btn.disabled = true;
+  const patch = { project_name: name, project_code: code, target_tph: tph, gold_grade_g_t: grade, status: phase };
   try {
-    const updated = await api('PATCH', `/projects/${id}`, { project_name: name, project_code: code, target_tph: tph, gold_grade_g_t: grade, status: phase });
-    S.project = updated || { ...S.project, project_name: name, project_code: code, target_tph: tph, gold_grade_g_t: grade, status: phase };
+    const updated = await api('PATCH', `/projects/${id}`, patch);
+    clearLocalProjectOverride(id);
+    S.project = updated || { ...S.project, ...patch, id };
+    S.projects = applyLocalProjectOverrides(S.projects || []);
     toast('Projet mis à jour.');
     closeModal();
     render();
-  } catch(e) { errEl.textContent = e.message; errEl.style.display='flex'; }
+  } catch(e) {
+    if (e.softMissing) {
+      S.project = { ...S.project, ...patch, id };
+      saveLocalProjectOverride(S.project);
+      S.projects = applyLocalProjectOverrides(S.projects || []);
+      toast('Projet mis à jour localement.');
+      closeModal();
+      render();
+      return;
+    }
+    errEl.textContent = e.message; errEl.style.display='flex';
+  }
   finally { btn.disabled = false; }
 }
 
