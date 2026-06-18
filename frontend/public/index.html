@@ -1083,340 +1083,83 @@ html,body{height:100%;font-family:var(--sans);background:var(--bg);background-im
 .sim-kpi-value{font-family:var(--mono);color:var(--txt1);font-weight:600}
 .sim-bottleneck-alert{background:var(--red3);border:1px solid var(--red);border-radius:6px;padding:8px 10px;font-size:11px;color:var(--red2);margin-top:8px}
 
-/* METALFLOW_GOLD_MINING_EXECUTIVE_THEME
-   Refined graphite surfaces and restrained metallic accents for gold mining. */
-:root{
-  --bg:#090B0E;
-  --bg1:#0E1115;
-  --bg2:#13171C;
-  --bg3:#191E24;
-  --bg4:#222830;
-  --bg5:#2C343D;
-  --card:#14191F;
-  --surface:#191E24;
-  --txt:#E8EAED;
-  --txt1:#F7F4EC;
-  --txt2:#CCD0D5;
-  --txt3:#9EA5AD;
-  --txt4:#747C85;
-  --border:#292F36;
-  --border2:#373F48;
-  --border3:#505A65;
-  --gold:#C9A24D;
-  --gold2:#E1C16E;
-  --gold3:rgba(201,162,77,.15);
-  --gold4:rgba(201,162,77,.07);
-  --copper:#B87345;
-  --copper2:#D39A70;
-  --steel:#7E8D99;
-  --shadow:0 16px 38px rgba(0,0,0,.28);
-  --shadow-soft:0 8px 24px rgba(0,0,0,.18);
-}
+/* ════════════════════════════════════════════════════════════════
+   METALFLOW PRO — SHARED THEME PRIMITIVES (palette-independent)
+   Structural, state and semantic rules shared by the dark theme.
+   The full surface / accent / typography palette is defined once in
+   the consolidated dark-theme layer immediately below.
+═══════════════════════════════════════════════════════════════════ */
 
-html,body,#app,.layout,.main,.content,.login-page,.projects-page{
-  background-color:var(--bg)!important;
-  color:var(--txt)!important;
-}
-
-body{
-  background:
-    radial-gradient(circle at 15% 0%,rgba(201,162,77,.055),transparent 28%),
-    radial-gradient(circle at 100% 80%,rgba(184,115,69,.035),transparent 26%),
-    var(--bg)!important;
-}
-
-:where(body *:not(canvas):not(img):not(video)){
-  color:var(--txt)!important;
-}
-
-p,small,label,legend,caption,.page-sub,.section-sub,.kpi-sub,
-.project-meta,.logo-sub,.user-info .role,.card-title,
-.nav-group,.rf-palette-group,.sim-kpi-label,.form-label,
-.auth-compliance span,.auth-stats div div:last-child{
-  color:var(--txt3)!important;
-}
-
-h1,h2,h3,h4,h5,h6,strong,b,.page-title,.section-title,.logo-name,
-.topbar-title,.project-name,.kpi-val,.sim-kpi-value{
-  color:var(--txt1)!important;
-}
-
-a,.nav-item.active,.project-code,.logo-badge,.auth-intro h1 span{
-  color:var(--gold)!important;
-}
-
-.sidebar{
-  background:
-    linear-gradient(180deg,rgba(201,162,77,.045),transparent 150px),
-    linear-gradient(180deg,#15191E,#101318)!important;
-  border-color:#30363E!important;
-  box-shadow:12px 0 32px rgba(0,0,0,.18)!important;
-}
-
-.topbar{
-  background:rgba(16,19,24,.92)!important;
-  border-color:#30363E!important;
-  box-shadow:0 8px 24px rgba(0,0,0,.14)!important;
-  backdrop-filter:blur(18px)!important;
-}
-
-.card,.login-card,.project-card,.kpi,.modal,.dropdown,.popover,
-.sheet,.dialog,.rf-palette,.sim-results-card{
-  background:linear-gradient(145deg,rgba(24,29,35,.98),rgba(17,21,26,.98))!important;
-  border-color:var(--border2)!important;
-  box-shadow:var(--shadow-soft)!important;
-}
-
+/* Card stacking context so the top highlight (::before) anchors correctly */
 .card,.project-card,.kpi,.sim-results-card{
   position:relative;
   isolation:isolate;
 }
 
-.card::before,.project-card::before,.kpi::before,.sim-results-card::before{
-  content:"";
-  position:absolute;
-  inset:0 auto auto 0;
-  width:100%;
-  height:1px;
-  background:linear-gradient(90deg,transparent,rgba(225,193,110,.42),transparent);
-  pointer-events:none;
-}
-
-.card:hover,.project-card:hover,.kpi:hover{
-  border-color:rgba(201,162,77,.38)!important;
-  box-shadow:var(--shadow)!important;
-}
-
-.nav-item{
-  border-radius:7px!important;
-  color:var(--txt3)!important;
-}
-
-.nav-item:hover{
-  background:rgba(244,248,255,.035)!important;
-  color:var(--txt1)!important;
-}
-
-.nav-item.active{
-  background:linear-gradient(90deg,rgba(201,162,77,.17),rgba(201,162,77,.045))!important;
-  border-left-color:var(--gold)!important;
-  box-shadow:inset 0 0 0 1px rgba(201,162,77,.09)!important;
-}
-
+/* Typographic rhythm: tight titles, spaced uppercase eyebrows */
 .logo-name,.page-title,.section-title,.topbar-title{
   letter-spacing:-.012em;
 }
-
 .logo-badge,.nav-group,.card-title{
-  letter-spacing:.08em!important;
+  letter-spacing:.08em;
   text-transform:uppercase;
 }
 
-.kpi-val,.sim-kpi-value,.mb-kpi-val,.to-ccard-npv{
-  color:var(--gold2)!important;
-  text-shadow:0 0 20px rgba(201,162,77,.12);
-}
-
-table{
-  background:rgba(13,16,20,.65)!important;
-  border-color:var(--border2)!important;
-}
-
-thead,th{
-  background:#181D23!important;
-  border-color:var(--border2)!important;
-  color:var(--txt2)!important;
-}
-
+/* Compact uppercase table headers */
 th{
   font-size:10px!important;
   letter-spacing:.065em!important;
   text-transform:uppercase!important;
 }
 
-tbody,tr,td{
-  border-color:rgba(55,63,72,.72)!important;
-}
-
-tbody tr:nth-child(even){
-  background:rgba(244,248,255,.014)!important;
-}
-
-tbody tr:hover{
-  background:rgba(201,162,77,.055)!important;
-}
-
-input,textarea,select,option,[contenteditable="true"]{
-  background:#0E1216!important;
-  color:var(--txt1)!important;
-  border-color:var(--border2)!important;
-  caret-color:var(--gold)!important;
-  box-shadow:inset 0 1px 2px rgba(0,0,0,.24)!important;
-}
-
-input:focus,textarea:focus,select:focus,[contenteditable="true"]:focus{
-  border-color:var(--gold)!important;
-  box-shadow:0 0 0 3px rgba(201,162,77,.11)!important;
-  outline:none!important;
-}
-
+/* Placeholders & disabled controls — muted but still legible */
 input::placeholder,textarea::placeholder{
   color:var(--txt4)!important;
   opacity:1!important;
 }
-
-button,.btn,[role="button"]{
-  border-color:var(--border2)!important;
-}
-
-.btn:not(.btn-primary):not(.btn-gold){
-  background:linear-gradient(180deg,#20262D,#171C22)!important;
-  color:var(--txt2)!important;
-  box-shadow:0 1px 2px rgba(0,0,0,.24)!important;
-}
-
-.btn:not(.btn-primary):not(.btn-gold):hover{
-  border-color:rgba(201,162,77,.42)!important;
-  color:var(--txt1)!important;
-}
-
-.btn-primary,.btn-gold,button.btn-primary,button.btn-gold,
-#btn-login,#btn-register{
-  background:linear-gradient(135deg,#E0C16D 0%,#C49A3F 48%,#A9782B 100%)!important;
-  border-color:#E6CA7C!important;
-  color:#11100C!important;
-  font-weight:700!important;
-  box-shadow:0 8px 22px rgba(143,102,35,.24),inset 0 1px rgba(244,248,255,.24)!important;
-}
-
-.btn-primary *,.btn-gold *,button.btn-primary *,button.btn-gold *,
-#btn-login *,#btn-register *{
-  color:#11100C!important;
-}
-
 button:disabled,.btn:disabled,[aria-disabled="true"]{
   color:var(--txt4)!important;
   opacity:.62!important;
 }
 
+/* Semantic status colors — tuned for WCAG-AA on dark surfaces */
 .alert-success,.badge-success,.status-success,.status-complete,
 [class*="status-ok"],[class*="status-success"]{
   color:#6EE7B7!important;
 }
-
 .alert-error,.badge-error,.status-error,.status-critical,
 .sim-bottleneck-alert,[class*="status-error"],[class*="status-critical"]{
   color:#FCA5A5!important;
 }
-
 .alert-warning,.badge-warning,.status-warning,[class*="status-warning"]{
-  color:#FFD166!important;
+  color:#FBCB5B!important;
 }
-
 .alert-info,.badge-info,.status-info,[class*="status-info"]{
   color:#93C5FD!important;
 }
 
+/* Chart / SVG text follows the secondary text color */
 svg text,.plotly text,.js-plotly-plot text{
   fill:var(--txt2)!important;
   color:var(--txt2)!important;
 }
 
-.auth-shell{
-  background:
-    radial-gradient(circle at 18% 18%,rgba(201,162,77,.11),transparent 30%),
-    radial-gradient(circle at 82% 84%,rgba(184,115,69,.07),transparent 28%),
-    linear-gradient(135deg,#090B0E 0%,#11161B 50%,#090B0E 100%)!important;
-}
-
-.auth-intro>div:first-child>div:first-child{
-  background:linear-gradient(145deg,#E1C16E,#A9782B)!important;
-  box-shadow:0 10px 28px rgba(169,120,43,.22),inset 0 1px rgba(244,248,255,.32)!important;
-}
-
-.auth-features>div{
-  background:linear-gradient(145deg,rgba(28,33,39,.9),rgba(17,21,26,.92))!important;
-  border-color:#343C45!important;
-  box-shadow:0 10px 26px rgba(0,0,0,.16)!important;
-}
-
-.auth-features>div:nth-child(1),
-.auth-features>div:nth-child(4){
-  border-color:rgba(201,162,77,.29)!important;
-}
-
-.auth-features>div:nth-child(2){
-  border-color:rgba(126,141,153,.3)!important;
-}
-
-.auth-features>div:nth-child(3){
-  border-color:rgba(184,115,69,.3)!important;
-}
-
-.auth-panel{
-  background:linear-gradient(145deg,rgba(25,30,36,.96),rgba(14,17,21,.98))!important;
-  border:1px solid rgba(201,162,77,.24)!important;
-  box-shadow:0 30px 70px rgba(0,0,0,.42),inset 0 1px rgba(244,248,255,.035)!important;
-}
-
-.auth-panel>div:first-child{
-  background:#0D1115!important;
-  border:1px solid #2A3037!important;
-}
-
-.auth-panel>div:first-child button{
-  background:transparent!important;
-  box-shadow:none!important;
-}
-
-.auth-panel>div:first-child button[style*="0.15"]{
-  background:rgba(201,162,77,.13)!important;
-  color:var(--gold2)!important;
-  box-shadow:inset 0 0 0 1px rgba(201,162,77,.14)!important;
-}
-
-.auth-stats{
-  background:rgba(10,12,15,.72)!important;
-  border-color:#292F36!important;
-  backdrop-filter:blur(12px);
-}
-
-.auth-stats>div:nth-child(3n+1)>div:first-child{
-  color:var(--gold)!important;
-}
-
-.auth-stats>div:nth-child(3n+2)>div:first-child{
-  color:var(--steel)!important;
-}
-
-.auth-stats>div:nth-child(3n)>div:first-child{
-  color:var(--copper2)!important;
-}
-
+/* Wider, themed scrollbars (thumb color set in the dark-theme layer) */
 ::-webkit-scrollbar{
   width:9px;
   height:9px;
 }
-
 ::-webkit-scrollbar-track{
-  background:#0C0F12;
+  background:#0A0E14;
 }
 
-::-webkit-scrollbar-thumb{
-  background:#39414A;
-  border:2px solid #0C0F12;
-  border-radius:999px;
+/* Subtle, gradient-preserving hover for the primary gold buttons */
+.btn-primary:hover,.btn-gold:hover,button.btn-primary:hover,button.btn-gold:hover,
+#btn-login:hover,#btn-register:hover{
+  filter:brightness(1.06)!important;
 }
 
-::-webkit-scrollbar-thumb:hover{
-  background:#5C5138;
-}
-
-::selection{
-  background:var(--gold)!important;
-  color:#0A0F18!important;
-}
-
+/* Responsive auth layout */
 @media(max-width:760px){
   html,body{
     overflow-x:hidden!important;
@@ -1476,289 +1219,12 @@ svg text,.plotly text,.js-plotly-plot text{
     padding:16px!important;
   }
 }
-
-/* METALFLOW_CANONICAL_DARK_THEME */
-:root{
-  color-scheme:dark;
-  --bg:#06080E;
-  --bg1:#06080E;
-  --bg2:#0D121B;
-  --bg3:#141D2B;
-  --bg4:#1A2638;
-  --bg5:#202D42;
-  --app-bg:
-    radial-gradient(circle at 18% 12%,rgba(245,166,35,.10),transparent 30%),
-    radial-gradient(circle at 84% 18%,rgba(46,232,216,.08),transparent 26%),
-    radial-gradient(circle at 72% 88%,rgba(201,130,20,.07),transparent 30%),
-    linear-gradient(135deg,#06080E 0%,#0D121B 46%,#06080E 100%);
-  --card:#0D121B;
-  --surface:#141D2B;
-  --border:#16202E;
-  --border2:#202D42;
-  --border3:#283D56;
-  --gold:#F5A623;
-  --gold2:#FFD166;
-  --gold3:rgba(245,166,35,.16);
-  --gold4:rgba(245,166,35,.08);
-  --teal:#00C4B0;
-  --teal2:#2EE8D8;
-  --teal3:rgba(0,196,176,.16);
-  --txt:#F4F8FF;
-  --txt1:#DCE7F5;
-  --txt2:#B7C7DA;
-  --txt3:#8FA3BA;
-  --txt4:#63758C;
-  --copper:#00C4B0;
-  --copper2:#2EE8D8;
-  --steel:#8FA3BA;
-  --sans:'Inter Variable','Inter',system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
-  --mono:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;
-  --shadow:0 16px 38px rgba(0,0,0,.32);
-  --shadow-soft:0 8px 24px rgba(0,0,0,.22);
-}
-
-html,body,#app,.layout,.main,.content,.login-page,.projects-page{
-  background:var(--app-bg)!important;
-  background-attachment:fixed!important;
-  color:var(--txt)!important;
-}
-
-body{
-  background:var(--app-bg)!important;
-  font-family:var(--sans)!important;
-  line-height:1.55!important;
-  -webkit-font-smoothing:antialiased!important;
-  -moz-osx-font-smoothing:grayscale!important;
-  text-rendering:optimizeLegibility!important;
-  letter-spacing:0.01em;
-}
-
-.auth-shell{
-  background:var(--app-bg)!important;
-}
-
-:where(body *:not(canvas):not(img):not(video):not(.pdc-canvas):not(.pdc-canvas *)){
-  color:var(--txt);
-}
-
-p,small,label,legend,caption,.page-sub,.section-sub,.kpi-sub,
-.project-meta,.logo-sub,.user-info .role,.card-title,.kpi-label,
-.nav-group,.rf-palette-group,.sim-kpi-label,.form-label,.field-label,
-.auth-compliance span,.auth-stats div div:last-child{
-  color:var(--txt3)!important;
-}
-
-h1,h2,h3,h4,h5,h6,strong,b,.page-title,.section-title,.logo-name,
-.topbar-title,.project-name,.kpi-val,.sim-kpi-value{
-  color:var(--txt1)!important;
-}
-
-a,.nav-item.active,.project-code,.logo-badge,.auth-intro h1 span,
-.t-gold{
-  color:var(--gold)!important;
-}
-
-.t-teal,.btn-teal{
-  color:var(--teal2)!important;
-}
-
-.sidebar{
-  background:#0D121B!important;
-  border-color:#16202E!important;
-  box-shadow:none!important;
-}
-
-.topbar{
-  background:#0D121B!important;
-  border-color:#16202E!important;
-  box-shadow:none!important;
-  backdrop-filter:none!important;
-}
-
-.card,.login-card,.project-card,.kpi,.modal,.dropdown,.popover,
-.sheet,.dialog,.panel,.rf-palette,.sim-results-card,.sim-v2-panel,
-.gmie-config-card,.gmie-chart-area,.gmie-result-metric,.gmie-scatter-wrap,
-#ai-chat-widget #ai-chat-panel{
-  background:#0D121B!important;
-  border-color:#202D42!important;
-  box-shadow:var(--shadow-soft)!important;
-}
-
-.card::before,.project-card::before,.kpi::before,.sim-results-card::before{
-  background:linear-gradient(90deg,transparent,rgba(245,166,35,.34),transparent)!important;
-}
-
-.card:hover,.project-card:hover,.kpi:hover{
-  border-color:var(--gold)!important;
-  box-shadow:var(--shadow)!important;
-}
-
-.nav-item{
-  color:var(--txt2)!important;
-}
-
-.nav-item:hover{
-  background:#141D2B!important;
-  color:var(--txt1)!important;
-}
-
-.nav-item.active{
-  background:rgba(245,166,35,.16)!important;
-  border-left-color:#F5A623!important;
-  box-shadow:inset 0 0 0 1px rgba(245,166,35,.12)!important;
-}
-
-table{
-  background:#0D121B!important;
-  border-color:#202D42!important;
-}
-
-thead,th{
-  background:#141D2B!important;
-  border-color:#202D42!important;
-  color:var(--txt2)!important;
-  font-weight:600!important;
-}
-
-tbody,tr,td{
-  border-color:#16202E!important;
-  color:var(--txt)!important;
-}
-
-tbody tr:nth-child(even){
-  background:rgba(42,58,84,.22)!important;
-}
-
-tbody tr:hover{
-  background:rgba(245,166,35,.1)!important;
-}
-
-input,textarea,select,option,[contenteditable="true"]{
-  background:#0D121B!important;
-  color:var(--txt1)!important;
-  border-color:#202D42!important;
-  caret-color:#F5A623!important;
-  box-shadow:none!important;
-  line-height:1.45!important;
-}
-
-input:focus,textarea:focus,select:focus,[contenteditable="true"]:focus{
-  border-color:#F5A623!important;
-  box-shadow:0 0 0 3px rgba(245,166,35,.2)!important;
-  outline:none!important;
-}
-
-input::placeholder,textarea::placeholder{
-  color:var(--txt4)!important;
-  opacity:1!important;
-}
-
-button,.btn,[role="button"]{
-  border-color:#202D42!important;
-}
-
-.btn:not(.btn-primary):not(.btn-gold):not(.btn-teal){
-  background:#141D2B!important;
-  color:var(--txt2)!important;
-  box-shadow:none!important;
-}
-
-.btn:not(.btn-primary):not(.btn-gold):not(.btn-teal):hover{
-  background:#1A2638!important;
-  border-color:#283D56!important;
-  color:var(--txt1)!important;
-}
-
-.btn-primary,.btn-gold,button.btn-primary,button.btn-gold,
-#btn-login,#btn-register{
-  background:#F5A623!important;
-  border-color:#FFD166!important;
-  color:#06080E!important;
-  font-weight:700!important;
-  box-shadow:0 8px 22px rgba(245,166,35,.2)!important;
-}
-
-.btn-primary:hover,.btn-gold:hover,button.btn-primary:hover,button.btn-gold:hover,
-#btn-login:hover,#btn-register:hover{
-  background:#FFD166!important;
-}
-
-.btn-primary *,.btn-gold *,button.btn-primary *,button.btn-gold *,
-#btn-login *,#btn-register *{
-  color:#06080E!important;
-}
-
-.btn-teal,button.btn-teal{
-  background:#00C4B0!important;
-  border-color:#2EE8D8!important;
-  color:#F9FAFB!important;
-}
-
-.auth-shell{
-  background:#06080E!important;
-}
-
-.auth-intro>div:first-child>div:first-child{
-  background:#F5A623!important;
-  box-shadow:0 10px 28px rgba(245,166,35,.2)!important;
-}
-
-.auth-features>div,.auth-panel{
-  background:#0D121B!important;
-  border-color:#202D42!important;
-  box-shadow:var(--shadow)!important;
-}
-
-.auth-features>div:nth-child(n){
-  border-color:#202D42!important;
-}
-
-.auth-panel>div:first-child{
-  background:#141D2B!important;
-  border-color:#202D42!important;
-}
-
-.auth-panel>div:first-child button[style*="0.15"]{
-  background:rgba(245,166,35,.16)!important;
-  color:#FFD166!important;
-  box-shadow:inset 0 0 0 1px rgba(245,166,35,.12)!important;
-}
-
-.auth-stats{
-  background:#0D121B!important;
-  border-color:#202D42!important;
-}
-
-.auth-stats>div:nth-child(3n+1)>div:first-child{
-  color:#F5A623!important;
-}
-
-.auth-stats>div:nth-child(3n+2)>div:first-child,
-.auth-stats>div:nth-child(3n)>div:first-child{
-  color:#2EE8D8!important;
-}
-
-::-webkit-scrollbar-track{
-  background:transparent!important;
-}
-
-::-webkit-scrollbar-thumb{
-  background:#202D42!important;
-  border-color:transparent!important;
-}
-
-::-webkit-scrollbar-thumb:hover{
-  background:#283D56!important;
-}
-
-::selection{
-  background:#F5A623!important;
-  color:#06080E!important;
-}
-
-/* METALFLOW_CAPTURE_DARK_THEME_V3
-   Screenshot-matched PLM dashboard layer: ink-dark shell, pale panel strokes,
-   amber actions, teal completion states, and quiet blue-gray controls. */
+/* ════════════════════════════════════════════════════════════════
+   METALFLOW PRO — CONSOLIDATED DARK THEME (single source of truth)
+   Executive mining dark layer: deep obsidian surfaces, restrained
+   metallic gold + teal accents, clear typographic hierarchy and
+   WCAG-AA text contrast. This is the only theme/palette override
+   layer; legacy stacked overrides have been merged in here. */
 :root{
   --bg:#070A12;
   --bg1:#080D16;
@@ -1789,6 +1255,9 @@ button,.btn,[role="button"]{
   --txt2:#B8C3D3;
   --txt3:#7F8DA3;
   --txt4:#56657A;
+  --copper:#F59E0B;
+  --copper2:#FBBF24;
+  --steel:#7F8DA3;
   --shadow:0 18px 42px rgba(0,0,0,.34);
   --shadow-soft:0 8px 22px rgba(0,0,0,.20);
 }
@@ -1862,8 +1331,13 @@ a,.project-code,.logo-badge,.auth-intro h1 span,.t-gold{
 }
 
 .card::before,.project-card::before,.kpi::before,.sim-results-card::before{
+  content:""!important;
+  position:absolute!important;
+  inset:0 auto auto 0!important;
+  width:100%!important;
   height:1px!important;
   background:linear-gradient(90deg,transparent,rgba(244,248,255,.10),transparent)!important;
+  pointer-events:none!important;
 }
 
 .card:hover,.project-card:hover,.kpi:hover{
@@ -3905,7 +3379,7 @@ async function loadFlowsheets() {
 async function checkFlowsheetCoherence() {
   if (!S.pid) return;
   try {
-    const r = await api('GET', `/projects/${S.pid}/flowsheets/coherence`);
+    const r = await api('GET', `/projects/${S.pid}/flowsheets/cohérence`);
     S._fsCoherence = r;
   } catch { S._fsCoherence = null; }
 }
@@ -3922,7 +3396,7 @@ function stalenessBanner(module, label) {
   const s = S.staleness && S.staleness[module];
   if (!s || !s.is_stale) return '';
   return `<div style="background:#FEF3C7;border:1px solid #F5A623;border-radius:6px;padding:8px 12px;margin-bottom:8px;font-size:12px;color:#92400E;">
-    <b>⚠</b> ${label} est obsolete — ${s.reason || 'donnees modifiees'}.
+    <b>⚠</b> ${label} est obsolete — ${s.reason || 'données modifiees'}.
   </div>`;
 }
 
@@ -4426,10 +3900,10 @@ function openAddChecklistItemGate(gateId) {
   const gate = (S.gates||[]).find(g => g.id === gateId);
   const stageOrder = gate?.stage_order || 1;
   const domainsByStage = {
-    1: ['Metallurgie & Testwork','Ingenierie Procedes','Estimation & Economie','Environnement & Permis','Ressources & Geologie'],
-    2: ['Metallurgie & Testwork','Ingenierie Procedes','Estimation & Economie','Environnement & Permis','Risques & Planning'],
-    3: ['Metallurgie & Testwork','Ingenierie Procedes','Estimation & Economie','Environnement & Permis','Risques & HAZID','Ressources & Plan Minier'],
-    4: ['Ingenierie Procedes','Ingenierie Mecanique & Civile','Electricite & Instrumentation','Approvisionnement','HAZOP & Securite','Planning & Execution'],
+    1: ['Métallurgie & Testwork','Ingénierie Procédés','Estimation & Économie','Environnement & Permis','Ressources & Géologie'],
+    2: ['Métallurgie & Testwork','Ingénierie Procédés','Estimation & Économie','Environnement & Permis','Risques & Planning'],
+    3: ['Métallurgie & Testwork','Ingénierie Procédés','Estimation & Économie','Environnement & Permis','Risques & HAZID','Ressources & Plan Minier'],
+    4: ['Ingénierie Procédés','Ingénierie Mecanique & Civile','Electricite & Instrumentation','Approvisionnement','HAZOP & Sécurité','Planning & Execution'],
     5: ['Documents IFC','HAZOP & SIL','Contrats & Budget','Commissioning Prep','Permis & Reglementaire'],
     6: ['Construction','Pre-Commissioning','Commissioning','Ramp-up & Performance','Handover & Cloture'],
   };
@@ -4524,7 +3998,7 @@ const REPORT_SECTIONS_NI43101 = [
   { id: 's1', num: 1, title: 'Sommaire', required: true },
   { id: 's2', num: 2, title: 'Introduction', required: true },
   { id: 's13', num: 13, title: 'Traitement mineralurgique et essais metallurgiques', required: true },
-  { id: 's17', num: 17, title: 'Recuperation', required: true },
+  { id: 's17', num: 17, title: 'Récupération', required: true },
   { id: 's23', num: 23, title: 'Conclusions et recommandations', required: true },
   { id: 's24', num: 24, title: 'References', required: true },
   { id: 's25', num: 25, title: 'Date et signature', required: true },
@@ -4534,7 +4008,7 @@ const REPORT_SECTIONS_NI43101 = [
 const REPORT_VALIDATION_RULES = [
   { id: 'r01', severity: 'error', source: 'NI 43-101 §2.3', check: (s, d) => !(d.text || '').toLowerCase().includes('ressources potentielles'), msg: 'Terme « ressources potentielles » non conforme NI 43-101 §2.3.' },
   { id: 'r10', severity: 'warning', source: 'NI 43-101 §13', check: (s, d) => s.num !== 13 || (d.text || '').length > 120, msg: '§13: Contenu essais metallurgiques trop court ou absent.' },
-  { id: 'r17', severity: 'warning', source: 'NI 43-101 §17', check: (s, d) => s.num !== 17 || (d.text || '').length > 120, msg: '§17: Methodes de recuperation insuffisamment documentees.' },
+  { id: 'r17', severity: 'warning', source: 'NI 43-101 §17', check: (s, d) => s.num !== 17 || (d.text || '').length > 120, msg: '§17: Methodes de récupération insuffisamment documentees.' },
   { id: 'r15', severity: 'error', source: 'NI 43-101 §25', check: (s, d) => s.num !== 25 || !!(d.effective_date), msg: '§25: Date effective du rapport manquante.' },
   { id: 'r08', severity: 'error', source: 'NI 43-101 §26', check: (s, d) => s.num !== 26 || !!(d.independence_statement), msg: '§26: Declaration d\'independance QP manquante.' },
 ];
@@ -4573,7 +4047,7 @@ async function generateNI43101Section(sectionNum, ev) {
   } catch (e) {
     toast('Erreur generation: ' + (e.message || e), 'error');
   } finally {
-    if (btn) { btn.disabled = false; btn.innerHTML = 'Generer section'; }
+    if (btn) { btn.disabled = false; btn.innerHTML = 'Générer section'; }
   }
 }
 
@@ -4582,7 +4056,7 @@ function renderNI43101Subsections(sec) {
   if (!rows.length) {
     return `<div class="card" style="padding:24px;text-align:center;color:var(--txt3);">
       <div style="font-size:14px;margin-bottom:8px;">Aucun contenu pour cette section</div>
-      <div style="font-size:12px;">Cliquez sur <strong>Generer section</strong> pour produire un texte conforme NI 43-101 a partir des donnees du projet (LIMS, DC, bilan massique, simulation).</div>
+      <div style="font-size:12px;">Cliquez sur <strong>Générer section</strong> pour produire un texte conforme NI 43-101 a partir des données du projet (LIMS, DC, bilan massique, simulation).</div>
     </div>`;
   }
   return rows.map((row, idx) => `
@@ -4605,18 +4079,18 @@ function renderNI43101SectionEditor(sec) {
   const status = ni43101SectionStatus(sec);
   const statusBadge = status === 'done' ? '<span class="badge badge-green" style="font-size:9px;">Genere</span>'
     : status === 'na' ? '<span class="badge" style="font-size:9px;">N/A</span>'
-    : '<span class="badge badge-gold" style="font-size:9px;">A generer</span>';
+    : '<span class="badge badge-gold" style="font-size:9px;">A générer</span>';
 
   return `
   <div style="flex:1;min-width:0;">
     <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-bottom:12px;">
       <div style="font-size:16px;font-weight:700;">${sec.num} — ${esc(sec.title)}</div>
       ${statusBadge}
-      <button class="btn btn-gold btn-sm" onclick="generateNI43101Section(${sec.num}, event)">${icon('refresh')} Generer section</button>
+      <button class="btn btn-gold btn-sm" onclick="generateNI43101Section(${sec.num}, event)">${icon('refresh')} Générer section</button>
       <button class="btn btn-sm" onclick="ni43101AddSubsection(${sec.num})">+ Ajouter element</button>
     </div>
     <div style="font-size:11px;color:var(--txt3);margin-bottom:14px;line-height:1.6;">
-      Generation conforme NI 43-101 / formulaire 43-101F1 — perimetre metallurgique (essais, flowsheet, recuperation, cloture QP).
+      Generation conforme NI 43-101 / formulaire 43-101F1 — perimetre metallurgique (essais, flowsheet, récupération, cloture QP).
       Vous pouvez modifier ou completer chaque sous-section apres generation.
     </div>
     ${renderNI43101Subsections(sec)}
@@ -4663,7 +4137,7 @@ function renderReportChecklist() {
 <div class="kpi-grid mb16" style="grid-template-columns:repeat(3,1fr);">
   <div class="kpi"><div class="kpi-label">Avancement</div><div class="kpi-val">${pct}<span class="unit">%</span></div></div>
   <div class="kpi"><div class="kpi-label">Sections</div><div class="kpi-val">${completed}<span class="unit">/ ${total}</span></div></div>
-  <div class="kpi"><div class="kpi-label">Perimetre</div><div class="kpi-val" style="font-size:13px;">Metallurgie</div></div>
+  <div class="kpi"><div class="kpi-label">Perimetre</div><div class="kpi-val" style="font-size:13px;">Métallurgie</div></div>
 </div>
 <div class="card"><table class="tbl"><thead><tr><th>#</th><th>Section</th><th>Statut</th><th>Elements</th></tr></thead><tbody>${rows}</tbody></table></div>`;
 }
@@ -4762,12 +4236,12 @@ ${renderBreadcrumb('ni43101')}
   <div class="ab-title">${sectionLabel('ni43101')}</div>
   <span class="badge badge-teal" style="font-size:10px;">Rapport metallurgique · 8 sections</span>
   <span class="ab-sep"></span>
-  <button class="btn btn-gold" onclick="generateNI43101Report()">${icon('refresh')} Generer tout le rapport</button>
+  <button class="btn btn-gold" onclick="generateNI43101Report()">${icon('refresh')} Générer tout le rapport</button>
   <button class="btn btn-teal" onclick="exportNI43101('docx')">${icon('download')} Word</button>
   <button class="btn" onclick="exportNI43101('pdf')">${icon('download')} PDF</button>
   <button class="btn btn-sm" onclick="exportReportChecklist()">Checklist CSV</button>
 </div>
-<div class="alert alert-info mb16" style="font-size:12px;"><span class="alert-icon">i</span><span>Perimetre: traitement mineralurgique, essais metallurgiques, recuperation et cloture QP (sections 1, 2, 13, 17, 23–26). Contenu genere selon NI 43-101 et pratiques CIM.</span></div>
+<div class="alert alert-info mb16" style="font-size:12px;"><span class="alert-icon">i</span><span>Perimetre: traitement mineralurgique, essais metallurgiques, récupération et cloture QP (sections 1, 2, 13, 17, 23–26). Contenu genere selon NI 43-101 et pratiques CIM.</span></div>
 <div style="display:flex;gap:6px;margin-bottom:16px;border-bottom:1px solid var(--border2);padding-bottom:10px;">
   ${tabBtn('sections', 'Sections du rapport')} ${tabBtn('checklist', 'Avancement')} ${tabBtn('validation', 'Validation')} ${tabBtn('qp', 'QP')}
 </div>
@@ -8368,7 +7842,7 @@ function otbRenderDashboard(run) {
       <span style="font-size:15px;font-weight:600;margin-left:12px;">${esc(run.name || r.feed_params?.name || 'Simulation')}</span>
     </div>
     <div style="display:flex;gap:8px;">
-      <button class="btn btn-sm" onclick="otbOpenRun('${run.id}')">${icon('refresh')} Actualiser</button>
+      <button class="btn btn-sm" onclick="otbViewRun('${run.id}')">${icon('refresh')} Actualiser</button>
       <button class="btn btn-sm btn-danger" onclick="otbDeleteRun('${run.id}')">${icon('trash')} Supprimer</button>
       <button class="btn btn-sm btn-gold" onclick="otbNewSimulation()">+ Nouvelle</button>
     </div>
@@ -8591,15 +8065,15 @@ window.openAddPsdSample = function() {
   modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:1000;display:flex;align-items:center;justify-content:center';
   modal.innerHTML = `<div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:24px;width:480px;max-height:80vh;overflow-y:auto">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-      <span style="font-size:14px;font-weight:700">Ajouter un echantillon PSD</span>
+      <span style="font-size:14px;font-weight:700">Ajouter un échantillon PSD</span>
       <button class="btn btn-sm" onclick="document.getElementById('psd-sample-modal').remove()" style="font-size:16px;line-height:1">&times;</button>
     </div>
     <div class="form-group mb12">
-      <label class="form-label">Nom de l'echantillon</label>
+      <label class="form-label">Nom de l'échantillon</label>
       <input class="input" type="text" id="psd-sample-name" placeholder="ex: ROM Feed" style="width:100%">
     </div>
     <div class="form-group mb12">
-      <label class="form-label">Donnees PSD <span style="color:var(--txt3)">(taille_um  %_passant, une paire par ligne)</span></label>
+      <label class="form-label">Données PSD <span style="color:var(--txt3)">(taille_um  %_passant, une paire par ligne)</span></label>
       <textarea class="input" id="psd-sample-data" rows="12" placeholder="25000 100&#10;19000 95.2&#10;12500 82.1&#10;9500 68.4&#10;6300 52.0&#10;3350 35.6&#10;1700 22.1&#10;850 14.3&#10;425 8.7&#10;212 5.1&#10;106 2.8&#10;75 1.9" style="width:100%;font-family:var(--mono);font-size:12px"></textarea>
     </div>
     <div style="display:flex;gap:8px;justify-content:flex-end">
@@ -8615,7 +8089,7 @@ window.savePsdSample = function() {
   const nameEl = document.getElementById('psd-sample-name');
   const dataEl = document.getElementById('psd-sample-data');
   if (!nameEl || !dataEl) return;
-  const name = nameEl.value.trim() || ('Echantillon ' + ((S.psdSamples || []).length + 1));
+  const name = nameEl.value.trim() || ('Échantillon ' + ((S.psdSamples || []).length + 1));
   const lines = dataEl.value.trim().split('\n').filter(l => l.trim());
   const sizes = [], passing = [];
   for (const line of lines) {
@@ -8630,7 +8104,7 @@ window.savePsdSample = function() {
   if (!S.psdSamples) S.psdSamples = [];
   S.psdSamples.push({ name, sizes_um: sizes, pct_passing: passing });
   document.getElementById('psd-sample-modal').remove();
-  toast('Echantillon "' + name + '" ajoute (' + sizes.length + ' points).', 'success');
+  toast('Échantillon "' + name + '" ajoute (' + sizes.length + ' points).', 'success');
   rerenderSection();
 };
 
@@ -8652,8 +8126,8 @@ function renderPsdInteractiveTab() {
   </div>`;
   if (!samples.length) {
     html += `<div class="empty card" style="min-height:200px">
-      <div class="empty-icon">📊</div><div class="empty-title">Aucun echantillon PSD</div>
-      <div class="empty-sub">Ajoutez un echantillon avec le bouton ci-dessus pour visualiser les courbes granulometriques.</div>
+      <div class="empty-icon">📊</div><div class="empty-title">Aucun échantillon PSD</div>
+      <div class="empty-sub">Ajoutez un échantillon avec le bouton ci-dessus pour visualiser les courbes granulometriques.</div>
     </div>`;
     return html;
   }
@@ -8742,7 +8216,7 @@ function renderBondCalcTab() {
 
   return `<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start">
   <div class="card" style="padding:16px">
-    <div style="font-size:13px;font-weight:600;margin-bottom:14px">Parametres Bond</div>
+    <div style="font-size:13px;font-weight:600;margin-bottom:14px">Paramètres Bond</div>
     <div class="form-group mb12">
       <label class="form-label">Wi <span style="color:var(--txt3)">(kWh/t)</span></label>
       <input class="input mono" type="number" step="0.1" min="0.1" value="${bc.wi}" onchange="S.bondCalc.wi=parseFloat(this.value)||14;rerenderSection()" style="width:100%">
@@ -8773,7 +8247,7 @@ function renderBondCalcTab() {
   </div>
   <div>
     <div class="card mb12" style="padding:24px;text-align:center;background:${energy !== null ? 'var(--bg2)' : 'var(--bg)'}">
-      <div style="font-size:11px;color:var(--txt3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Energie specifique</div>
+      <div style="font-size:11px;color:var(--txt3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Énergie spécifique</div>
       <div style="font-size:36px;font-weight:800;font-family:var(--mono);color:${energy !== null ? '#F5A623' : 'var(--txt3)'}">
         ${energy !== null ? energy : '—'}
       </div>
@@ -8807,10 +8281,10 @@ function renderCircuitSizingTab() {
   const result = S.circuitCalc;
 
   let html = `<div class="card mb14" style="padding:16px">
-    <div style="font-size:13px;font-weight:600;margin-bottom:14px">Parametres du circuit SAG-Ball</div>
+    <div style="font-size:13px;font-weight:600;margin-bottom:14px">Paramètres du circuit SAG-Ball</div>
     <div class="form-row" style="gap:12px;flex-wrap:wrap;margin-bottom:14px">
       <div class="form-group" style="min-width:140px">
-        <label class="form-label" style="font-size:11px">Debit <span style="color:var(--txt3)">(t/h)</span></label>
+        <label class="form-label" style="font-size:11px">Débit <span style="color:var(--txt3)">(t/h)</span></label>
         <input class="input mono" type="number" step="1" min="1" id="cs_throughput" value="${cp.throughput_tph}" style="height:28px;font-size:12px">
       </div>
       <div class="form-group" style="min-width:140px">
@@ -8851,7 +8325,7 @@ function renderCircuitSizingTab() {
         <div style="font-size:12px;color:var(--txt3)">m</div>
       </div>
       <div class="card" style="padding:16px;text-align:center;border-top:3px solid #8B5CF6">
-        <div style="font-size:10px;color:var(--txt3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Energie Ball Mill</div>
+        <div style="font-size:10px;color:var(--txt3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Énergie Ball Mill</div>
         <div style="font-size:28px;font-weight:800;font-family:var(--mono);color:#8B5CF6">${result.ballEnergy_kWht}</div>
         <div style="font-size:12px;color:var(--txt3)">kWh/t</div>
       </div>
@@ -8859,8 +8333,8 @@ function renderCircuitSizingTab() {
   } else {
     html += `<div class="empty card" style="min-height:140px">
       <div class="empty-icon">⚙</div>
-      <div class="empty-title">Aucun resultat</div>
-      <div class="empty-sub">Renseignez les parametres et cliquez sur Calculer.</div>
+      <div class="empty-title">Aucun résultat</div>
+      <div class="empty-sub">Renseignez les paramètres et cliquez sur Calculer.</div>
     </div>`;
   }
   return html;
@@ -8875,7 +8349,7 @@ window.calculateCircuitSizing = function() {
     p80_um: parseFloat(document.getElementById('cs_p80')?.value) || 75
   };
   const result = sizeSAGBallCircuit(S.circuitParams);
-  if (!result) { toast('Parametres invalides — verifiez les valeurs.', 'error'); return; }
+  if (!result) { toast('Paramètres invalides — vérifiez les valeurs.', 'error'); return; }
   S.circuitCalc = result;
   rerenderSection();
 };
@@ -13830,7 +13304,7 @@ function renderFlowsheetLivingStatus() {
     { key:'PEA', label:'PEA', desc:'Preliminary Economic Assessment - Evaluation economique preliminaire' },
     { key:'PFS', label:'PFS', desc:'Pre-Feasibility Study - Etude de prefaisabilite' },
     { key:'FS', label:'FS', desc:'Feasibility Study - Etude de faisabilite' },
-    { key:'ENGINEERING', label:'Detail Eng.', desc:'Ingenierie detaillee - Plans pour construction' },
+    { key:'ENGINEERING', label:'Detail Eng.', desc:'Ingénierie detaillee - Plans pour construction' },
     { key:'CONSTRUCTION', label:'Construction', desc:'Construction de l\'usine et installation des equipements' },
     { key:'COMMISSIONING', label:'Commissioning', desc:'Mise en service et demarrage de la production' },
   ];
@@ -13877,7 +13351,7 @@ function renderFlowsheetLivingStatus() {
     const isCompleted = i < activeIdx;
     const isCurrent = i === activeIdx;
     const borderColor = isCurrent ? 'var(--gold)' : isCompleted ? '#10B981' : 'var(--border2)';
-    const statusLabel = isCompleted ? 'Completee' : isCurrent ? 'En cours' : 'A venir';
+    const statusLabel = isCompleted ? 'Complétée' : isCurrent ? 'En cours' : 'A venir';
     const statusColor = isCompleted ? '#10B981' : isCurrent ? 'var(--gold)' : 'var(--txt3)';
     html += `<div class="card" style="padding:10px 12px;border-left:3px solid ${borderColor};">
       <div style="font-size:11px;font-weight:700;color:${borderColor};margin-bottom:4px;">${p.label}</div>
@@ -13897,7 +13371,7 @@ function renderFlowsheetAutoGenerator() {
     return `<div style="text-align:center;padding:60px 20px;color:var(--txt3);font-size:13px;">
       <div style="font-size:32px;margin-bottom:12px;">&#x1f52c;</div>
       <div style="font-weight:600;margin-bottom:8px;">Arbre de decision inactif</div>
-      Importez des donnees d'essais (C2 Gravimetrie, D1 Lixiviation, G1 Flottation) pour activer la recommandation automatique de circuit.
+      Importez des données d'essais (C2 Gravimétrie, D1 Lixiviation, G1 Flottation) pour activer la recommandation automatique de circuit.
       <div style="margin-top:16px;"><button class="btn btn-gold" onclick="navigateTo('lims')">Importer des essais LIMS</button></div>
     </div>`;
   }
@@ -13976,7 +13450,7 @@ async function loadPfdLevel(n) {
 async function computeEnergyBalance() {
   try {
     S.esEnergy = await api('POST', `/projects/${S.pid}/flowsheet-engine/energy-balance`);
-    toast('Bilan energetique calcule', 'success');
+    toast('Bilan énergétique calcule', 'success');
     rerenderSection();
   } catch(e) { toast('Erreur calcul energie: ' + (e.message||e), 'error'); }
 }
@@ -13999,7 +13473,7 @@ async function generatePfd() {
 // ── Engineering Studio Rendering ────────────────────────────────────────────
 function renderEngineeringStudio() {
   const phase = (S.project?.status || 'SCOPING').toUpperCase();
-  const phaseLabel = {SCOPING:'PEA / Scoping', PFS:'Pre-faisabilite', FS:'Faisabilite', FEED:'Ingenierie detaillee'}[phase] || phase;
+  const phaseLabel = {SCOPING:'PEA / Scoping', PFS:'Pre-faisabilite', FS:'Faisabilite', FEED:'Ingénierie detaillee'}[phase] || phase;
   const energy = S.esEnergy || {items:[], total_installed_kw:0, total_operating_kw:0, kwh_per_tonne:0};
   const sizing = S.esSizing || {items:[]};
   const showEnergy = phase !== 'SCOPING' || S._esAdvanced;
@@ -14020,7 +13494,7 @@ function renderEngineeringStudio() {
       PFD Canvas
     </button>
     ${showEnergy ? `<button onclick="S.esTab='energy';rerenderSection()" style="padding:8px 16px;font-size:12px;border:none;cursor:pointer;border-bottom:2px solid ${S.esTab==='energy'?'#F5A623':'transparent'};color:${S.esTab==='energy'?'#F5A623':'#9ca3af'};background:transparent;">
-      Bilan Energie
+      Bilan Énergie
     </button>` : ''}
     ${showSizing ? `<button onclick="S.esTab='sizing';rerenderSection()" style="padding:8px 16px;font-size:12px;border:none;cursor:pointer;border-bottom:2px solid ${S.esTab==='sizing'?'#F5A623':'transparent'};color:${S.esTab==='sizing'?'#F5A623':'#9ca3af'};background:transparent;">
       Dimensionnement
@@ -14045,7 +13519,7 @@ function renderEngineeringStudio() {
       ${phaseIndicator}
     </div>
     <div style="display:flex;gap:6px;">
-      <button class="btn" onclick="computeEnergyBalance()">${icon('refresh')} Bilan Energie</button>
+      <button class="btn" onclick="computeEnergyBalance()">${icon('refresh')} Bilan Énergie</button>
       <button class="btn" onclick="computeSizing()">Dimensionner</button>
     </div>
   </div>
@@ -14068,7 +13542,7 @@ function renderBfdCanvas() {
   if (!data || !data.sections || data.sections.length === 0) {
     return `<div style="text-align:center;padding:60px 20px;color:#6b7280;">
       <p style="font-size:14px;">Aucun PFD genere.</p>
-      <p style="font-size:12px;margin-top:8px;">Cliquez sur <strong>Generer PFD</strong> pour creer le diagramme de blocs a partir du circuit template.</p>
+      <p style="font-size:12px;margin-top:8px;">Cliquez sur <strong>Générer PFD</strong> pour créer le diagramme de blocs a partir du circuit template.</p>
     </div>`;
   }
 
@@ -14241,7 +13715,7 @@ function renderPfdProCanvas() {
   if (!data || !data.blocks || data.blocks.length === 0) {
     return `<div style="text-align:center;padding:60px 20px;color:#6b7280;">
       <p style="font-size:14px;">PFD Professionnel non genere.</p>
-      <p style="font-size:12px;margin-top:8px;">Cliquez sur <strong>Generer PFD</strong> pour creer le diagramme professionnel.</p>
+      <p style="font-size:12px;margin-top:8px;">Cliquez sur <strong>Générer PFD</strong> pour créer le diagramme professionnel.</p>
     </div>`;
   }
 
@@ -14338,7 +13812,7 @@ function renderEnergyTab(energy) {
   const items = energy.items || [];
   if (items.length === 0) {
     return `<div style="text-align:center;padding:40px;color:#6b7280;">
-      <p>Aucun bilan energetique calcule.</p>
+      <p>Aucun bilan énergétique calcule.</p>
       <button class="btn btn-gold" onclick="computeEnergyBalance()" style="margin-top:8px;">Calculer le bilan energie</button>
     </div>`;
   }
@@ -14361,7 +13835,7 @@ function renderEnergyTab(energy) {
       <div style="font-size:20px;font-weight:700;color:#00C4B0;">${fmt((energy.total_operating_kw||0)/1000, 1)} MW</div>
     </div>
     <div style="background:#1f2937;border-radius:8px;padding:12px;text-align:center;">
-      <div style="font-size:10px;color:#6b7280;">Energie specifique</div>
+      <div style="font-size:10px;color:#6b7280;">Énergie spécifique</div>
       <div style="font-size:20px;font-weight:700;color:#e5e7eb;">${fmt(energy.kwh_per_tonne||0, 1)} kWh/t</div>
     </div>
     <div style="background:#1f2937;border-radius:8px;padding:12px;text-align:center;">
@@ -14720,7 +14194,7 @@ function renderFlowsheet() {
               border-radius:8px;padding:10px 14px;margin-bottom:10px;display:flex;
               align-items:center;justify-content:space-between;">
     <span style="color:#F5A623;font-size:12px;display:flex;align-items:center;gap:6px;">
-      Les criteres de conception ou le bilan massique ont ete modifies depuis la derniere generation.
+      Les critères de conception ou le bilan massique ont ete modifies depuis la derniere generation.
       ${(coh.changes_summary||[]).map(c => '<br>- ' + c).join('')}
     </span>
     <button class="btn btn-sm btn-gold" onclick="autoGenerateFlowsheet()">
@@ -14739,7 +14213,7 @@ ${renderBreadcrumb('flowsheet')}
 <div class="action-bar">
   <div class="ab-title">${sectionLabel('flowsheet')}</div>
   <button class="btn" onclick="loadFlowsheets().then(rerenderSection)">${icon('refresh')} Actualiser</button>
-  <button class="btn" onclick="autoGenerateFlowsheet()">${icon('bolt')} Auto-generer</button>
+  <button class="btn" onclick="autoGenerateFlowsheet()">${icon('bolt')} Auto-générer</button>
   ${fs ? `<button class="btn" onclick="saveFlowsheet()">${icon('check')} Sauvegarder</button>` : ''}
   ${fs ? `<button class="btn btn-danger" onclick="confirmPurgeFlowsheet()">${icon('trash')} Tout supprimer</button>` : ''}
 </div>
@@ -14755,7 +14229,7 @@ ${renderBreadcrumb('flowsheet')}
 <!-- FICHE TECHNIQUE PROCEDE -->
 <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;margin-bottom:14px;">
   <div class="kpi" style="padding:10px 12px;">
-    <div class="kpi-label">Debit alimentation</div>
+    <div class="kpi-label">Débit alimentation</div>
     <div class="kpi-val" style="font-size:20px">${tph ? _r(tph,1) : '--'}<span class="unit">t/h</span></div>
     <div class="kpi-sub" style="font-size:9px">${hasDC ? 'V DC' : hasMB ? 'V MB' : 'o Projet'}</div>
   </div>
@@ -14765,7 +14239,7 @@ ${renderBreadcrumb('flowsheet')}
     <div class="kpi-sub" style="font-size:9px">${hasMB ? 'V MB' : 'o Projet'}</div>
   </div>
   <div class="kpi" style="padding:10px 12px;">
-    <div class="kpi-label">Disponibilite</div>
+    <div class="kpi-label">Disponibilité</div>
     <div class="kpi-val" style="font-size:20px">${avail}<span class="unit">%</span></div>
     <div class="kpi-sub" style="font-size:9px">${hasDC ? 'V DC' : 'o Projet'}</div>
   </div>
@@ -14775,7 +14249,7 @@ ${renderBreadcrumb('flowsheet')}
     <div class="kpi-sub" style="font-size:9px">${hasDC ? 'V DC' : 'o Projet'}</div>
   </div>
   <div class="kpi" style="padding:10px 12px;">
-    <div class="kpi-label">Recuperation Au</div>
+    <div class="kpi-label">Récupération Au</div>
     <div class="kpi-val" style="font-size:20px;color:${rec>=88?'#10B981':rec>=80?'#F5A623':'#EF4444'}">${rec ? _r(rec,1) : '--'}<span class="unit">%</span></div>
     <div class="kpi-sub" style="font-size:9px">${hasMB ? 'V MB' : hasDC ? 'V DC' : limsRec ? 'V LIMS D1' : 'o Non calcule'}</div>
   </div>
@@ -14797,7 +14271,7 @@ ${renderBreadcrumb('flowsheet')}
 </div>
 
 ${staleBanner}
-${stalenessBanner('flowsheet', 'Le schema de procede')}
+${stalenessBanner('flowsheet', 'Le schema de procédé')}
 
 <!-- EDITEUR SCHEMATIQUE -->
 <div class="card mb16">
@@ -14813,16 +14287,16 @@ ${stalenessBanner('flowsheet', 'Le schema de procede')}
 </div>
 
 ${!fs ? `
-<div class="alert alert-info mb16"><span class="alert-icon">i</span><span>Le flowsheet est auto-genere depuis LIMS, DC, bilan massique et parametres de simulation. Completez ces modules pour obtenir un flowsheet enrichi.</span></div>
+<div class="alert alert-info mb16"><span class="alert-icon">i</span><span>Le flowsheet est auto-genere depuis LIMS, DC, bilan massique et paramètres de simulation. Completez ces modules pour obtenir un flowsheet enrichi.</span></div>
 <div class="empty card" style="min-height:220px">
   <div class="empty-icon">&#x1f504;</div>
   <div class="empty-title">Aucun flowsheet</div>
-  <div class="empty-sub">Cliquez sur "Auto-generer" pour creer le flowsheet.</div>
+  <div class="empty-sub">Cliquez sur "Auto-générer" pour créer le flowsheet.</div>
 </div>` : `
 <!-- BILAN FLUX & EQUIPEMENTS -->
 <div class="g2 mb16">
   <div class="card">
-    <div class="card-title">Blocs procede <span class="badge badge-teal">${fs.blocks?.length || 0}</span></div>
+    <div class="card-title">Blocs procédé <span class="badge badge-teal">${fs.blocks?.length || 0}</span></div>
     <div class="tbl-wrap">
     <table class="tbl">
       <thead><tr><th>Type</th><th>Libelle</th><th>Puissance</th><th>Capacite</th><th>Actions</th></tr></thead>
@@ -14998,8 +14472,8 @@ function _fsRenderVisioEditor(fs) {
   <div class="vfs-wrap" id="vfs-wrap">
     <!-- TOOLBAR -->
     <div class="vfs-toolbar">
-      <button class="vfs-tool-btn ${S._fsTool==='select'?'active':''}" onclick="S._fsTool='select';_fsUpdateCursor()" title="Selection (V)">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z"/></svg> Selection
+      <button class="vfs-tool-btn ${S._fsTool==='select'?'active':''}" onclick="S._fsTool='select';_fsUpdateCursor()" title="Sélection (V)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z"/></svg> Sélection
       </button>
       <button class="vfs-tool-btn ${S._fsTool==='connect'?'active':''}" onclick="S._fsTool='connect';_fsUpdateCursor()" title="Connexion (C)">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg> Connexion
@@ -15023,7 +14497,7 @@ function _fsRenderVisioEditor(fs) {
       <button class="vfs-tool-btn" onclick="saveFlowsheet()" title="Sauvegarder">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Sauver
       </button>
-      <button class="vfs-tool-btn" onclick="autoGenerateFlowsheet()" title="Auto-generer">
+      <button class="vfs-tool-btn" onclick="autoGenerateFlowsheet()" title="Auto-générer">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Auto
       </button>
       <button class="vfs-tool-btn" onclick="_fsExportSvg()" title="Exporter SVG">SVG</button>
@@ -15086,7 +14560,7 @@ function _fsRenderVisioEditor(fs) {
     <!-- BOTTOM PANEL -->
     <div class="vfs-bottom">
       <div class="vfs-bot-header">
-        <button class="vfs-bot-tab ${S._fsBotTab==='energy'&&botOpen?'active':''}" onclick="S._fsBotPanel=true;S._fsBotTab='energy';rerenderSection()">Bilan Energie</button>
+        <button class="vfs-bot-tab ${S._fsBotTab==='energy'&&botOpen?'active':''}" onclick="S._fsBotPanel=true;S._fsBotTab='energy';rerenderSection()">Bilan Énergie</button>
         <button class="vfs-bot-tab ${S._fsBotTab==='sizing'&&botOpen?'active':''}" onclick="S._fsBotPanel=true;S._fsBotTab='sizing';rerenderSection()">Dimensionnement</button>
         <button class="vfs-bot-tab ${S._fsBotTab==='streams'&&botOpen?'active':''}" onclick="S._fsBotPanel=true;S._fsBotTab='streams';rerenderSection()">Table des Flux</button>
         <span style="flex:1"></span>
@@ -15225,7 +14699,7 @@ function _fsRenderBlockProperties(b) {
   const paramFields = _fsGetParamFields(b.type);
   if (paramFields.length > 0) {
     html += `<div style="border-top:1px solid #1E293B;padding-top:10px;margin-top:10px">
-      <div style="font-size:10px;font-weight:700;color:#94A3B8;text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px">Parametres</div>`;
+      <div style="font-size:10px;font-weight:700;color:#94A3B8;text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px">Paramètres</div>`;
     for (const pf of paramFields) {
       const val = b.params?.[pf.key] ?? pf.default;
       html += `<div class="vfs-prop-field">
@@ -15240,7 +14714,7 @@ function _fsRenderBlockProperties(b) {
   // Energy data
   if (energyItem) {
     html += `<div style="border-top:1px solid #1E293B;padding-top:10px;margin-top:10px">
-      <div style="font-size:10px;font-weight:700;color:#F5A623;text-transform:uppercase;margin-bottom:6px">Energie</div>
+      <div style="font-size:10px;font-weight:700;color:#F5A623;text-transform:uppercase;margin-bottom:6px">Énergie</div>
       <div style="font-size:11px;color:#94A3B8">
         <div style="display:flex;justify-content:space-between;padding:2px 0">
           <span>Installee</span><span style="color:#F5A623;font-weight:600">${(energyItem.power_installed_kw||0).toLocaleString()} kW</span>
@@ -15249,7 +14723,7 @@ function _fsRenderBlockProperties(b) {
           <span>Operation</span><span style="color:#00C4B0;font-weight:600">${(energyItem.power_operating_kw||0).toLocaleString()} kW</span>
         </div>
         <div style="display:flex;justify-content:space-between;padding:2px 0">
-          <span>Specifique</span><span style="color:#DCE7F5;font-weight:600">${fmt(energyItem.specific_energy_kwh_t||0, 2)} kWh/t</span>
+          <span>Spécifique</span><span style="color:#DCE7F5;font-weight:600">${fmt(energyItem.specific_energy_kwh_t||0, 2)} kWh/t</span>
         </div>
       </div>
     </div>`;
@@ -15343,13 +14817,13 @@ function _fsGetParamFields(type) {
   if (t.includes('CRUSH') || t.includes('GYRATORY') || t.includes('JAW') || t.includes('CONE'))
     return [{key:'capacity_tph',label:'Capacite',unit:'t/h',default:1500},{key:'power_kw',label:'Puissance',unit:'kW',default:500},{key:'css_mm',label:'CSS',unit:'mm',default:120}];
   if (t.includes('SAG') || t.includes('BALL') || t.includes('MILL') || t.includes('VERTI'))
-    return [{key:'power_kw',label:'Puissance',unit:'kW',default:12000},{key:'f80_mm',label:'F80',unit:'mm',default:150},{key:'p80_um',label:'P80',unit:'um',default:75},{key:'specific_energy',label:'Energie specifique',unit:'kWh/t',default:8}];
+    return [{key:'power_kw',label:'Puissance',unit:'kW',default:12000},{key:'f80_mm',label:'F80',unit:'mm',default:150},{key:'p80_um',label:'P80',unit:'um',default:75},{key:'specific_energy',label:'Énergie spécifique',unit:'kWh/t',default:8}];
   if (t.includes('HPGR'))
-    return [{key:'power_kw',label:'Puissance',unit:'kW',default:5000},{key:'press_nmm2',label:'Pression specifique',unit:'N/mm2',default:3.5},{key:'capacity_tph',label:'Capacite',unit:'t/h',default:2000}];
+    return [{key:'power_kw',label:'Puissance',unit:'kW',default:5000},{key:'press_nmm2',label:'Pression spécifique',unit:'N/mm2',default:3.5},{key:'capacity_tph',label:'Capacite',unit:'t/h',default:2000}];
   if (t.includes('KNELSON') || t.includes('GRAV'))
     return [{key:'grg_pct',label:'GRG',unit:'%',default:80},{key:'capacity_tph',label:'Capacite',unit:'t/h',default:500}];
   if (t.includes('FLOT'))
-    return [{key:'recovery_pct',label:'Recuperation',unit:'%',default:90},{key:'srt_min',label:'SRT',unit:'min',default:12},{key:'air_m3_m2_min',label:'Debit air',unit:'m3/m2/min',default:1.5}];
+    return [{key:'recovery_pct',label:'Récupération',unit:'%',default:90},{key:'srt_min',label:'SRT',unit:'min',default:12},{key:'air_m3_m2_min',label:'Débit air',unit:'m3/m2/min',default:1.5}];
   if (t.includes('CIL') || t.includes('CIP') || t.includes('LEACH'))
     return [{key:'srt_h',label:'SRT',unit:'h',default:24},{key:'ph',label:'pH',unit:'',default:10.5},{key:'pct_solids',label:'% Solides',unit:'%',default:40},{key:'cn_ppm',label:'NaCN',unit:'ppm',default:200}];
   if (t.includes('ELUT') || t.includes('STRIP'))
@@ -15357,11 +14831,11 @@ function _fsGetParamFields(type) {
   if (t.includes('EW') || t.includes('ELECTRO'))
     return [{key:'current_a_m2',label:'Courant',unit:'A/m2',default:250},{key:'efficiency_pct',label:'Efficacite',unit:'%',default:75}];
   if (t.includes('PUMP'))
-    return [{key:'flow_m3h',label:'Debit',unit:'m3/h',default:500},{key:'head_m',label:'HMT',unit:'m',default:30},{key:'power_kw',label:'Puissance',unit:'kW',default:75}];
+    return [{key:'flow_m3h',label:'Débit',unit:'m3/h',default:500},{key:'head_m',label:'HMT',unit:'m',default:30},{key:'power_kw',label:'Puissance',unit:'kW',default:75}];
   if (t.includes('SCREEN'))
     return [{key:'capacity_tph',label:'Capacite',unit:'t/h',default:1000},{key:'aperture_mm',label:'Ouverture',unit:'mm',default:25}];
   if (t.includes('THICK'))
-    return [{key:'uf_density_pct',label:'Densite sous-verse',unit:'%',default:55},{key:'unit_area',label:'Aire unitaire',unit:'m2/t/j',default:0.08}];
+    return [{key:'uf_density_pct',label:'Densité sous-verse',unit:'%',default:55},{key:'unit_area',label:'Aire unitaire',unit:'m2/t/j',default:0.08}];
   return [];
 }
 
@@ -15705,7 +15179,7 @@ function _fsCancelConnect() {
 }
 
 function _fsDeleteSelected() {
-  if (!S._fsSelectedId) { toast('Rien de selectionne.', 'warning'); return; }
+  if (!S._fsSelectedId) { toast('Rien de sélectionné.', 'warning'); return; }
   _fsPushHistory();
 
   // Check if it's a block
@@ -15980,7 +15454,7 @@ function showFsEquipInfo(bId) {
   if (t.includes('SAG')) {
     paramForm += makeRow2([
       ['sag_f80','F80 Alimentation',sp('comminution','sag_f80',100),'mm'],
-      ['sag_specific_energy','Energie Specifique',sp('comminution','sag_specific_energy',8.0),'kWh/t']
+      ['sag_specific_energy','Énergie Spécifique',sp('comminution','sag_specific_energy',8.0),'kWh/t']
     ]);
     paramForm += makeRow2([
       ['sag_load','Charge broyeur',sp('comminution','sag_load',30),'%'],
@@ -15989,7 +15463,7 @@ function showFsEquipInfo(bId) {
   } else if (t.includes('BALL') || t.includes('BALL_M')) {
     paramForm += makeRow2([
       ['bm_p80','P80 Cible',sp('comminution','bm_p80',75),'um'],
-      ['bm_specific_energy','Energie Specifique',sp('comminution','bm_specific_energy',7.0),'kWh/t']
+      ['bm_specific_energy','Énergie Spécifique',sp('comminution','bm_specific_energy',7.0),'kWh/t']
     ]);
     paramForm += makeRow2([
       ['bm_filling','Remplissage',sp('comminution','bm_filling',35),'%'],
@@ -15997,13 +15471,13 @@ function showFsEquipInfo(bId) {
     ]);
   } else if (t.includes('HPGR')) {
     paramForm += makeRow2([
-      ['hpgr_press','Pression specifique',sp('comminution','hpgr_press',3.5),'N/mm2'],
+      ['hpgr_press','Pression spécifique',sp('comminution','hpgr_press',3.5),'N/mm2'],
       ['hpgr_speed','Vitesse rouleaux',sp('comminution','hpgr_speed',1.2),'m/s']
     ]);
   } else if (t.includes('CRUSH')) {
     paramForm += makeRow2([
       ['crusher_css','CSS (Closed Side)',sp('comminution','crusher_css',120),'mm'],
-      ['crusher_avail','Disponibilite',sp('comminution','crusher_avail',75),'%']
+      ['crusher_avail','Disponibilité',sp('comminution','crusher_avail',75),'%']
     ]);
   } else if (t.includes('CYCL')) {
     paramForm += makeRow2([
@@ -16012,26 +15486,26 @@ function showFsEquipInfo(bId) {
     ]);
   } else if (t.includes('FLOT')) {
     paramForm += makeRow2([
-      ['flot_rec','Recuperation cible',sp('flotation','flot_rec',88),'%'],
+      ['flot_rec','Récupération cible',sp('flotation','flot_rec',88),'%'],
       ['flot_ratio','Ratio concentration',sp('flotation','flot_ratio',20),'--']
     ]);
     paramForm += makeRow2([
       ['flot_srt','Temps residence',sp('flotation','flot_srt',12),'min'],
-      ['flot_air','Debit air',sp('flotation','flot_air',1.5),'m3/m2/min']
+      ['flot_air','Débit air',sp('flotation','flot_air',1.5),'m3/m2/min']
     ]);
   } else if (t.includes('THICK')) {
     paramForm += makeRow2([
-      ['thickener_uf_density','Densite Sous-Verse',sp('dewatering','thickener_uf_density',55),'%'],
+      ['thickener_uf_density','Densité Sous-Verse',sp('dewatering','thickener_uf_density',55),'%'],
       ['thickener_unit_area','Aire Unitaire',sp('dewatering','thickener_unit_area',0.08),'m2/t/j']
     ]);
     paramForm += makeRow2([
       ['thick_flocculant','Floculant',sp('dewatering','thick_flocculant',20),'g/t'],
-      ['thick_overflow_density','Densite Debordement',sp('dewatering','thick_overflow_density',2),'%']
+      ['thick_overflow_density','Densité Debordement',sp('dewatering','thick_overflow_density',2),'%']
     ]);
   } else if (t.includes('FILT')) {
     paramForm += makeRow2([
       ['filter_cake_moisture','Humidite gateau',sp('dewatering','filter_cake_moisture',12),'%'],
-      ['filter_throughput','Debit specifique',sp('dewatering','filter_throughput',150),'kg/m2/h']
+      ['filter_throughput','Débit spécifique',sp('dewatering','filter_throughput',150),'kg/m2/h']
     ]);
   } else if (t.includes('CIL') || t.includes('CIP')) {
     paramForm += makeRow2([
@@ -16053,7 +15527,7 @@ function showFsEquipInfo(bId) {
     ]);
   } else if (t.includes('GRAV') || t.includes('FALCON') || t.includes('KNELSON')) {
     paramForm += makeRow2([
-      ['grg_target','GRG Recuperation cible',sp('gravity','grg_target',80),'%'],
+      ['grg_target','GRG Récupération cible',sp('gravity','grg_target',80),'%'],
       ['grav_split','Coupure massique',sp('gravity','grav_split',0.5),'%']
     ]);
   } else if (t.includes('STRIP') || t.includes('ELUT')) {
@@ -16067,7 +15541,7 @@ function showFsEquipInfo(bId) {
     ]);
   } else if (t.includes('ELECTRO') || t.includes('EW')) {
     paramForm += makeRow2([
-      ['ew_current','Densite courant',sp('adr','ew_current',250),'A/m2'],
+      ['ew_current','Densité courant',sp('adr','ew_current',250),'A/m2'],
       ['ew_voltage','Tension cellule',sp('adr','ew_voltage',3.5),'V']
     ]);
     paramForm += makeRow2([
@@ -16076,7 +15550,7 @@ function showFsEquipInfo(bId) {
     ]);
   } else if (t.includes('PUMP')) {
     paramForm += makeRow2([
-      ['pump_flow','Debit nominal',sp('utilities','pump_flow',500),'m3/h'],
+      ['pump_flow','Débit nominal',sp('utilities','pump_flow',500),'m3/h'],
       ['pump_head','Hauteur manometrique',sp('utilities','pump_head',30),'m']
     ]);
     paramForm += makeRow2([
@@ -16092,11 +15566,11 @@ function showFsEquipInfo(bId) {
 
   if (paramForm) {
     html += `<div style="border-top:1px solid var(--border2);padding-top:12px">
-      <div class="card-title" style="font-size:12px;margin-bottom:10px">Parametres procede</div>
+      <div class="card-title" style="font-size:12px;margin-bottom:10px">Paramètres procédé</div>
       ${paramForm}
     </div>`;
   } else {
-    html += `<div class="alert alert-info" style="font-size:12px">Aucun parametre procede configurable pour ce type d'equipement.</div>`;
+    html += `<div class="alert alert-info" style="font-size:12px">Aucun paramètre procédé configurable pour ce type d'equipement.</div>`;
   }
 
   const hasParams = !!paramForm;
@@ -16150,7 +15624,7 @@ function saveFsEquipInfo(bId, type) {
 
   if (updates.length > 0) {
     api('POST', `/projects/${S.pid}/simulation/params-batch`, updates)
-      .then(() => toast("Parametres enregistres dans le modele.", "success"))
+      .then(() => toast("Paramètres enregistres dans le modèle.", "success"))
       .catch(e => toast(e.message, "error"));
   } else {
     toast("Libelle mis a jour.", "success");
@@ -16230,7 +15704,7 @@ function renderFlowsheetVisual(fs) { return _fsRenderVisioEditor(fs); }
 async function autoGenerateDC() {
   const btn = document.getElementById('btn-gen-dc');
   if (!S.circuitTemplateId) {
-    toast('Veuillez creer un template de circuit d\'abord.', 'warning');
+    toast('Veuillez créer un template de circuit d\'abord.', 'warning');
     return;
   }
   if (btn) { btn.disabled = true; btn.innerHTML = `<span class="spinner"></span> Génération...`; }
@@ -16627,7 +16101,7 @@ function dcValidateValue(label, unit, value) {
   const u = String(unit || '').toLowerCase();
   if (/bwi|bond ball/.test(l) && (n < 5 || n > 30)) return { level:'warn', text:`BWi hors plage usuelle (${fmtAuto(n)} kWh/t)` };
   if (/cwi|crushing/.test(l) && u.includes('kwh') && (n < 2 || n > 30)) return { level:'warn', text:`CWi hors plage usuelle (${fmtAuto(n)} kWh/t)` };
-  if (/densite|sg/.test(l) && (n < 1.2 || n > 5.5)) return { level:'warn', text:`Densité/SG atypique (${fmtAuto(n)})` };
+  if (/densité|sg/.test(l) && (n < 1.2 || n > 5.5)) return { level:'warn', text:`Densité/SG atypique (${fmtAuto(n)})` };
   if (u === '%' && (/disponibilite|rendement|recup|passant|solides|marge|facteur/.test(l)) && (n < 0 || n > 100)) {
     return { level:'error', text:`Pourcentage invalide (${fmtAuto(n)}%)` };
   }
@@ -16757,7 +16231,7 @@ function dcApplyEquipmentFormulaGroup(group, ctx) {
     else if (/p80|produit|cible/.test(label)) st.p80 = v;
     if (/cwi|crushing work/.test(label)) st.cwi = v;
     if (/bwi|bond bwi|work index/.test(label)) st.bwi = v;
-    if (/sg minerai|densite.*minerai|specific gravity/.test(label)) st.sg = v;
+    if (/sg minerai|densité.*minerai|specific gravity/.test(label)) st.sg = v;
   };
 
   for (let i = 0; i < rows.length; i++) {
@@ -16787,7 +16261,7 @@ function dcApplyEquipmentFormulaGroup(group, ctx) {
       const efs = rows.filter(r => /^ef[1-8]/.test(dcNormalizeLabel(r.item))).map(r => dcCriterionNumber(r, 1));
       row = dcSetCalculatedCriterion(row, base != null ? base * efs.reduce((a, v) => a * (v || 1), 1) : null, 'W Bond × produit EF1-EF8', 3);
     } else if (/puissance arbre|p_shaft|shaft/.test(label)) {
-      const energy = dcFirstFinite(rows.slice(0, i).reverse().find(r => /energie.*(bond|corrigee|specifique|e_v)/.test(dcNormalizeLabel(r.item)))?.design_value, null);
+      const energy = dcFirstFinite(rows.slice(0, i).reverse().find(r => /energie.*(bond|corrigee|spécifique|e_v)/.test(dcNormalizeLabel(r.item)))?.design_value, null);
       row = dcSetCalculatedCriterion(row, energy != null && st.feedTph != null ? energy * st.feedTph : null, 'Énergie spécifique × débit', 1);
     } else if (/puissance installee|installed power/.test(label)) {
       const prev = rows.slice(0, i);
@@ -16807,7 +16281,7 @@ function dcApplyEquipmentFormulaGroup(group, ctx) {
       const recycle = readInput(rows.find(r => /recycle/.test(dcNormalizeLabel(r.item))), 25);
       row = dcSetCalculatedCriterion(row, st.feedTph * (1 + recycle / 100), 'Fresh feed × (1 + recycle ratio)', 1);
     } else if (/capacite par unite/.test(label)) {
-      const mdot = readInput(rows.find(r => /debit specifique/.test(dcNormalizeLabel(r.item))), 250);
+      const mdot = readInput(rows.find(r => /debit spécifique/.test(dcNormalizeLabel(r.item))), 250);
       const d = readInput(rows.find(r => /diametre rouleau/.test(dcNormalizeLabel(r.item))), 2.4);
       const l = readInput(rows.find(r => /longueur rouleau/.test(dcNormalizeLabel(r.item))), 1.7);
       const u = dcFirstFinite(rows.find(r => /vitesse periph/.test(dcNormalizeLabel(r.item)))?.design_value, null);
@@ -16817,12 +16291,12 @@ function dcApplyEquipmentFormulaGroup(group, ctx) {
       const cap = dcFirstFinite(rows.find(r => /capacite par unite/.test(dcNormalizeLabel(r.item)))?.design_value, null);
       row = dcSetCalculatedCriterion(row, cap ? dcCeil(total / cap) : null, 'ROUNDUP(débit total roll / capacité unitaire)', 0);
     } else if (/force totale/.test(label)) {
-      const fsp = readInput(rows.find(r => /force specifique/.test(dcNormalizeLabel(r.item))), 4.5);
+      const fsp = readInput(rows.find(r => /force spécifique/.test(dcNormalizeLabel(r.item))), 4.5);
       const d = readInput(rows.find(r => /diametre rouleau/.test(dcNormalizeLabel(r.item))), 2.4);
       const l = readInput(rows.find(r => /longueur rouleau/.test(dcNormalizeLabel(r.item))), 1.7);
       row = dcSetCalculatedCriterion(row, fsp * d * 1000 * l, 'F_sp × D × 1000 × L', 0);
     } else if (/puissance nette/.test(label) && op.includes('HPGR')) {
-      const esp = readInput(rows.find(r => /energie specifique/.test(dcNormalizeLabel(r.item))), 2.3);
+      const esp = readInput(rows.find(r => /energie spécifique/.test(dcNormalizeLabel(r.item))), 2.3);
       const cap = dcFirstFinite(rows.find(r => /capacite par unite/.test(dcNormalizeLabel(r.item)))?.design_value, null);
       row = dcSetCalculatedCriterion(row, esp * cap, 'Énergie spécifique × capacité unitaire', 1);
     } else if (/puissance totale hpgr/.test(label)) {
@@ -16856,7 +16330,7 @@ function dcApplyEquipmentFormulaGroup(group, ctx) {
       const solids = dcFirstFinite(rows.find(r => /debit solides|feed cyclone|debit alimentation/.test(dcNormalizeLabel(r.item)))?.design_value, st.feedTph);
       const pct = readInput(rows.find(r => /% solides|solides feed/.test(dcNormalizeLabel(r.item))), 45);
       row = dcSetCalculatedCriterion(row, dcVolumetricSlurryFlow(solids, st.sg, pct), 'Solides/SG + solides×(100-%solides)/%solides', 1);
-    } else if (/densite pulpe/.test(label)) {
+    } else if (/densité pulpe/.test(label)) {
       const pct = readInput(rows.find(r => /% solides|solides feed/.test(dcNormalizeLabel(r.item))), 45);
       row = dcSetCalculatedCriterion(row, dcSlurryDensity(st.sg, pct), '1 + (SG minerai - 1) × %solides / 100', 3);
     } else if (/nombre cyclones operationnels/.test(label)) {
@@ -16888,7 +16362,7 @@ function dcApplyEquipmentFormulaGroup(group, ctx) {
       row = dcSetCalculatedCriterion(row, diameter, /epaississeur|thick/.test(label + op) ? '√(4 × surface / π)' : '√((4 × volume / π) / hauteur)', 2);
     } else if (/puissance par tank/.test(label)) {
       const vol = dcFirstFinite(rows.find(r => /volume unitaire/.test(dcNormalizeLabel(r.item)))?.design_value, null);
-      const kwm3 = readInput(rows.find(r => /puissance specifique/.test(dcNormalizeLabel(r.item))), 0.1);
+      const kwm3 = readInput(rows.find(r => /puissance spécifique/.test(dcNormalizeLabel(r.item))), 0.1);
       row = dcSetCalculatedCriterion(row, vol * kwm3, 'Volume unitaire × puissance spécifique agitation', 1);
     } else if (/puissance totale agitation/.test(label)) {
       const unit = dcFirstFinite(rows.find(r => /puissance par tank/.test(dcNormalizeLabel(r.item)))?.design_value, null);
@@ -16904,7 +16378,7 @@ function dcApplyEquipmentFormulaGroup(group, ctx) {
       row = dcSetCalculatedCriterion(row, unit * n, 'Inventaire par tank × nombre de tanks avec charbon', 2);
     } else if (/surface.*requise|surface filtration/.test(label)) {
       const solids = dcFirstFinite(rows.find(r => /debit solides|debit alimentation/.test(dcNormalizeLabel(r.item)))?.design_value, st.feedTph);
-      const slr = readInput(rows.find(r => /slr|solids loading|capacite specifique/.test(dcNormalizeLabel(r.item))), /filtration/.test(label) ? 250 : 1);
+      const slr = readInput(rows.find(r => /slr|solids loading|capacite spécifique/.test(dcNormalizeLabel(r.item))), /filtration/.test(label) ? 250 : 1);
       row = dcSetCalculatedCriterion(row, /filtration/.test(label) ? solids * 1000 / slr : solids / slr, /filtration/.test(label) ? 'Solides × 1000 / capacité spécifique filtre' : 'Débit solides / SLR', 1);
     } else if (/consommation par jour/.test(label)) {
       const solids = dcFirstFinite(rows.find(r => /debit solides/.test(dcNormalizeLabel(r.item)))?.design_value, st.feedTph);
@@ -16918,7 +16392,7 @@ function dcApplyEquipmentFormulaGroup(group, ctx) {
       const loading = readInput(rows.find(r => /charge au sur charbon/.test(dcNormalizeLabel(r.item))), 3000);
       row = dcSetCalculatedCriterion(row, carbonMass * loading / 1000, 'Masse charbon × charge Au / 1000', 2);
     } else if (/courant total/.test(label)) {
-      const density = readInput(rows.find(r => /densite courant/.test(dcNormalizeLabel(r.item))), 200);
+      const density = readInput(rows.find(r => /densité courant/.test(dcNormalizeLabel(r.item))), 200);
       const area = readInput(rows.find(r => /surface cathode/.test(dcNormalizeLabel(r.item))), 24);
       row = dcSetCalculatedCriterion(row, density * area, 'Densité courant × surface cathode', 0);
     } else if (/puissance ew/.test(label)) {
@@ -16942,13 +16416,13 @@ function dcSetPhase(ph) { S.dcPhase = ph; rerenderSection(); }
 
 // ── DC Pipeline State ──────────────────────────────────────────────
 const DC_PIPELINE_STEPS = [
-  {id:'select_circuit',   name:'Selection de circuit',  icon:'🔧', num:1},
+  {id:'select_circuit',   name:'Sélection de circuit',  icon:'🔧', num:1},
   {id:'enrich_lims',      name:'Enrichir LIMS',         icon:'🧪', num:2},
-  {id:'edit',             name:'Editer',                icon:'✏️', num:3},
+  {id:'edit',             name:'Éditer',                icon:'✏️', num:3},
   {id:'recalculate',      name:'Recalculer',            icon:'⚙️', num:4},
   {id:'validate_step',    name:'Valider',               icon:'✓',  num:5},
   {id:'optimize_ai',      name:'Optimiser circuit IA',  icon:'🤖', num:6},
-  {id:'validate_coher',   name:'Valider coherence',     icon:'🔍', num:7},
+  {id:'validate_coher',   name:'Valider cohérence',     icon:'🔍', num:7},
   {id:'freeze',           name:'Figer et verrouiller',  icon:'🔒', num:8},
 ];
 
@@ -16966,7 +16440,7 @@ function dcSetActiveStep(stepId) {
   const currentIdx = steps.findIndex(s => s.id === S._dcActiveStep);
   // Allow navigating back to validated steps or forward one step at a time
   if (idx > currentIdx + 1 && state[stepId] !== 'validated') {
-    toast('Completez l\'etape precedente d\'abord', 'info');
+    toast('Completez l\'étape precedente d\'abord', 'info');
     return;
   }
   S._dcActiveStep = stepId;
@@ -16981,14 +16455,14 @@ function dcValidateCurrentStep() {
     S._dcActiveStep = steps[idx + 1].id;
   }
   rerenderSection();
-  toast('Etape validee — passage a l\'etape suivante', 'success');
+  toast('Étape validée — passage a l\'étape suivante', 'success');
 }
 
 // Step-specific action handlers
 async function dcStepEnrichLims() {
   try {
     await api('POST', `/projects/${S.pid}/circuit-templates/${S.circuitTemplateId}/criteria/enrich`);
-    toast('Criteres enrichis depuis les donnees LIMS', 'success');
+    toast('Critères enrichis depuis les données LIMS', 'success');
     await loadDesignCriteriaV2();
     rerenderSection();
   } catch(e) { toast('Erreur enrichissement: ' + (e.message||e), 'error'); }
@@ -17002,7 +16476,7 @@ async function dcStepRecalculate() {
     const summary = r.production_summary || {};
     const ozStr = summary.annual_gold_oz != null ? fmtAuto(summary.annual_gold_oz) : '—';
     const recStr = summary.overall_recovery_pct != null ? fmtAuto(summary.overall_recovery_pct) : '—';
-    toast(`${r.updated || 0} criteres recalcules · ${ozStr} oz/an · ${recStr}% recup.`, 'success');
+    toast(`${r.updated || 0} critères recalcules · ${ozStr} oz/an · ${recStr}% recup.`, 'success');
     await loadDesignCriteriaV2();
     rerenderSection();
   } catch(e) { toast('Erreur recalcul: ' + (e.message||e), 'error'); }
@@ -17020,11 +16494,11 @@ async function dcStepOptimizeAI() {
 
 async function dcDeleteAllCriteria() {
   if (!S.circuitTemplateId) { toast('Aucun template actif', 'error'); return; }
-  if (!confirm('Supprimer TOUS les criteres de conception de ce circuit ?\n\nCette action est irreversible.')) return;
+  if (!confirm('Supprimer TOUS les critères de conception de ce circuit ?\n\nCette action est irreversible.')) return;
   try {
     // Delete all criteria for this template
     await api('DELETE', `/projects/${S.pid}/circuit-templates/${S.circuitTemplateId}/criteria`);
-    toast('Tous les criteres de conception ont ete supprimes', 'success');
+    toast('Tous les critères de conception ont ete supprimes', 'success');
     S._dcPipelineState = {};
     S._dcActiveStep = 'select_circuit';
     await loadDesignCriteriaV2();
@@ -17038,7 +16512,7 @@ async function dcDeleteAllCriteria() {
           if (c.id) await api('PATCH', `/projects/${S.pid}/circuit-templates/${S.circuitTemplateId}/criteria/${c.id}`, {enabled: false, version: c.version || 1});
         }
       }
-      toast('Tous les criteres ont ete desactives', 'success');
+      toast('Tous les critères ont ete desactives', 'success');
       S._dcPipelineState = {};
       S._dcActiveStep = 'select_circuit';
       await loadDesignCriteriaV2();
@@ -17050,7 +16524,7 @@ async function dcDeleteAllCriteria() {
 async function dcDeleteCircuit() {
   if (!S.circuitTemplateId) { toast('Aucun template actif', 'error'); return; }
   const name = S.circuitTemplate?.name || 'ce circuit';
-  if (!confirm(`Supprimer le circuit "${name}" et TOUS ses criteres ?\n\nCette action est irreversible.`)) return;
+  if (!confirm(`Supprimer le circuit "${name}" et TOUS ses critères ?\n\nCette action est irreversible.`)) return;
   try {
     await api('DELETE', `/projects/${S.pid}/circuit-templates/${S.circuitTemplateId}`);
     toast('Circuit supprime: ' + name, 'success');
@@ -17086,7 +16560,7 @@ async function dcStepValidateCoherence() {
       ).join('');
       showModal(`
         <div style="padding:4px;">
-          <div style="font-size:14px;font-weight:700;color:var(--txt1);margin-bottom:12px;">Validation de coherence</div>
+          <div style="font-size:14px;font-weight:700;color:var(--txt1);margin-bottom:12px;">Validation de cohérence</div>
           <div style="font-size:12px;color:var(--txt3);margin-bottom:10px;">${r.ops_count || 0} operations analysees</div>
           ${warnHtml ? `<div style="margin-bottom:12px;"><div style="font-size:11px;font-weight:600;color:#F5A623;margin-bottom:6px;">Avertissements (${r.warnings?.length || 0})</div>${warnHtml}</div>` : ''}
           ${missHtml ? `<div style="margin-bottom:12px;"><div style="font-size:11px;font-weight:600;color:var(--teal);margin-bottom:6px;">Operations manquantes suggerees</div>${missHtml}</div>` : ''}
@@ -17098,7 +16572,7 @@ async function dcStepValidateCoherence() {
       `);
     }
   } catch(e) { toast('Erreur validation: ' + (e.message||e), 'error'); }
-  finally { if (btn) { btn.disabled = false; btn.innerHTML = `${icon('check')} Verifier coherence`; } }
+  finally { if (btn) { btn.disabled = false; btn.innerHTML = `${icon('check')} Vérifier cohérence`; } }
 }
 
 async function dcLoadPipelineFlags() {
@@ -17720,7 +17194,7 @@ function dcEditCell(td, criterionId, field, _unusedVersion, inputType) {
           // Legacy recalculate (updates all derived values)
           const recalc = await api('POST', `/projects/${S.pid}/circuit-templates/${S.circuitTemplateId}/criteria/recalculate`);
           if (recalc?.updated > 0) {
-            toast(`${recalc.updated} criteres recalcules automatiquement`, 'success');
+            toast(`${recalc.updated} critères recalcules automatiquement`, 'success');
           }
         }
         await loadDesignCriteriaV2();
@@ -17864,7 +17338,7 @@ async function dcValidateCoherence() {
       modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
     }
   } catch(e) { toast('Erreur validation: ' + (e.message || e), 'error'); }
-  finally { if (btn) { btn.disabled = false; btn.innerHTML = `${icon('check')} Valider coherence`; } }
+  finally { if (btn) { btn.disabled = false; btn.innerHTML = `${icon('check')} Valider cohérence`; } }
 }
 
 function circuitAIParseBullets(text) {
@@ -18498,7 +17972,7 @@ function showCircuitOptimizer(r) {
 
   <!-- Pareto chart -->
   <div class="card" style="padding:14px;margin-bottom:16px;">
-    <div style="font-size:13px;font-weight:700;margin-bottom:8px;">Front de Pareto — Recuperation vs OPEX</div>
+    <div style="font-size:13px;font-weight:700;margin-bottom:8px;">Front de Pareto — Récupération vs OPEX</div>
     <div style="height:300px;position:relative;"><canvas id="pareto-chart"></canvas></div>
   </div>
 
@@ -18507,7 +17981,7 @@ function showCircuitOptimizer(r) {
     <div style="font-size:13px;font-weight:700;margin-bottom:8px;">Classement par NPV</div>
     <div style="overflow-x:auto;">
       <table class="tbl" style="font-size:11px;">
-        <thead><tr><th>#</th><th>Circuit</th><th class="num">Recovery</th><th class="num">OPEX</th><th class="num">Energie</th><th class="num">NPV</th><th>Statut</th></tr></thead>
+        <thead><tr><th>#</th><th>Circuit</th><th class="num">Recovery</th><th class="num">OPEX</th><th class="num">Énergie</th><th class="num">NPV</th><th>Statut</th></tr></thead>
         <tbody>${tableRows}</tbody>
       </table>
     </div>
@@ -18989,7 +18463,7 @@ ${renderActionBar('dc', ACTION_BAR_CONFIG.dc)}
 <div style="display:flex;gap:16px;align-items:flex-start;">
   <!-- LEFT PANEL: Sidebar -->
   <div style="width:250px;min-width:250px;flex-shrink:0;">
-    <!-- Equipment catalog (always visible for selection) -->
+    <!-- Equipment catalog (always visible for sélection) -->
     <div class="card mb12" style="padding:10px;">
       <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--txt3);margin-bottom:6px;">Equipements du circuit</div>
       <div style="font-size:10px;color:var(--txt3);margin-bottom:8px;line-height:1.35;">Chaque sélection génère et recalcule automatiquement ses paramètres.</div>
@@ -19029,7 +18503,7 @@ ${renderActionBar('dc', ACTION_BAR_CONFIG.dc)}
     <div class="card mb12" style="padding:10px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
       <span style="font-size:10px;color:var(--txt3);font-family:var(--mono);padding:2px 6px;border:1px solid var(--border);border-radius:4px;">${APP_BUILD_ID}</span>
       <span style="font-size:12px;color:var(--txt2)">${activeOpCodes.size} operations</span>
-      <span style="font-size:12px;color:var(--txt2)">${totalCriteria} criteres</span>
+      <span style="font-size:12px;color:var(--txt2)">${totalCriteria} critères</span>
       <span style="font-size:12px;color:#166534">${limsCount} depuis LIMS</span>
       ${oorCount ? `<span style="font-size:12px;color:#F5A623">${oorCount} hors plage</span>` : ''}
       <button class="btn btn-sm" style="margin-left:auto;border-color:var(--gold);color:var(--gold)" onclick="dcRegenerateSelectedCriteria(true)">Mettre à jour paramètres équipements</button>
@@ -19498,14 +18972,14 @@ async function mbSaveRecovery() {
 
 function mbEditDCParam(paramLabel, currentValue) {
   showModal(`
-    <div style="font-size:14px;font-weight:700;color:var(--txt1);margin-bottom:12px;">Modifier parametre DC</div>
+    <div style="font-size:14px;font-weight:700;color:var(--txt1);margin-bottom:12px;">Modifier paramètre DC</div>
     <div style="margin-bottom:12px;">
       <label style="font-size:12px;color:var(--txt2);display:block;margin-bottom:4px;">${paramLabel}</label>
       <input id="mb-dc-edit-val" type="number" step="any" value="${currentValue || ''}"
         style="width:100%;padding:8px;border-radius:4px;border:1px solid var(--border);background:var(--bg2);color:var(--txt);font-family:var(--mono);font-size:13px;">
     </div>
     <div style="font-size:10px;color:var(--txt3);margin-bottom:12px;">
-      La modification sera sauvegardee dans les criteres de conception et le bilan massique sera recalcule automatiquement.
+      La modification sera sauvegardee dans les critères de conception et le bilan massique sera recalcule automatiquement.
     </div>
     <div style="display:flex;gap:8px;justify-content:flex-end;">
       <button class="btn btn-sm" onclick="closeModal()">Annuler</button>
@@ -19519,11 +18993,11 @@ async function mbSaveDCParam(paramLabel) {
   if (isNaN(val)) { toast('Valeur invalide', 'error'); return; }
   // Map common labels to simulation_params keys
   const paramMap = {
-    'Debit alimentation (t/h)': 'target_tph',
-    'Disponibilite (%)': 'availability_pct',
+    'Débit alimentation (t/h)': 'target_tph',
+    'Disponibilité (%)': 'availability_pct',
     'Teneur Au (g/t)': 'gold_grade_g_t',
-    'Recuperation (%)': 'rec_baseline',
-    'Densite minerai (SG)': 'ore_sg',
+    'Récupération (%)': 'rec_baseline',
+    'Densité minerai (SG)': 'ore_sg',
     'P80 cible (um)': 'bm_p80',
     'NaCN (kg/t)': 'nacn_kg_t',
     'CaO (kg/t)': 'cao_kg_t',
@@ -19540,15 +19014,15 @@ async function mbSaveDCParam(paramLabel) {
         await api('POST', `/projects/${S.pid}/simulation/params-batch`, [{category:'process', param_key:key, param_value:String(val)}]);
       }
       closeModal();
-      toast('Parametre mis a jour. Recalcul en cours...', 'info');
+      toast('Paramètre mis a jour. Recalcul en cours...', 'info');
       await api('POST', mbAutoGenerateUrl());
       await loadMassBalanceV2();
       rerenderSection();
-      toast('Bilan massique recalcule avec nouveau parametre', 'success');
+      toast('Bilan massique recalcule avec nouveau paramètre', 'success');
     } catch(e) { toast('Erreur: ' + (e.message||e), 'error'); }
   } else {
     closeModal();
-    toast('Parametre non reconnu: ' + paramLabel, 'error');
+    toast('Paramètre non reconnu: ' + paramLabel, 'error');
   }
 }
 
@@ -19602,7 +19076,7 @@ function mbShowReconciliation() {
         <strong>Suggestions:</strong>
         <div>• Verifiez les debits d'entree et de sortie de chaque section</div>
         <div>• Les erreurs &gt; 1 t/h indiquent un probleme de convergence</div>
-        <div>• Recalculez depuis les criteres de conception pour reinitialiser</div>
+        <div>• Recalculez depuis les critères de conception pour reinitialiser</div>
       </div>
     </div>
     <div style="display:flex;gap:8px;justify-content:flex-end;">
@@ -19621,7 +19095,7 @@ async function mbRecalculateFromDC() {
     await api('POST', mbAutoGenerateUrl());
     await loadMassBalanceV2();
     rerenderSection();
-    toast('Bilan massique recalcule depuis les criteres de conception.', 'success');
+    toast('Bilan massique recalcule depuis les critères de conception.', 'success');
   } catch(e) { toast('Erreur recalcul: ' + (e.message || e), 'error'); }
   finally { if (btn) { btn.disabled = false; btn.innerHTML = `${icon('refresh')} Recalculer depuis DC`; } }
 }
@@ -19849,7 +19323,7 @@ function startMBMonteCarlo() {
       if (resEl) {
         resEl.style.display = 'block';
         resEl.innerHTML = `
-          <div style="font-size:12px;font-weight:600;color:var(--txt1);margin-bottom:4px;">Resultats - ${nSims.toLocaleString()} simulations</div>
+          <div style="font-size:12px;font-weight:600;color:var(--txt1);margin-bottom:4px;">Résultats - ${nSims.toLocaleString()} simulations</div>
           <div style="font-size:10px;color:#63758C;margin-bottom:8px;">Heures operationnelles: ${result.annual_hours} h/an (${result.h_per_day} h/j × ${result.availability}% dispo)</div>
           <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px;">
             <div class="card" style="padding:8px;text-align:center;">
@@ -19901,7 +19375,7 @@ function renderMBHistogram(data, nSims) {
     type: 'bar',
     data: {
       labels,
-      datasets: [{ label: 'Frequence', data: bins, backgroundColor: 'rgba(245,166,35,0.6)', borderColor: 'rgba(245,166,35,1)', borderWidth: 1 }]
+      datasets: [{ label: 'Fréquence', data: bins, backgroundColor: 'rgba(245,166,35,0.6)', borderColor: 'rgba(245,166,35,1)', borderWidth: 1 }]
     },
     options: {
       responsive: true, maintainAspectRatio: false,
@@ -19924,8 +19398,8 @@ function exportMassBalance() {
     if (S.mbData && S.mbData.summary) {
       const s = S.mbData.summary;
       mbRows.push(['KPI']);
-      mbRows.push(['Debit alimentation (t/h)', s.total_feed_tph]);
-      mbRows.push(['Recuperation globale (%)', s.overall_recovery_pct]);
+      mbRows.push(['Débit alimentation (t/h)', s.total_feed_tph]);
+      mbRows.push(['Récupération globale (%)', s.overall_recovery_pct]);
       mbRows.push(['Production annuelle Au (oz)', s.annual_gold_oz]);
       mbRows.push([]);
     }
@@ -20000,8 +19474,8 @@ function exportMassBalance() {
       ['Phase', S.dcPhase || 'PFS'],
       [],
       ['INDICATEURS CLES'],
-      ['Debit alimentation', fmtAuto((S.mbData?.summary?.total_feed_tph) || 0), 't/h'],
-      ['Recuperation globale', fmtAuto((S.mbData?.summary?.overall_recovery_pct) || 0), '%'],
+      ['Débit alimentation', fmtAuto((S.mbData?.summary?.total_feed_tph) || 0), 't/h'],
+      ['Récupération globale', fmtAuto((S.mbData?.summary?.overall_recovery_pct) || 0), '%'],
       ['Production annuelle Au', fmt((S.mbData?.summary?.annual_gold_oz) || 0, 0), 'oz/an'],
       ['CO2 par once', S.mbCarbon ? fmtAuto(S.mbCarbon.co2_per_oz) : '--', 'kgCO2/oz'],
       [],
@@ -20083,7 +19557,7 @@ function mbSetStep(stepId) {
   const idx = steps.indexOf(stepId);
   const currentIdx = steps.indexOf(S._mbPipelineStep || 'generate');
   if (idx > currentIdx + 1 && state[stepId] !== 'validated') {
-    toast('Completez l\'etape precedente d\'abord', 'info');
+    toast('Completez l\'étape precedente d\'abord', 'info');
     return;
   }
   S._mbPipelineStep = stepId;
@@ -20101,7 +19575,7 @@ function mbValidateStep() {
   if (idx < steps.length - 1) {
     S._mbPipelineStep = steps[idx + 1];
   }
-  toast('Etape validee', 'success');
+  toast('Étape validée', 'success');
   const tabMap = {generate:'bilan',review:'bilan',edit:'bilan',reconcile:'bilan',water:'eau',carbon:'carbone',montecarlo:'mc',snapshot:'bilan'};
   rerenderSection();
   setTimeout(() => { const tab = tabMap[S._mbPipelineStep]; if (tab) mbSwitchTab(tab); }, 50);
@@ -20225,7 +19699,7 @@ function renderMassBalance() {
     const areaMap = {
       'CRUSHING': 'Concassage', 'COMMINUTION_HPGR': 'Broyage HPGR',
       'COMMINUTION_BALL': 'Broyage Ball Mill', 'COMMINUTION_SAG': 'Broyage SAG',
-      'GRAVITY_RECOVERY': 'Gravimetrie', 'FLOTATION': 'Flottation',
+      'GRAVITY_RECOVERY': 'Gravimétrie', 'FLOTATION': 'Flottation',
       'CONCENTRATE_REGRIND': 'Rebroyage', 'LEACHING': 'Lixiviation',
       'CIP': 'CIP', 'CIL': 'CIL', 'DETOX': 'Destruction CN',
       'TAILINGS_THICKENER': 'Epaississeur residus', 'ADR': 'ADR',
@@ -20486,9 +19960,9 @@ function renderMassBalance() {
       <div style="font-size:12px;font-weight:600;margin-bottom:8px;">Recommandations</div>
       <div style="font-size:11px;color:var(--txt2);line-height:1.8;">
         ${co2PerOz != null && co2PerOz > wgcBenchmark ? `
-          <div>- Envisager des sources d'energie renouvelable pour reduire l'empreinte energetique</div>
-          <div>- Optimiser la consommation de reactifs (NaCN, CaO)</div>
-          <div>- Evaluer le recyclage thermique et la recuperation de chaleur</div>
+          <div>- Envisager des sources d'energie renouvelable pour reduire l'empreinte énergétique</div>
+          <div>- Optimiser la consommation de réactifs (NaCN, CaO)</div>
+          <div>- Evaluer le recyclage thermique et la récupération de chaleur</div>
           <div>- Considerer la compensation carbone pour atteindre le benchmark WGC</div>
         ` : `
           <div>- Performance carbone dans les normes WGC</div>
@@ -20515,15 +19989,15 @@ function renderMassBalance() {
           <input class="input mono" id="mb-mc-nsims" type="number" value="5000" step="1000" min="100" max="50000" style="width:120px;padding:4px 6px;font-size:12px;">
         </div>
         <div>
-          <label style="font-size:10px;color:#94A3B8;display:block;margin-bottom:4px;">Parametres de base</label>
+          <label style="font-size:10px;color:#94A3B8;display:block;margin-bottom:4px;">Paramètres de base</label>
           <div style="font-size:11px;color:var(--txt2);">
-            Debit: ${fmtAuto(feedTph)} t/h | Teneur: ${fmtAuto(summary.gold_grade_g_t || 1.5)} g/t | Recuperation: ${fmtAuto(recPct)}% | Production: ${fmt(annualOz, 0)} oz/an
+            Débit: ${fmtAuto(feedTph)} t/h | Teneur: ${fmtAuto(summary.gold_grade_g_t || 1.5)} g/t | Récupération: ${fmtAuto(recPct)}% | Production: ${fmt(annualOz, 0)} oz/an
           </div>
         </div>
         <button class="btn btn-gold" id="btn-mc" onclick="startMBMonteCarlo()" ${!hasData ? 'disabled' : ''}>${icon('refresh')} Lancer Monte Carlo</button>
       </div>
       <div style="font-size:10px;color:var(--txt3);margin-bottom:8px;">
-        Variabilite: teneur +/-10%, recuperation +/-3%, debit +/-5% (distribution normale)
+        Variabilite: teneur +/-10%, récupération +/-3%, debit +/-5% (distribution normale)
       </div>
       <div id="mb-mc-progress" style="display:${S.mbMcProgress != null && S.mbMcProgress < 100 ? 'block' : 'none'};margin-bottom:12px;">
         <div style="height:8px;background:#1e293b;border-radius:4px;overflow:hidden;">
@@ -20568,7 +20042,7 @@ function renderMassBalance() {
   const mbStep = S._mbPipelineStep;
   const mbPipelineSteps = [
     {id:'generate', name:'Configurer le circuit', num:1, icon:'⚙️'},
-    {id:'review', name:'Verifier les flux', num:2, icon:'🔍'},
+    {id:'review', name:'Vérifier les flux', num:2, icon:'🔍'},
     {id:'edit', name:'Ajuster les valeurs', num:3, icon:'✏️'},
     {id:'reconcile', name:'Reconcilier', num:4, icon:'⚖️'},
     {id:'water', name:'Bilan d\'eau', num:5, icon:'💧'},
@@ -20590,35 +20064,35 @@ function renderMassBalance() {
         <div>✓ ▲▼ pour réordonner le circuit</div>
         <div>✓ × pour retirer un équipement</div>
       </div>
-      <button class="btn btn-sm" style="width:100%;border-color:#22C55E;color:#22C55E" onclick="mbValidateStep()">Passer a l'etape suivante →</button>`,
+      <button class="btn btn-sm" style="width:100%;border-color:#22C55E;color:#22C55E" onclick="mbValidateStep()">Passer a l'étape suivante →</button>`,
     review: `
-      <div style="font-size:11px;font-weight:700;color:var(--gold);margin-bottom:8px;">2. Verifier les flux</div>
+      <div style="font-size:11px;font-weight:700;color:var(--gold);margin-bottom:8px;">2. Vérifier les flux</div>
       <p style="font-size:10px;color:var(--txt3);margin-bottom:8px;">Verifiez que les debits, densites et teneurs sont coherents section par section.</p>
       <div style="font-size:11px;color:var(--txt2);margin-bottom:8px;">
         ${totalStreams} flux · ${sections.length} sections
       </div>
-      <button class="btn btn-sm" style="width:100%;border-color:#22C55E;color:#22C55E" onclick="mbValidateStep()">Passer a l'etape suivante →</button>`,
+      <button class="btn btn-sm" style="width:100%;border-color:#22C55E;color:#22C55E" onclick="mbValidateStep()">Passer a l'étape suivante →</button>`,
     edit: `
       <div style="font-size:11px;font-weight:700;color:var(--gold);margin-bottom:8px;">3. Ajuster les valeurs</div>
       <p style="font-size:10px;color:var(--txt3);margin-bottom:8px;">Cliquez sur les cellules editables pour modifier les debits. Le recalcul en cascade est automatique.</p>
-      <button class="btn btn-sm" style="width:100%;border-color:#22C55E;color:#22C55E" onclick="mbValidateStep()">Passer a l'etape suivante →</button>`,
+      <button class="btn btn-sm" style="width:100%;border-color:#22C55E;color:#22C55E" onclick="mbValidateStep()">Passer a l'étape suivante →</button>`,
     reconcile: `
       <div style="font-size:11px;font-weight:700;color:var(--gold);margin-bottom:8px;">4. Reconcilier</div>
       <p style="font-size:10px;color:var(--txt3);margin-bottom:8px;">Verifiez les erreurs de balance (entrees - sorties) pour chaque section.</p>
       <button class="btn btn-sm btn-gold" style="width:100%;margin-bottom:4px;" onclick="mbShowReconciliation()">${icon('check')} Lancer reconciliation</button>
-      <button class="btn btn-sm" style="width:100%;border-color:#22C55E;color:#22C55E" onclick="mbValidateStep()">Passer a l'etape suivante →</button>`,
+      <button class="btn btn-sm" style="width:100%;border-color:#22C55E;color:#22C55E" onclick="mbValidateStep()">Passer a l'étape suivante →</button>`,
     water: `
       <div style="font-size:11px;font-weight:700;color:var(--gold);margin-bottom:8px;">5. Bilan d'eau</div>
       <p style="font-size:10px;color:var(--txt3);margin-bottom:8px;">Verifiez le bilan d'eau : eau fraiche, recyclage, pertes, evaporation.</p>
-      <button class="btn btn-sm" style="width:100%;border-color:#22C55E;color:#22C55E" onclick="mbValidateStep()">Passer a l'etape suivante →</button>`,
+      <button class="btn btn-sm" style="width:100%;border-color:#22C55E;color:#22C55E" onclick="mbValidateStep()">Passer a l'étape suivante →</button>`,
     carbon: `
       <div style="font-size:11px;font-weight:700;color:var(--gold);margin-bottom:8px;">6. Empreinte carbone</div>
       <p style="font-size:10px;color:var(--txt3);margin-bottom:8px;">Analysez l'empreinte CO2 par operation et comparez au benchmark WGC.</p>
-      <button class="btn btn-sm" style="width:100%;border-color:#22C55E;color:#22C55E" onclick="mbValidateStep()">Passer a l'etape suivante →</button>`,
+      <button class="btn btn-sm" style="width:100%;border-color:#22C55E;color:#22C55E" onclick="mbValidateStep()">Passer a l'étape suivante →</button>`,
     montecarlo: `
       <div style="font-size:11px;font-weight:700;color:var(--gold);margin-bottom:8px;">7. Monte Carlo</div>
       <p style="font-size:10px;color:var(--txt3);margin-bottom:8px;">Evaluez la variabilite de la production avec une simulation Monte Carlo (P10, P50, P90).</p>
-      <button class="btn btn-sm" style="width:100%;border-color:#22C55E;color:#22C55E" onclick="mbValidateStep()">Passer a l'etape suivante →</button>`,
+      <button class="btn btn-sm" style="width:100%;border-color:#22C55E;color:#22C55E" onclick="mbValidateStep()">Passer a l'étape suivante →</button>`,
     snapshot: `
       <div style="font-size:11px;font-weight:700;color:var(--gold);margin-bottom:8px;">8. Figer le bilan</div>
       <p style="font-size:10px;color:var(--txt3);margin-bottom:8px;">Sauvegardez un snapshot immutable du bilan massique pour tracabilite.</p>
@@ -20678,7 +20152,7 @@ ${renderActionBar('balance', ACTION_BAR_CONFIG.balance)}
 </div>
 
 <div class="mb-kpi-grid">
-  <div class="mb-kpi-card is-warn" style="cursor:pointer" onclick="mbEditDCParam('Debit alimentation (t/h)', ${nominalTph})" title="Modifier le débit nominal">
+  <div class="mb-kpi-card is-warn" style="cursor:pointer" onclick="mbEditDCParam('Débit alimentation (t/h)', ${nominalTph})" title="Modifier le débit nominal">
     <div class="mb-kpi-label">Débit nominal DC &#9998;</div>
     <div class="mb-kpi-val" style="color:var(--teal2)">${hasEquipment && nominalTph > 0 ? fmtAuto(nominalTph) : '—'}<span class="unit">t/h solides</span></div>
     ${hasData && feedTph !== nominalTph ? `<div class="mb-kpi-sub">Débit projet: ${fmtAuto(feedTph)} t/h</div>` : '<div class="mb-kpi-sub">Base critères de conception</div>'}
@@ -22032,11 +21506,11 @@ ${renderActionBar('economics', ACTION_BAR_CONFIG.economics)}
     </label>
     <label style="display:block;margin-bottom:8px;">
       <span style="color:var(--txt3);display:block;margin-bottom:2px;">Processing ($/t)</span>
-      <input type="number" step="0.01" value="${fmtAuto(ep.proc_ut, 2)}" onchange="S.econParams.proc_ut=+this.value;switchEconTab(S.econTab)" style="width:100%;padding:5px 8px;background:var(--bg);border:1px solid var(--border2);border-radius:var(--r6);color:var(--txt);font-family:var(--mono);font-size:12px;">
+      <input type="number" step="0.01" value="${ep.proc_ut==null?'':+(+ep.proc_ut).toFixed(2)}" onchange="S.econParams.proc_ut=+this.value;switchEconTab(S.econTab)" style="width:100%;padding:5px 8px;background:var(--bg);border:1px solid var(--border2);border-radius:var(--r6);color:var(--txt);font-family:var(--mono);font-size:12px;">
     </label>
     <label style="display:block;margin-bottom:8px;">
       <span style="color:var(--txt3);display:block;margin-bottom:2px;">G&A ($/an)</span>
-      <input type="number" step="100000" value="${fmtAuto(ep.ga_y, 0)}" onchange="S.econParams.ga_y=+this.value;switchEconTab(S.econTab)" style="width:100%;padding:5px 8px;background:var(--bg);border:1px solid var(--border2);border-radius:var(--r6);color:var(--txt);font-family:var(--mono);font-size:12px;">
+      <input type="number" step="100000" value="${ep.ga_y==null?'':Math.round(ep.ga_y)}" onchange="S.econParams.ga_y=+this.value;switchEconTab(S.econTab)" style="width:100%;padding:5px 8px;background:var(--bg);border:1px solid var(--border2);border-radius:var(--r6);color:var(--txt);font-family:var(--mono);font-size:12px;">
     </label>
     <label style="display:block;margin-bottom:8px;">
       <span style="color:var(--txt3);display:block;margin-bottom:2px;">Redevance (%)</span>
@@ -24148,7 +23622,7 @@ function downloadTemplate(code) {
     ws['!merges'] = [{s:{r:0,c:0}, e:{r:0,c:colHeaders.length-1}}];
     ws['!cols'] = [{wch:38},{wch:25},{wch:18},...Array(colHeaders.length-3).fill({wch:16})];
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "MIN-01d Mineralogie");
+    XLSX.utils.book_append_sheet(wb, ws, "MIN-01d Minéralogie");
     XLSX.writeFile(wb, "MET_MIN01d_Mineralogie_QEMSCAN.xlsx");
     toast("Template M1 — Analyse Minéralogique téléchargé.");
     return;
