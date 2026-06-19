@@ -1089,12 +1089,13 @@ html,body{height:100%;font-family:var(--sans);background:var(--bg);background-im
    Mirrors backend/constants.py::TROY_OZ_PER_GRAM = 1/31.1035
 ═══════════════════════════════════════════════════════ */
 const TROY_OZ_PER_GRAM = 1 / 31.1035;  // g → troy oz (mirrors backend/constants.py)
+const API_ORIGIN = 'https://metalflow-pro-production.up.railway.app';
 
 /* ════════════════════════════════════════════════════════
    CONFIG
 ═══════════════════════════════════════════════════════ */
 const CFG = {
-  api: `${window.location.origin}/api/v1`,
+  api: `${API_ORIGIN}/api/v1`,
   phases: ['SCOPING','PFS','FS','ENGINEERING','COMMISSIONING'],
   phaseAcc: {'SCOPING':'±40%','PFS':'±25%','FS':'±15%','ENGINEERING':'±10%','COMMISSIONING':'réel'},
   lims_types: [
@@ -1573,6 +1574,7 @@ async function api(methodOrPath, pathOrOptions, body) {
   const headers = { ...extraHeaders };
   const isFormBody = (typeof FormData !== 'undefined') && payload instanceof FormData;
   if (!isFormBody) headers['Content-Type'] = 'application/json';
+  if (S.token && !headers.Authorization) headers.Authorization = `Bearer ${S.token}`;
 
   let reqBody = undefined;
   if (payload !== undefined && payload !== null) {
@@ -2069,6 +2071,7 @@ async function doLogin() {
   try {
     const data = await api('POST', '/auth/login', { email, password: pwd });
     if (data?.user || data?.access_token) {
+      S.token = data.access_token || null;
       S.userEmail = data.user?.email || email;
       S.userRole = data.user?.role || 'Read-only';
       S.userFullName = data.user?.full_name || email;
@@ -2149,7 +2152,7 @@ function bindLoginEvents() {
    PAGE: PROJECTS
 ═══════════════════════════════════════════════════════ */
 async function loadProjects() {
-  try { const resp = await api('GET', '/projects'); S.projects = resp.items || resp; } catch(e) { S.projects = []; toast(e.message, 'error'); }
+  try { const resp = await api('GET', '/projects'); S.projects = resp?.items || resp || []; } catch(e) { S.projects = []; toast(e.message, 'error'); }
 }
 
 function renderProjectsPage() {
@@ -2310,6 +2313,7 @@ async function openProject(id) {
 async function doLogout() {
   try { await api('POST', '/auth/logout', { refresh_token: '' }); } catch (_) { /* ignore */ }
   resetProjectScopedState();
+  S.token = null;
   S.userEmail = null; S.userRole = null; S.userFullName = null;
   S.page = 'login';
   S.projects = null; S.pid = null;

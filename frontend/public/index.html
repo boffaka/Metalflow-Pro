@@ -2258,6 +2258,7 @@ async function api(methodOrPath, pathOrOptions, body) {
   const headers = { ...extraHeaders };
   const isFormBody = (typeof FormData !== 'undefined') && payload instanceof FormData;
   if (!isFormBody) headers['Content-Type'] = 'application/json';
+  if (S.token && !headers.Authorization) headers.Authorization = `Bearer ${S.token}`;
 
   let reqBody = undefined;
   if (payload !== undefined && payload !== null) {
@@ -2766,6 +2767,7 @@ async function doLogin() {
   try {
     const data = await api('POST', '/auth/login', { email, password: pwd });
     if (data?.user || data?.access_token) {
+      S.token = data.access_token || null;
       S.userEmail = data.user?.email || email;
       S.userRole = data.user?.role || 'Read-only';
       S.userFullName = data.user?.full_name || email;
@@ -2848,7 +2850,7 @@ function bindLoginEvents() {
 async function loadProjects() {
   try {
     const resp = await api('GET', '/projects');
-    S.projects = applyLocalProjectOverrides(resp.items || resp);
+    S.projects = applyLocalProjectOverrides(resp?.items || resp || []);
   } catch(e) { S.projects = []; toast(e.message, 'error'); }
 }
 
@@ -3010,6 +3012,7 @@ async function openProject(id) {
 async function doLogout() {
   try { await api('POST', '/auth/logout', { refresh_token: '' }); } catch (_) { /* ignore */ }
   resetProjectScopedState();
+  S.token = null;
   S.userEmail = null; S.userRole = null; S.userFullName = null;
   S.page = 'login';
   S.projects = null; S.pid = null;
