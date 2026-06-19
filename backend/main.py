@@ -4,8 +4,6 @@ FastAPI + PostgreSQL + JWT Auth
 Compatible avec test_api.py et test_mass_balance_e2e.py
 """
 
-from __future__ import annotations
-
 import importlib
 import logging
 import os

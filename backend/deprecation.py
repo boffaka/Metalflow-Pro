@@ -11,8 +11,6 @@ isolation; `deprecated_endpoint` is the FastAPI dependency factory that wires it
 in and logs the access.
 """
 
-from __future__ import annotations
-
 import logging
 
 logger = logging.getLogger("mpdpms.legacy_usage")

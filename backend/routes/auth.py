@@ -1,8 +1,6 @@
 """
 MPDPMS — Auth routes (login, me, logout, rotate, refresh).
 """
-from __future__ import annotations
-
 import logging
 import psycopg2
 import time

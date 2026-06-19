@@ -1,9 +1,7 @@
 """Geometallurgical Intelligence API — auto-domaining, LOM forecast, blend optimization."""
-from __future__ import annotations
-
 import logging
 import psycopg2
-from fastapi import APIRouter, HTTPException, Depends, Request
+from fastapi import APIRouter, HTTPException, Depends, Body
 from pydantic import BaseModel, Field
 from typing import Optional
 
@@ -105,10 +103,8 @@ def _user_id(user) -> str | None:
 
 
 @router.post("/{pid}/geomet-intelligence/auto-domain")
-def run_auto_domain(request: Request = None, pid: str | None = None, body: dict | None = None, user=Depends(project_user)):
+def run_auto_domain(pid: str, body: dict | None = Body(default=None), user=Depends(project_user)):
     """Run geometallurgical auto-domaining from LIMS data (A1+B1+D1)."""
-    if pid is None:
-        pid = str(request)
     try:
         result = auto_cluster_domains(pid)
         if result["status"] == "ok":

@@ -3,8 +3,6 @@ MPDPMS — Simulation v2 & Mine-to-Mill routes.
 Rigorous simulation, sensitivity, scenario comparison, NSGA-II optimization,
 mine scheduling, LOM simulation, blend optimization, Monte Carlo, and ESG.
 """
-from __future__ import annotations
-
 import json
 import logging
 import uuid
