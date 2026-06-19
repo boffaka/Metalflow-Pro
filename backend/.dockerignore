@@ -1,0 +1,16 @@
+venv/
+__pycache__/
+*.pyc
+*.pyo
+.git/
+.env
+.env.*
+storage/reports/
+uploads/
+tests/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+ml/*.joblib
+ml/*.pkl

@@ -1,0 +1,89 @@
+{
+  "Crushing": [
+    ["ROM_BIN", "Trémie ROM"],
+    ["CONVEYOR", "Convoyeur Alimentation"],
+    ["CRUSHER", "Concasseur Gyratoire"],
+    ["SCREEN", "Crible Vibrant #1"],
+    ["CRUSHER", "Concasseur HP1250"],
+    ["SCREEN", "Crible Vibrant #2"],
+    ["STOCKPILE", "Stockpile Concassé"]
+  ],
+  "HPGR": [
+    ["HPGR", "HPGR"],
+    ["SCREEN", "Crible HPGR"]
+  ],
+  "BallMill": [
+    ["BALL_MILL", "Broyeur à Boulets"],
+    ["SUMP", "Puisard Décharge BB"],
+    ["PUMP", "Pompe BB Décharge"],
+    ["CYCLONES", "Batterie Hydrocyclones"]
+  ],
+  "Grinding": [
+    ["BALL_MILL", "Broyeur à Boulets"],
+    ["SUMP", "Puisard Décharge BB"],
+    ["PUMP", "Pompe BB Décharge"],
+    ["CYCLONES", "Batterie Hydrocyclones"]
+  ],
+  "SAG": [
+    ["SAG_MILL", "Broyeur SAG"],
+    ["SUMP", "Puisard Décharge SAG"],
+    ["PUMP", "Pompe SAG Décharge"],
+    ["CYCLONES", "Batterie Hydrocyclones SAG"]
+  ],
+  "Gravity": [
+    ["GRAVITY", "Concentrateur Knelson"],
+    ["ICR", "Réacteur Lixiviation Intense (ICR)"]
+  ],
+  "Flotation": [
+    ["AGITATOR", "Conditionneur Réactifs"],
+    ["FLOTATION", "Flottation Rougher"],
+    ["FLOTATION", "Flottation Scavenger"],
+    ["FLOTATION", "Flottation Cleaner"],
+    ["THICKENER", "Épaississeur Concentré Flottation"]
+  ],
+  "IsaMill": [
+    ["ISAMILL", "IsaMill (rebroyage ultrafin)"]
+  ],
+  "CIL": [
+    ["LEACH_TANK", "Cuve Pré-Aération"],
+    ["CIL_TANK", "Cuve CIL 1"],
+    ["CIL_TANK", "Cuve CIL 2"],
+    ["CIL_TANK", "Cuve CIL 3"],
+    ["CIL_TANK", "Cuve CIL 4"],
+    ["CIL_TANK", "Cuve CIL 5"],
+    ["CIL_TANK", "Cuve CIL 6"],
+    ["SCREEN", "Crible Lavage Charbon"]
+  ],
+  "CIP": [
+    ["LEACH_TANK", "Cuve Pré-Aération"],
+    ["CIP_TANK", "Cuve CIP 1"],
+    ["CIP_TANK", "Cuve CIP 2"],
+    ["CIP_TANK", "Cuve CIP 3"],
+    ["CIP_TANK", "Cuve CIP 4"],
+    ["CIP_TANK", "Cuve CIP 5"],
+    ["CIP_TANK", "Cuve CIP 6"],
+    ["SCREEN", "Crible Lavage Charbon"]
+  ],
+  "ADR": [
+    ["STRIPPING", "Colonne d'Élution"],
+    ["ELECTROWIN", "Cellule EW"],
+    ["SMELT", "Four à Induction"],
+    ["REFINERY", "Coulée Lingots Doré"]
+  ],
+  "Elution": [
+    ["STRIPPING", "Colonne d'Élution"],
+    ["ELECTROWIN", "Cellule EW"],
+    ["SMELT", "Four à Induction"],
+    ["REFINERY", "Coulée Lingots Doré"]
+  ],
+  "Detox": [
+    ["CN_DESTRUCT", "Destruction Cyanure"]
+  ],
+  "Thickener": [
+    ["THICKENER", "Épaississeur Résidus"]
+  ],
+  "Tailing": [
+    ["TAILINGS", "Parc à Résidus (TSF)"],
+    ["WATER_TREAT", "Bassin Eau de Procédé"]
+  ]
+}

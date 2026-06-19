@@ -1,0 +1,48 @@
+key: sag_ball
+label: "SAG + Ball"
+description: "SAG -> Ball mill -> CIL"
+default_factors:
+  indirect_pct: 0.30
+  epcm_pct: 0.15
+  contingency_pct: 0.15
+equipment:
+  - template_key: primary_crusher
+    category: Crushing
+    name: "Concasseur primaire à mâchoires"
+    typical_power_kw: 750
+    cost: { alpha: 6500, beta: 0.65 }
+  - template_key: sag_mill
+    category: Comminution
+    name: "Broyeur SAG"
+    typical_power_kw: 16000
+    cost: { alpha: 32000, beta: 0.74 }
+  - template_key: ball_mill_main
+    category: Comminution
+    name: "Broyeur à boulets primaire"
+    typical_power_kw: 8500
+    cost: { alpha: 18500, beta: 0.72 }
+  - template_key: cyclone_cluster
+    category: Comminution
+    name: "Cluster d'hydrocyclones"
+    typical_power_kw: 75
+    cost: { alpha: 1200, beta: 0.55 }
+  - template_key: cil_tanks
+    category: Leach
+    name: "Réservoirs CIL (6 cuves)"
+    typical_power_kw: 1500
+    cost: { alpha: 14500, beta: 0.68 }
+  - template_key: adr_circuit
+    category: ADR
+    name: "Circuit ADR (élution + EW + raffinage)"
+    typical_power_kw: 850
+    cost: { alpha: 9800, beta: 0.65 }
+  - template_key: tailings_thickener
+    category: Tailings
+    name: "Épaississeur de résidus"
+    typical_power_kw: 95
+    cost: { alpha: 2800, beta: 0.58 }
+  - template_key: reagent_storage
+    category: Reagents
+    name: "Stockage et préparation des réactifs"
+    typical_power_kw: 50
+    cost: { alpha: 850, beta: 0.50 }

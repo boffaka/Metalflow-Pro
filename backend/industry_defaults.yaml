@@ -1,0 +1,300 @@
+metallurgical:
+  ore_sg:
+    value: 2.75
+    unit: "-"
+    range: [2.5, 3.2]
+    reference: "USGS typical siliceous Au ore"
+  default_recovery_pct:
+    value: 89.0
+    unit: "%"
+    range: [50, 99]
+    reference: "Industry average CIL circuit"
+  default_availability_pct:
+    value: 92.0
+    unit: "%"
+    range: [75, 98]
+    reference: "Typical gold plant availability"
+  calendar_hours_day:
+    value: 24.0
+    unit: "h"
+    range: [8, 24]
+    reference: "Continuous operation"
+  effective_hours_day:
+    value: 22.1
+    unit: "h"
+    range: [16, 24]
+    reference: "24h minus maintenance buffer"
+  nacn_consumption_kg_t:
+    value: 0.5
+    unit: "kg/t"
+    range: [0.1, 5.0]
+    reference: "Typical CIL NaCN consumption"
+  cao_consumption_kg_t:
+    value: 1.2
+    unit: "kg/t"
+    range: [0.3, 10.0]
+    reference: "Typical CIL lime consumption"
+  sag_specific_energy:
+    value: 8.0
+    unit: "kWh/t"
+    range: [4.0, 20.0]
+    reference: "Typical SAG mill specific energy"
+  bm_specific_energy:
+    value: 7.0
+    unit: "kWh/t"
+    range: [3.0, 18.0]
+    reference: "Typical ball mill specific energy"
+  aux_energy_kwh_t:
+    value: 5.0
+    unit: "kWh/t"
+    range: [2.0, 15.0]
+    reference: "Auxiliary power (fans, pumps, lighting)"
+  flotation_mass_pull_pct:
+    value: 8.0
+    unit: "%"
+    range: [0.5, 30.0]
+    reference: "Typical gold flotation mass pull"
+  cil_residence_time_h:
+    value: 24.0
+    unit: "h"
+    range: [8, 48]
+    reference: "Typical CIL residence time"
+  cil_n_tanks:
+    value: 8
+    unit: "-"
+    range: [4, 12]
+    reference: "Typical CIL tank count"
+  leach_k_fallback:
+    value: 0.3
+    unit: "1/h"
+    range: [0.05, 2.0]
+    reference: "Fallback kinetic rate constant"
+
+economic:
+  gold_price_usd_oz:
+    value: 2200.0
+    unit: "$/oz"
+    range: [800, 5000]
+    reference: "Spot price reference — must be updated per project"
+  discount_rate_pct:
+    value: 5.0
+    unit: "%"
+    range: [3, 15]
+    reference: "Typical WACC for mid-tier gold producer"
+  refining_tc_rc_usd_oz:
+    value: 4.0
+    unit: "$/oz"
+    range: [2, 10]
+    reference: "Typical gold refining charges"
+  royalty_pct:
+    value: 3.0
+    unit: "%"
+    range: [0, 10]
+    reference: "Typical mining royalty"
+  tax_rate_pct:
+    value: 30.0
+    unit: "%"
+    range: [0, 50]
+    reference: "Typical corporate tax rate"
+  energy_rate_usd_kwh:
+    value: 0.08
+    unit: "$/kWh"
+    range: [0.02, 0.30]
+    reference: "African power cost baseline"
+  nacn_price_usd_kg:
+    value: 3.50
+    unit: "$/kg"
+    range: [1.0, 8.0]
+    reference: "NaCN commodity price"
+  cao_price_usd_kg:
+    value: 0.12
+    unit: "$/kg"
+    range: [0.05, 0.50]
+    reference: "CaO/lime price"
+
+equipment:
+  lang_installation_pct:
+    value: 35.0
+    unit: "%"
+    range: [25, 45]
+    reference: "Lang method — gold plant typical"
+  lang_civil_pct:
+    value: 25.0
+    unit: "%"
+    range: [15, 35]
+    reference: "Lang method — gold plant typical"
+  lang_instrumentation_pct:
+    value: 15.0
+    unit: "%"
+    range: [10, 25]
+    reference: "Lang method — gold plant typical"
+  lang_piping_pct:
+    value: 20.0
+    unit: "%"
+    range: [10, 30]
+    reference: "Lang method — gold plant typical"
+  lang_electrical_pct:
+    value: 10.0
+    unit: "%"
+    range: [5, 20]
+    reference: "Lang method — gold plant typical"
+  epcm_pct:
+    value: 12.0
+    unit: "%"
+    range: [8, 18]
+    reference: "Typical EPCM for gold project"
+  contingency_pct:
+    value: 15.0
+    unit: "%"
+    range: [10, 30]
+    reference: "FS-level contingency"
+  mech_efficiency:
+    value: 0.85
+    unit: "-"
+    range: [0.75, 0.95]
+    reference: "Motor 95% x Gearbox 92% x Bearings 97%"
+  flotation_power_intensity_kw_m3:
+    value: 0.6
+    unit: "kW/m3"
+    range: [0.4, 1.0]
+    reference: "Mechanical flotation cell"
+  thickener_max_diameter_m:
+    value: 45.0
+    unit: "m"
+    range: [10, 60]
+    reference: "Practical thickener diameter limit"
+  ew_cathode_current_density:
+    value: 200.0
+    unit: "A/m2"
+    range: [100, 400]
+    reference: "Electrowinning cathode current density"
+  ew_faraday_efficiency:
+    value: 0.75
+    unit: "-"
+    range: [0.5, 0.95]
+    reference: "Electrowinning current efficiency"
+
+environmental:
+  grid_co2_kg_kwh:
+    value: 0.50
+    unit: "kgCO2/kWh"
+    range: [0.05, 0.95]
+    reference: "Typical African grid — must be site-specific"
+  wgc_co2_benchmark:
+    value: 800
+    unit: "kgCO2/oz"
+    range: [400, 1200]
+    reference: "World Gold Council industry average"
+  wad_cn_limit_mg_l:
+    value: 0.5
+    unit: "mg/L"
+    range: [0.1, 5.0]
+    reference: "IFC discharge standard"
+
+geotechnical:
+  tsf_fs_downstream_static:
+    value: 1.5
+    unit: "-"
+    range: [1.3, 2.0]
+    reference: "CDA/ANCOLD minimum for downstream construction"
+  tsf_fs_downstream_seismic:
+    value: 1.2
+    unit: "-"
+    range: [1.0, 1.5]
+    reference: "CDA/ANCOLD minimum under seismic loading"
+  tsf_fs_centreline_static:
+    value: 1.3
+    unit: "-"
+    range: [1.2, 1.8]
+    reference: "CDA/ANCOLD minimum for centreline construction"
+  tsf_fs_centreline_seismic:
+    value: 1.1
+    unit: "-"
+    range: [1.0, 1.5]
+    reference: "CDA/ANCOLD minimum under seismic loading"
+  tsf_fs_upstream_static:
+    value: 1.2
+    unit: "-"
+    range: [1.1, 1.5]
+    reference: "CDA/ANCOLD minimum for upstream construction"
+  tsf_fs_upstream_seismic:
+    value: 1.0
+    unit: "-"
+    range: [0.9, 1.3]
+    reference: "CDA/ANCOLD minimum under seismic loading"
+  seismic_coefficient:
+    value: 0.1
+    unit: "-"
+    range: [0.0, 0.5]
+    reference: "Default pseudo-static seismic coefficient"
+
+# ---------------------------------------------------------------------------
+# Advisor thresholds (scenario_advisor niveaux 4-7).
+# All values are initial tunables — override per project as needed.
+# References: SME Mineral Processing Handbook (3rd ed.), Outotec best practices,
+# typical gold-plant PFS/FS design.
+# ---------------------------------------------------------------------------
+advisor_thresholds:
+  # Niveau 4 — Blockmodel / variabilité minerai
+  bwi_cv_high:
+    value: 0.30           # Tunable — CV(BWi) > 0.3 => HPGR recommended
+    unit: "-"
+    range: [0.15, 0.50]
+    reference: "SME Handbook Ch. Comminution — hard-ore HPGR screening criterion"
+  oxide_share_dual_circuit_pct:
+    value: 20.0           # Tunable — oxide share > 20% => dual circuit
+    unit: "%"
+    range: [10.0, 40.0]
+    reference: "Outotec — dual oxide/sulfide circuit break-even"
+  low_grade_heap_g_t:
+    value: 0.6            # Tunable — avg Au grade below this => consider heap leach
+    unit: "g/t"
+    range: [0.3, 1.0]
+    reference: "Industry rule of thumb for heap-leach economics"
+  heap_tonnage_ktpd:
+    value: 30.0           # Tunable — paired with low_grade_heap_g_t
+    unit: "ktpd"
+    range: [10.0, 80.0]
+    reference: "Large low-grade project heap-leach threshold"
+  # Niveau 5 — Design / mass balance
+  p80_target_tolerance_pct:
+    value: 10.0           # Tunable — actual P80 within ±X% of target is acceptable
+    unit: "%"
+    range: [5.0, 25.0]
+    reference: "Industry MB convergence tolerance"
+  # Niveau 6 — Equipment / costs
+  equipment_utilization_low_pct:
+    value: 70.0           # Tunable — utilization below this => debottleneck
+    unit: "%"
+    range: [50.0, 85.0]
+    reference: "Outotec — underutilization threshold"
+  high_capex_revenue_ratio:
+    value: 0.8            # Tunable — CAPEX / revenue > 0.8 => reduce CAPEX option
+    unit: "-"
+    range: [0.5, 1.2]
+    reference: "Project economics rule of thumb"
+  high_reagent_opex_usd_t:
+    value: 3.0            # Tunable — reagent OPEX > $3/t ore => optimize
+    unit: "$/t"
+    range: [1.5, 8.0]
+    reference: "Industry benchmark for NaCN + collectors"
+
+# ---------------------------------------------------------------------------
+# Plant design & simulation QA (MetPlant 2008 + SLA simulation best practices).
+# ---------------------------------------------------------------------------
+plant_design_thresholds:
+  bwi_cv_variability:
+    value: 0.30
+    unit: "-"
+    range: [0.15, 0.50]
+    reference: "MetPlant 2008 — comminution variability triggers domain testwork"
+  testwork_score_run_warn:
+    value: 50.0
+    unit: "%"
+    range: [30.0, 70.0]
+    reference: "SLA 2008 — GIGO guard before rigorous simulation"
+  simulation_qa_min_fraction:
+    value: 0.75
+    unit: "-"
+    range: [0.5, 0.95]
+    reference: "SLA model lifecycle — stage fraction considered OK"

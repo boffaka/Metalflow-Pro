@@ -1,0 +1,187 @@
+# DC Cascade DAG Registry
+# Each node is a calculated DC parameter with its dependencies and formula reference.
+# "inputs" are parameters that are NOT calculated (LIMS, Manual, Project settings).
+
+inputs:
+  - target_tph
+  - gold_grade_g_t
+  - operating_hours_day
+  - availability_pct
+  - ore_sg
+  - avg_bwi
+  - avg_p80_um
+  - avg_f80_um
+  - avg_grg_pct
+  - avg_au_recovery_pct
+  - avg_nacn_kg_t
+  - avg_cao_kg_t
+  - avg_unit_area
+  - flot_mass_pull_pct
+  - regrind_feed_p80_um
+  - regrind_product_p80_um
+  - regrind_sig_kwh_t
+  - regrind_mech_efficiency
+  - regrind_install_margin_pct
+  - regrind_recirc_pct
+  - has_flotation
+  - has_gravity
+  - has_hpgr
+  - cil_srt_h
+  - cil_pct_solids
+  - mech_efficiency
+  - energy_rate_usd_kwh
+  - rom_f80_mm
+  - pc_css_mm
+  - sc_css_mm
+  - sag_p80_mm
+  - bm_circ_load_pct
+  - bm_install_margin_pct
+  - cil_hd_ratio
+  - max_vol_per_tank
+  - thickener_safety_factor
+  - thickener_max_diameter_m
+  - underflow_pct_solids
+  - evap_factor
+
+nodes:
+  # --- Crushing ---
+  pc_p80_mm:
+    depends_on: [pc_css_mm]
+    formula_ref: "crush_product"
+    section: "crushing"
+  sc_p80_mm:
+    depends_on: [sc_css_mm]
+    formula_ref: "crush_product"
+    section: "crushing"
+
+  # --- Comminution ---
+  sag_f80_mm:
+    depends_on: [sc_p80_mm]
+    formula_ref: "cascade_feed"
+    section: "comminution"
+  sag_power_kw:
+    depends_on: [target_tph, avg_bwi, sag_f80_mm, sag_p80_mm, mech_efficiency]
+    formula_ref: "bond_power_sag"
+    section: "comminution"
+  bm_f80_um:
+    depends_on: [sag_p80_mm]
+    formula_ref: "sag_to_bm_feed"
+    section: "comminution"
+  bm_power_kw:
+    depends_on: [target_tph, avg_bwi, bm_f80_um, avg_p80_um, mech_efficiency, bm_install_margin_pct]
+    formula_ref: "bond_power_bm"
+    section: "comminution"
+  total_commin_power_kw:
+    depends_on: [sag_power_kw, bm_power_kw]
+    formula_ref: "sum_power"
+    section: "comminution"
+
+  # --- Classification ---
+  cyc_feed_tph:
+    depends_on: [target_tph, bm_circ_load_pct]
+    formula_ref: "circ_load_feed"
+    section: "classification"
+
+  # --- Flotation (conditional) ---
+  flot_conc_tph:
+    depends_on: [target_tph, flot_mass_pull_pct]
+    formula_ref: "mass_pull_tonnage"
+    section: "flotation"
+
+  # --- Regrind ---
+  regrind_feed_tph:
+    depends_on: [target_tph, flot_mass_pull_pct, has_flotation]
+    formula_ref: "regrind_feed"
+    section: "regrind"
+  regrind_specific_energy_kwh_t:
+    depends_on: [regrind_sig_kwh_t, regrind_feed_p80_um, regrind_product_p80_um]
+    formula_ref: "regrind_specific_energy"
+    section: "regrind"
+  regrind_shaft_power_kw:
+    depends_on: [regrind_feed_tph, regrind_specific_energy_kwh_t]
+    formula_ref: "regrind_shaft_power"
+    section: "regrind"
+  regrind_installed_power_kw:
+    depends_on: [regrind_feed_tph, regrind_specific_energy_kwh_t, regrind_mech_efficiency, regrind_install_margin_pct]
+    formula_ref: "regrind_power"
+    section: "regrind"
+
+  # --- Leaching ---
+  leach_feed_tph:
+    depends_on: [target_tph, flot_mass_pull_pct, has_flotation]
+    formula_ref: "leach_feed"
+    section: "leaching"
+  slurry_sg:
+    depends_on: [ore_sg, cil_pct_solids]
+    formula_ref: "slurry_density"
+    section: "leaching"
+  vol_flow_m3h:
+    depends_on: [leach_feed_tph, slurry_sg, cil_pct_solids]
+    formula_ref: "volumetric_flow"
+    section: "leaching"
+  cil_volume_m3:
+    depends_on: [vol_flow_m3h, cil_srt_h]
+    formula_ref: "residence_volume"
+    section: "leaching"
+  cil_n_tanks:
+    depends_on: [cil_volume_m3, max_vol_per_tank]
+    formula_ref: "tank_count"
+    section: "leaching"
+  cil_tank_diameter_m:
+    depends_on: [cil_volume_m3, cil_n_tanks, cil_hd_ratio]
+    formula_ref: "tank_geometry"
+    section: "leaching"
+  nacn_kg_h:
+    depends_on: [leach_feed_tph, avg_nacn_kg_t]
+    formula_ref: "nacn_rate"
+    section: "leaching"
+  cao_kg_h:
+    depends_on: [leach_feed_tph, avg_cao_kg_t]
+    formula_ref: "cao_rate"
+    section: "leaching"
+
+  # --- Thickener ---
+  thickener_area_m2:
+    depends_on: [target_tph, avg_unit_area, thickener_safety_factor]
+    formula_ref: "thickener_area"
+    section: "thickener"
+  thickener_diameter_m:
+    depends_on: [thickener_area_m2]
+    formula_ref: "circular_diameter"
+    section: "thickener"
+  n_thickeners:
+    depends_on: [thickener_diameter_m, thickener_max_diameter_m]
+    formula_ref: "unit_count_by_max"
+    section: "thickener"
+
+  # --- Water Balance ---
+  process_water_m3h:
+    depends_on: [leach_feed_tph, cil_pct_solids]
+    formula_ref: "process_water"
+    section: "water"
+  tailings_water_loss_m3h:
+    depends_on: [target_tph, underflow_pct_solids]
+    formula_ref: "tailings_water"
+    section: "water"
+  evaporation_m3h:
+    depends_on: [process_water_m3h, evap_factor]
+    formula_ref: "evaporation"
+    section: "water"
+  fresh_water_m3h:
+    depends_on: [tailings_water_loss_m3h, evaporation_m3h]
+    formula_ref: "fresh_water"
+    section: "water"
+
+  # --- Production & Economics ---
+  annual_gold_oz:
+    depends_on: [target_tph, gold_grade_g_t, avg_au_recovery_pct, availability_pct, operating_hours_day]
+    formula_ref: "annual_production"
+    section: "production"
+  total_installed_power_kw:
+    depends_on: [total_commin_power_kw, target_tph]
+    formula_ref: "total_power"
+    section: "production"
+  energy_cost_usd_t:
+    depends_on: [total_installed_power_kw, target_tph, energy_rate_usd_kwh]
+    formula_ref: "energy_cost"
+    section: "production"

@@ -1,0 +1,53 @@
+key: heap_leach
+label: "Lixiviation en tas"
+description: "Concassage -> agglomération -> empilement -> irrigation cyanurée -> ADR"
+default_factors:
+  indirect_pct: 0.30
+  epcm_pct: 0.15
+  contingency_pct: 0.15
+equipment:
+  - template_key: primary_crusher
+    category: Crushing
+    name: "Concasseur primaire à mâchoires"
+    typical_power_kw: 750
+    cost: { alpha: 6500, beta: 0.65 }
+  - template_key: secondary_crusher
+    category: Crushing
+    name: "Concasseur secondaire à cône"
+    typical_power_kw: 600
+    cost: { alpha: 4800, beta: 0.62 }
+  - template_key: tertiary_crusher
+    category: Crushing
+    name: "Concasseur tertiaire à cône"
+    typical_power_kw: 500
+    cost: { alpha: 4200, beta: 0.62 }
+  - template_key: agglomerator
+    category: Heap
+    name: "Drum agglomerator"
+    typical_power_kw: 220
+    cost: { alpha: 3500, beta: 0.60 }
+  - template_key: stacker
+    category: Heap
+    name: "Convoyeur empileur radial"
+    typical_power_kw: 350
+    cost: { alpha: 4200, beta: 0.55 }
+  - template_key: heap_irrigation
+    category: Heap
+    name: "Système d'irrigation goutte-à-goutte"
+    typical_power_kw: 180
+    cost: { alpha: 1800, beta: 0.50 }
+  - template_key: leach_ponds
+    category: Heap
+    name: "Bassins PLS et stériles"
+    typical_power_kw: 0
+    cost: { alpha: 2500, beta: 0.55 }
+  - template_key: adr_circuit
+    category: ADR
+    name: "Circuit ADR (élution + EW + raffinage)"
+    typical_power_kw: 850
+    cost: { alpha: 9800, beta: 0.65 }
+  - template_key: reagent_storage
+    category: Reagents
+    name: "Stockage et préparation des réactifs"
+    typical_power_kw: 50
+    cost: { alpha: 850, beta: 0.50 }
