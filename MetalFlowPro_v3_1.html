@@ -3194,6 +3194,7 @@ function renderActionBar(sectionId, cfg) {
   if (hasData && btns) btns += '<span class="ab-sep"></span>';
   if (cfg.export) btns += `<button class="btn btn-teal" onclick="${cfg.export}">${icon('download')} Exporter</button>`;
   if (cfg.import) btns += `<button class="btn btn-teal" onclick="${cfg.import}">${icon('upload')} Importer</button>`;
+  if (cfg.reset) btns += `<button class="btn btn-danger" onclick="${cfg.reset}">${icon('trash')} Réinitialiser</button>`;
   if (cfg.purge) btns += `<button class="btn btn-danger" onclick="${cfg.purge}">${icon('trash')} Tout supprimer</button>`;
   if (cfg.delete) btns += `<button class="btn btn-danger" onclick="${cfg.delete}">${icon('trash')} Supprimer</button>`;
   return `<div class="action-bar">${left}${btns}</div>`;
@@ -3222,7 +3223,7 @@ const ACTION_BAR_CONFIG = {
   audit:         { refresh:"loadAuditLog().then(rerenderSection)" },
   metallurgical_decision: { save: "mdSaveWorkspace()", delete: "deleteSimulationRuns()" },
   geomet_intelligence: { save: "gmieSaveSnapshot()" },
-  mineopt: { refresh:"loadMineOptimization().then(rerenderSection)", save:"saveMineOptimizationScenario()", export:"exportMineOptimizationReport()" }
+  mineopt: { refresh:"loadMineOptimization().then(rerenderSection)", save:"saveMineOptimizationScenario()", export:"exportMineOptimizationReport()", reset:"confirmResetMineOptimization()" }
 };
 
 function renderSectionContent() {
@@ -25139,6 +25140,29 @@ function duplicateMineOptimizationScenario() {
 
 function removeMineOptRun(id) {
   localStorage.setItem(mineOptStorageKey('runs'), JSON.stringify(getMineOptRuns().filter(r => r.id !== id)));
+  rerenderSection();
+}
+
+function confirmResetMineOptimization() {
+  const runs = getMineOptRuns();
+  showModal(`
+<div class="modal-header"><div class="modal-title">${icon('trash')} Réinitialiser Mine & Optimisation</div><button class="modal-close" onclick="closeModal()">✕</button></div>
+<div class="modal-body">
+  <div class="alert alert-error"><span class="alert-icon">⚠</span><span>Réinitialiser les hypothèses du scénario actif et supprimer les <strong>${runs.length} scénario(s)</strong> de comparaison pour ce projet ?<br>Les données du Block Model et les autres modules ne seront pas modifiés.</span></div>
+</div>
+<div class="modal-footer">
+  <button class="btn" onclick="closeModal()">Annuler</button>
+  <button class="btn btn-danger" id="btn-reset-mineopt" onclick="resetMineOptimization()">Réinitialiser</button>
+</div>`);
+}
+
+function resetMineOptimization() {
+  localStorage.removeItem(mineOptStorageKey('active'));
+  localStorage.removeItem(mineOptStorageKey('runs'));
+  S.mineOpt = { scenario: { ...MINEOPT_DEFAULTS }, result: null };
+  S.mineOpt.result = computeMineOptimization(S.mineOpt.scenario);
+  closeModal();
+  toast('Mine & Optimisation réinitialisé.', 'success');
   rerenderSection();
 }
 
