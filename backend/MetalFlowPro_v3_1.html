@@ -2254,7 +2254,7 @@ async function doCreateProject() {
   }
   const btn = document.getElementById('btn-create-proj'); btn.disabled = true;
   try {
-    const p = await api('POST', '/projects/', { project_name: name, project_code: code, target_tph: tph, gold_grade_g_t: grade, status: phase });
+    const p = await api('POST', '/projects', { project_name: name, project_code: code, target_tph: tph, gold_grade_g_t: grade, status: phase });
     toast(`Projet "${name}" créé avec succès.`);
     closeModal();
     await loadProjects();
