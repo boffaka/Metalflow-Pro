@@ -3188,6 +3188,7 @@ function renderActionBar(sectionId, cfg) {
   let btns = '';
   if (cfg.add) btns += `<button class="btn btn-primary" onclick="${cfg.add}">${icon('plus')} Ajouter</button>`;
   if (cfg.refresh) btns += `<button class="btn" onclick="${cfg.refresh}">${icon('refresh')} Actualiser</button>`;
+  if (cfg.blockModelImport) btns += `<button class="btn btn-teal" onclick="${cfg.blockModelImport}">${icon('upload')} Block Model importé</button>`;
   if (cfg.autoGen) btns += `<button class="btn" onclick="${cfg.autoGen}">${icon('bolt')} Auto-générer</button>`;
   if (cfg.save) btns += `<button class="btn" onclick="${cfg.save}">${icon('check')} Sauvegarder</button>`;
   const hasData = cfg.export || cfg.import;
@@ -3223,7 +3224,7 @@ const ACTION_BAR_CONFIG = {
   audit:         { refresh:"loadAuditLog().then(rerenderSection)" },
   metallurgical_decision: { save: "mdSaveWorkspace()", delete: "deleteSimulationRuns()" },
   geomet_intelligence: { save: "gmieSaveSnapshot()" },
-  mineopt: { refresh:"loadMineOptimization().then(rerenderSection)", save:"saveMineOptimizationScenario()", export:"exportMineOptimizationReport()", reset:"confirmResetMineOptimization()" }
+  mineopt: { refresh:"loadMineOptimization().then(rerenderSection)", blockModelImport:"importMineOptimizationBlockModel()", save:"saveMineOptimizationScenario()", export:"exportMineOptimizationReport()", reset:"confirmResetMineOptimization()" }
 };
 
 function renderSectionContent() {
@@ -25041,6 +25042,29 @@ async function loadMineOptimization() {
   }
   S.mineOpt.scenario = getMineOptScenario();
   S.mineOpt.result = computeMineOptimization(S.mineOpt.scenario);
+}
+
+async function importMineOptimizationBlockModel() {
+  S.mineOpt = S.mineOpt || {};
+  S.mineOpt.loadingBlockModel = true;
+  rerenderSection();
+  try {
+    S.blockModel = null;
+    S.bmStats = null;
+    S.bmCutoff = null;
+    if (typeof loadBlockModel === 'function') await loadBlockModel();
+    if (bmModels && bmModels.length && typeof loadBmStats === 'function') await loadBmStats();
+    const hasImportedBlocks = Number(bmSummary?.total_blocks) > 0 && Number(bmSummary?.total_tonnage) > 0;
+    S.mineOpt.scenario = getMineOptScenario();
+    S.mineOpt.result = computeMineOptimization(S.mineOpt.scenario);
+    S.mineOpt.importedFromBlockModelAt = hasImportedBlocks ? new Date().toISOString() : null;
+    toast(hasImportedBlocks ? 'Données Block Model importées dans Mine & Optimisation.' : 'Aucun Block Model importé disponible; le module conserve le cas de démonstration.', hasImportedBlocks ? 'success' : 'warn');
+  } catch (e) {
+    toast('Import Block Model impossible: ' + (e.message || e), 'error');
+  } finally {
+    S.mineOpt.loadingBlockModel = false;
+    rerenderSection();
+  }
 }
 
 function mineOptDataset() {
