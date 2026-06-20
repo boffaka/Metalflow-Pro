@@ -1118,14 +1118,48 @@ CREATE INDEX IF NOT EXISTS idx_blocks_z ON blocks(config_id, z_center);
 -- DESIGN CRITERIA v2: Circuit Templates & Criteria
 -- =============================================================================
 
+CREATE TABLE IF NOT EXISTS unit_operations_catalog (
+    id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    op_code          TEXT UNIQUE NOT NULL,
+    category         TEXT NOT NULL,
+    label            TEXT NOT NULL,
+    sort_order       INTEGER NOT NULL DEFAULT 0,
+    dependencies     JSONB DEFAULT '[]'::jsonb,
+    lims_triggers    JSONB DEFAULT '{}'::jsonb,
+    default_criteria JSONB DEFAULT '[]'::jsonb
+);
+CREATE INDEX IF NOT EXISTS idx_uoc_category ON unit_operations_catalog(category);
+CREATE INDEX IF NOT EXISTS idx_uoc_sort_order ON unit_operations_catalog(sort_order);
+
 CREATE TABLE IF NOT EXISTS circuit_templates (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
     name TEXT NOT NULL DEFAULT 'Circuit principal',
+    is_active BOOLEAN DEFAULT TRUE,
+    created_by UUID REFERENCES users(id),
+    description TEXT,
     created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    UNIQUE(project_id, name)
 );
 CREATE INDEX IF NOT EXISTS idx_ct_project ON circuit_templates(project_id);
+ALTER TABLE IF EXISTS circuit_templates ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT TRUE;
+ALTER TABLE IF EXISTS circuit_templates ADD COLUMN IF NOT EXISTS created_by UUID REFERENCES users(id);
+ALTER TABLE IF EXISTS circuit_templates ADD COLUMN IF NOT EXISTS description TEXT;
+UPDATE circuit_templates SET is_active = TRUE WHERE is_active IS NULL;
+
+CREATE TABLE IF NOT EXISTS circuit_operations (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    template_id UUID NOT NULL REFERENCES circuit_templates(id) ON DELETE CASCADE,
+    op_code TEXT NOT NULL REFERENCES unit_operations_catalog(op_code),
+    enabled BOOLEAN DEFAULT TRUE,
+    sort_order INTEGER DEFAULT 0,
+    created_by UUID REFERENCES users(id),
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    UNIQUE(template_id, op_code)
+);
+CREATE INDEX IF NOT EXISTS idx_co_template ON circuit_operations(template_id);
+CREATE INDEX IF NOT EXISTS idx_co_opcode ON circuit_operations(template_id, op_code);
 
 CREATE TABLE IF NOT EXISTS circuit_template_operations (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -1167,6 +1201,37 @@ CREATE TABLE IF NOT EXISTS circuit_criteria (
 );
 CREATE INDEX IF NOT EXISTS idx_cc_template ON circuit_criteria(template_id);
 CREATE INDEX IF NOT EXISTS idx_cc_opcode ON circuit_criteria(template_id, op_code);
+
+CREATE TABLE IF NOT EXISTS design_criteria_v2 (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+    template_id UUID NOT NULL REFERENCES circuit_templates(id) ON DELETE CASCADE,
+    op_code TEXT NOT NULL REFERENCES unit_operations_catalog(op_code),
+    ref_number TEXT NOT NULL,
+    section_title TEXT,
+    item TEXT NOT NULL,
+    unit TEXT,
+    design_value NUMERIC,
+    nominal_value NUMERIC,
+    min_value NUMERIC,
+    max_value NUMERIC,
+    source_code TEXT DEFAULT 'X',
+    revision TEXT DEFAULT 'A',
+    author TEXT,
+    comments TEXT,
+    lims_value NUMERIC,
+    industry_default NUMERIC,
+    enabled BOOLEAN DEFAULT TRUE,
+    sort_order INTEGER DEFAULT 0,
+    formula TEXT,
+    dag_key TEXT,
+    value_kind TEXT DEFAULT 'number',
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_dc_v2_project ON design_criteria_v2(project_id);
+CREATE INDEX IF NOT EXISTS idx_dc_v2_template ON design_criteria_v2(template_id);
+CREATE INDEX IF NOT EXISTS idx_dc_v2_opcode ON design_criteria_v2(template_id, op_code);
 
 -- Circuit compilations: snapshot of flowsheet -> circuit_template compilation (v3).
 CREATE TABLE IF NOT EXISTS circuit_compilations (

@@ -4609,7 +4609,9 @@ async function loadSimulationSection() {
   if (!S.pid) return;
   _simInit();
   const _apiv2 = async (path) => {
-    const res = await fetch(API_ORIGIN + path, { credentials: 'include' });
+    const headers = {};
+    if (S.token) headers.Authorization = `Bearer ${S.token}`;
+    const res = await fetch(API_ORIGIN + path, { credentials: 'include', headers });
     if (!res.ok) throw new Error(`HTTP ${res.status} ${path}`);
     return res.json();
   };
@@ -28422,7 +28424,9 @@ S.geomet = S.geomet || {
 
 async function _geometApi(path, body, method) {
   const url = API_ORIGIN + '/api/v1/projects/' + S.pid + '/geomet' + path;
-  const opt = { method: method || (body ? 'POST' : 'GET'), credentials: 'include', headers: { 'Content-Type': 'application/json' } };
+  const headers = { 'Content-Type': 'application/json' };
+  if (S.token) headers.Authorization = `Bearer ${S.token}`;
+  const opt = { method: method || (body ? 'POST' : 'GET'), credentials: 'include', headers };
   if (body !== undefined && body !== null) opt.body = JSON.stringify(body);
   const res = await fetch(url, opt);
   if (!res.ok) {
@@ -28433,12 +28437,82 @@ async function _geometApi(path, body, method) {
   return res.json();
 }
 
+function _gmNormalizeDomainResponse(raw) {
+  const colors = ['#14B8A6', '#F59E0B', '#3B82F6', '#22C55E', '#EF4444', '#8B5CF6'];
+  const asNum = (v) => Number.isFinite(Number(v)) ? Number(v) : null;
+  const routeFor = (oreClass) => {
+    const key = String(oreClass || '').toLowerCase();
+    if (key.includes('refractory')) return 'Oxydation / CIL';
+    if (key.includes('preg')) return 'CIL + charbon actif';
+    if (key.includes('semi')) return 'Flottation + CIL';
+    return 'Gravité + CIL';
+  };
+  const fromGade = (d, i) => {
+    const profile = d.profile || {};
+    return {
+      id: d.domain_id ?? d.id ?? i,
+      code: d.domain_code || `GM-${String(i + 1).padStart(2, '0')}`,
+      name: d.domain_name || d.label || `Domaine ${i + 1}`,
+      color: d.color || colors[i % colors.length],
+      lithology: d.lithology || d.mineral_type || d.ore_class || 'Non défini',
+      tonnage_mt: asNum(d.tonnage_mt),
+      grade_au_g_t: asNum(profile.au_g_t ?? d.grade_au_g_t),
+      bwi_kwh_t: asNum(d.avg_bwi_kwh_t ?? profile.bwi_kwh_t ?? d.bwi_kwh_t),
+      grg_pct: asNum(profile.grg_pct ?? d.grg_pct),
+      sulphide_s_pct: asNum(profile.s_total_pct ?? d.sulphide_s_pct),
+      as_ppm: asNum(profile.as_ppm ?? d.as_ppm),
+      predicted_recovery_pct: asNum(d.avg_recovery_pct ?? d.predicted_recovery_pct ?? profile.au_recovery_pct),
+      preferred_route: d.preferred_route || routeFor(d.ore_class),
+    };
+  };
+  const fromManual = (d, i) => ({
+    id: d.id ?? i,
+    code: d.domain_code || d.code || `GM-${String(i + 1).padStart(2, '0')}`,
+    name: d.domain_name || d.name || `Domaine ${i + 1}`,
+    color: d.color || colors[i % colors.length],
+    lithology: d.lithology || d.mineralization_style || 'Non défini',
+    tonnage_mt: asNum(d.tonnage_mt),
+    grade_au_g_t: asNum(d.grade_au_g_t),
+    bwi_kwh_t: asNum(d.bwi_kwh_t),
+    grg_pct: asNum(d.grg_pct),
+    sulphide_s_pct: asNum(d.sulphide_s_pct),
+    as_ppm: asNum(d.as_ppm),
+    predicted_recovery_pct: asNum(d.predicted_recovery_pct),
+    preferred_route: d.preferred_route || 'A définir',
+  });
+  let items = [];
+  if (Array.isArray(raw)) items = raw.map(fromManual);
+  else if (Array.isArray(raw?.items)) items = raw.items.map(fromManual);
+  else if (Array.isArray(raw?.domains)) items = raw.domains.map(fromGade);
+  const weighted = (key) => {
+    const vals = items.map(x => asNum(x[key])).filter(v => v !== null);
+    if (!vals.length) return null;
+    return vals.reduce((a, b) => a + b, 0) / vals.length;
+  };
+  const totalTonnage = items.reduce((sum, x) => sum + (asNum(x.tonnage_mt) || 0), 0);
+  const avgGrade = weighted('grade_au_g_t');
+  const avgRecovery = weighted('predicted_recovery_pct');
+  return {
+    source_status: raw?.status || 'ok',
+    message: raw?.message || null,
+    items,
+    summary: {
+      n_domains: items.length,
+      total_tonnage_mt: totalTonnage || null,
+      weighted_grade_au_g_t: avgGrade,
+      weighted_recovery_pct: avgRecovery,
+      total_recoverable_oz: totalTonnage && avgGrade && avgRecovery ? totalTonnage * 1000000 * avgGrade * (avgRecovery / 100) / 31.1035 : null,
+    },
+    defaults: raw?.defaults || {},
+  };
+}
+
 globalThis.loadGeometIntelligence = async function () {
   if (!S.pid) return;
   S.geomet = S.geomet || {};
   S.geomet.tab = S.geomet.tab || 'domains';
   try {
-    S.geomet.data = await _geometApi('/domains');
+    S.geomet.data = _gmNormalizeDomainResponse(await _geometApi('/domains'));
     const defaults = S.geomet.data?.defaults || {};
     S.geomet.predict = { bwi:null, grade:null, grg:null, s:null, as:null, ...(defaults.predict || {}), result:null };
     S.geomet.blendConfig = { target_tph:null, horizon_years:null, max_as_ppm:null, max_cn_kg_t:null, target_recovery_pct:null, ...(defaults.blend || {}) };
@@ -28450,7 +28524,7 @@ function _gmFmtInt(x) { return (x===null||x===undefined||isNaN(x))?'—':Math.ro
 
 function _gmRenderDomains() {
   const data = S.geomet.data;
-  if (!data || !data.items) return `<div style="padding:20px;color:var(--txt3)">Chargement…</div>`;
+  if (!data || !Array.isArray(data.items)) return `<div class="card" data-testid="gm-load-error"><div style="padding:28px;text-align:center"><div style="font-size:16px;font-weight:600;color:var(--txt1);margin-bottom:8px">Données géométallurgiques indisponibles</div><div style="max-width:620px;margin:0 auto 14px;color:var(--txt3);font-size:12px;line-height:1.6">Le module n'a pas pu charger les domaines du projet. Vérifiez la connexion au backend puis relancez le chargement.</div><button class="btn btn-gold btn-sm" onclick="loadGeometIntelligence().then(()=>rerenderSection())">Réessayer</button></div></div>`;
   if (!data.items.length) return `<div class="card" data-testid="gm-empty-state"><div style="padding:28px;text-align:center"><div style="font-size:16px;font-weight:600;color:var(--txt1);margin-bottom:8px">Aucun domaine géométallurgique enregistré</div><div style="max-width:620px;margin:0 auto;color:var(--txt3);font-size:12px;line-height:1.6">Importez ou générez des domaines depuis vos données de projet. Le module n'affiche plus de domaines, teneurs ou paramètres métallurgiques fictifs.</div></div></div>`;
   const sm = data.summary;
   const kpi = (lbl, val, unit, color='var(--gold)') => `<div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:12px"><div style="font-size:10px;color:var(--txt3);text-transform:uppercase;letter-spacing:1.2px">${lbl}</div><div style="font-size:22px;font-weight:700;color:${color};margin-top:6px">${val}<span style="font-size:11px;color:var(--txt3);margin-left:4px">${unit}</span></div></div>`;

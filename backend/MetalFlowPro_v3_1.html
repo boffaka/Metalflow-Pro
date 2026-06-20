@@ -3899,7 +3899,9 @@ async function loadSimulationSection() {
   if (!S.pid) return;
   _simInit();
   const _apiv2 = async (path) => {
-    const res = await fetch(window.location.origin + path, { credentials: 'include' });
+    const headers = {};
+    if (S.token) headers.Authorization = `Bearer ${S.token}`;
+    const res = await fetch(window.location.origin + path, { credentials: 'include', headers });
     if (!res.ok) throw new Error(`HTTP ${res.status} ${path}`);
     return res.json();
   };
