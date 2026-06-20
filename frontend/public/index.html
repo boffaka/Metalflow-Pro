@@ -27947,6 +27947,7 @@ globalThis.gmieSaveSnapshot = gmieSaveSnapshot;
 ═══════════════════════════════════════════════════════════════════════ */
 S.simPro = S.simPro || {
   units: {},               // unit-library from backend
+  unitLibraryError: null,
   flowsheet: [],           // [{id,type,params}]
   feed: { tph: 150, gold_grade_g_t: 2.5, p80_um: 200000, solids_pct: 100 },
   lastSimResult: null,
@@ -27960,14 +27961,17 @@ S.simPro = S.simPro || {
 async function loadSimPro() {
   if (!S.pid) return;
   try {
-    const lib = await api('GET', '/sim-pro/unit-library', null);
-    // Note: sim-pro is mounted at /api/v1/sim-pro/* directly, not via /api/v1 prefix
-  } catch (e) { /* try direct path */ }
-  // Use direct fetch since sim-pro routes are at /api/v1/sim-pro
-  try {
-    const r = await fetch(API_ORIGIN + '/api/v1/sim-pro/unit-library', { credentials: 'include' });
-    if (r.ok) S.simPro.units = (await r.json()).units || {};
-  } catch (e) { S.simPro.units = {}; }
+    const headers = {};
+    if (S.token) headers.Authorization = `Bearer ${S.token}`;
+    const res = await fetch(API_ORIGIN + '/api/v2/unit-library', { credentials: 'include', headers });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const lib = await res.json();
+    S.simPro.units = lib?.units || {};
+    S.simPro.unitLibraryError = null;
+  } catch (e) {
+    S.simPro.units = {};
+    S.simPro.unitLibraryError = e?.message || 'Bibliothèque indisponible';
+  }
   if (!S.simPro.flowsheet.length) {
     S.simPro.flowsheet = [
       { id: 'u1', type: 'jaw_crusher', params: {} },
@@ -27996,6 +28000,27 @@ async function _simProApi(path, body) {
 
 function _spFmt(x, d=2) { return (x === null || x === undefined || isNaN(x)) ? '—' : Number(x).toFixed(d); }
 function _spFmtInt(x) { return (x === null || x === undefined || isNaN(x)) ? '—' : Math.round(Number(x)).toLocaleString('fr-FR'); }
+function _spUnitLabel(unitType, spec) {
+  return spec?.label || spec?.display_name || spec?.unit_type || unitType || 'Unité';
+}
+function _spUnitParams(spec) {
+  if (spec?.params && typeof spec.params === 'object') return spec.params;
+  const fromSchema = {};
+  (spec?.param_schema || []).forEach(p => {
+    if (!p?.name) return;
+    fromSchema[p.name] = {
+      label: p.label || p.name,
+      default: p.default ?? spec?.default_params?.[p.name] ?? 0,
+      unit: p.unit || '',
+      min: p.min,
+      max: p.max,
+    };
+  });
+  Object.entries(spec?.default_params || {}).forEach(([name, value]) => {
+    if (!fromSchema[name]) fromSchema[name] = { label: name, default: value, unit: '' };
+  });
+  return fromSchema;
+}
 
 function renderSimPro() {
   const sp = S.simPro;
@@ -28060,16 +28085,23 @@ function _spRenderDesign() {
     <div style="margin-bottom:14px">
       <div style="font-size:10px;color:var(--txt3);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px;font-weight:600">${cat}</div>
       <div style="display:flex;flex-wrap:wrap;gap:6px">
-        ${items.map(it => `<button class="btn btn-sm" onclick="_spAddUnit('${it.key}')" data-testid="sp-add-${it.key}" title="${esc(it.description||'')}">+ ${esc(it.label)}</button>`).join('')}
+        ${items.map(it => `<button class="btn btn-sm" onclick="_spAddUnit('${it.key}')" data-testid="sp-add-${it.key}" title="${esc(it.description||'')}">+ ${esc(_spUnitLabel(it.key, it))}</button>`).join('')}
       </div>
     </div>`).join('');
+  const libraryStatus = palette
+    ? palette
+    : `<div data-testid="sp-unit-library-empty" style="border:1px solid var(--border);border-radius:8px;padding:14px;color:var(--txt3);font-size:12px;line-height:1.5">
+        ${sp.unitLibraryError ? `Bibliothèque indisponible : ${esc(sp.unitLibraryError)}` : 'Bibliothèque vide.'}
+        <div style="margin-top:10px"><button class="btn btn-sm btn-gold" onclick="loadSimPro().then(()=>rerenderSection())">Recharger la bibliothèque</button></div>
+      </div>`;
 
   const chain = sp.flowsheet.map((n, idx) => {
     const spec = sp.units[n.type] || {};
-    const params = { ...(Object.fromEntries(Object.entries(spec.params||{}).map(([k,v])=>[k,v.default]))), ...(n.params||{}) };
-    const paramRows = Object.entries(spec.params||{}).map(([pk, pv]) => `
+    const specParams = _spUnitParams(spec);
+    const params = { ...(Object.fromEntries(Object.entries(specParams).map(([k,v])=>[k,v.default]))), ...(n.params||{}) };
+    const paramRows = Object.entries(specParams).map(([pk, pv]) => `
       <div style="display:flex;align-items:center;gap:6px;margin-top:4px">
-        <label style="font-size:11px;color:var(--txt3);flex:1">${pk}</label>
+        <label style="font-size:11px;color:var(--txt3);flex:1">${esc(pv.label || pk)}</label>
         <input class="input" style="width:90px;padding:4px 6px;font-size:11px" type="number" step="any"
           value="${params[pk]}" onchange="_spSetParam(${idx}, '${pk}', this.value)" data-testid="sp-param-${idx}-${pk}">
         <span style="font-size:10px;color:var(--txt4);width:36px">${pv.unit||''}</span>
@@ -28077,7 +28109,7 @@ function _spRenderDesign() {
     return `<div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px;margin-bottom:8px">
       <div style="display:flex;justify-content:space-between;align-items:center">
         <div><span style="font-family:var(--mono);font-size:10px;color:var(--gold);margin-right:6px">${String(idx+1).padStart(2,'0')}</span>
-          <strong style="color:var(--txt1)">${esc(spec.label||n.type)}</strong>
+          <strong style="color:var(--txt1)">${esc(_spUnitLabel(n.type, spec))}</strong>
           <span style="font-size:10px;color:var(--txt3);margin-left:6px">${esc(spec.category||'')}</span></div>
         <div style="display:flex;gap:4px">
           <button class="btn btn-sm" onclick="_spMove(${idx}, -1)" ${idx===0?'disabled':''}>↑</button>
@@ -28103,7 +28135,7 @@ function _spRenderDesign() {
 <div style="display:grid;grid-template-columns:280px 1fr;gap:12px;margin-top:12px">
   <div class="card"><div style="padding:12px">
     <div style="font-size:12px;color:var(--txt3);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px">Bibliothèque d'unités</div>
-    ${palette}
+    ${libraryStatus}
   </div></div>
   <div class="card"><div style="padding:12px">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
@@ -28175,9 +28207,9 @@ function _spRenderOptimize() {
   const varOptions = [];
   sp.flowsheet.forEach((n, idx) => {
     const spec = sp.units[n.type] || {};
-    Object.entries(spec.params || {}).forEach(([pk, pv]) => {
+    Object.entries(_spUnitParams(spec)).forEach(([pk, pv]) => {
       if (pv.min !== undefined && pv.max !== undefined) {
-        varOptions.push({ node_id: n.id, param: pk, label: `${spec.label}.${pk}`, min: pv.min, max: pv.max });
+        varOptions.push({ node_id: n.id, param: pk, label: `${_spUnitLabel(n.type, spec)}.${pv.label || pk}`, min: pv.min, max: pv.max });
       }
     });
   });
@@ -28243,8 +28275,8 @@ function _spRenderMonteCarlo() {
   const opts = [];
   sp.flowsheet.forEach(n => {
     const spec = sp.units[n.type] || {};
-    Object.entries(spec.params || {}).forEach(([pk, pv]) => {
-      if (pv.min !== undefined) opts.push({ node_id: n.id, param: pk, label: `${spec.label}.${pk}`, def: pv.default });
+    Object.entries(_spUnitParams(spec)).forEach(([pk, pv]) => {
+      if (pv.min !== undefined) opts.push({ node_id: n.id, param: pk, label: `${_spUnitLabel(n.type, spec)}.${pv.label || pk}`, def: pv.default });
     });
   });
   const block = (label, dist) => dist ? `
