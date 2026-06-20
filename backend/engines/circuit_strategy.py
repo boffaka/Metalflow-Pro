@@ -349,7 +349,50 @@ def analyze_circuit_strategy(pid: str, db_qall, db_qone) -> dict[str, Any]:
         cip_cil = None
 
     template_id, template_ops, template_name = _load_active_template(pid, db_qall, db_qone)
-    source_mode = "template_active" if template_ops else "library_fallback"
+    if not template_ops:
+        return {
+            "kind": "circuit_strategy",
+            "project_id": pid,
+            "scenario_source": {
+                "mode": "empty_project",
+                "template_id": template_id,
+                "template_name": template_name,
+                "template_operations": [],
+            },
+            "ore_profile": ore,
+            "cip_cil": cip_cil,
+            "recommendation": {
+                "project_id": pid,
+                "recommended": None,
+                "candidates": [],
+                "evaluated_count": 0,
+                "filtered_out": [],
+                "ore_profile": ore,
+                "justification": "",
+                "comparison_summary": "",
+                "data_sources": {
+                    "lims": False,
+                    "block_model": bool(ore.get("bm_available")),
+                    "design_criteria": bool(ore.get("dc_available")),
+                    "economics": bool(ore.get("economics_available")),
+                },
+                "cip_cil": cip_cil,
+            },
+            "tradeoff": {
+                "kind": "circuit_tradeoff",
+                "project_id": pid,
+                "circuit_ids": [],
+                "recommended": None,
+                "metallurgical_recommendation": {"circuit": None, "circuit_id": None, "rationale": []},
+                "candidates": [],
+                "ore_profile": ore,
+                "cip_cil": cip_cil,
+                "comparison_summary": "",
+                "evaluated_count": 0,
+            },
+        }
+
+    source_mode = "template_active"
 
     recommendation = _recommendation_payload(ore, cip_cil)
     tradeoff = _tradeoff_payload(ore, cip_cil, template_ops)

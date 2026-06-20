@@ -3285,7 +3285,7 @@ function navigateTo(section) {
   const topbarSub = document.querySelector('.topbar-sub');
   if (topbarSub) topbarSub.textContent = sectionLabel();
   rerenderSection();
-  const loaders = { dashboard: loadDashboardData, lims: loadLIMSAll, analysis: loadAnalysisData, granulometry: loadGranulometryData, flowsheet: loadFlowsheets, dc: loadDesignCriteria, circuit_strategy: runCircuitStrategyAnalysis, balance: loadMassBalance, equipment: loadEquipmentV2, economics: loadEconomics, ni43101: globalThis.loadNI43101, reports: globalThis.loadReports, stagegates: globalThis.loadStageGates, risks: globalThis.loadRisks, commissioning: globalThis.loadStageGates, simulation: loadSimulationSection, blockmodel: globalThis.loadBlockModel, analytics: loadAnalyticsDashboard, geotech: loadGeotech, geochem: loadGeochem, automation: loadAutomation, closure: loadClosure, energybalance: loadEnergyBalanceModule, equipmentsizing: loadEquipmentSizingModule, audit: loadAuditLog, geomet_intelligence: loadGeometIntelligence, mineopt: loadMineOptimization, sim_pro: () => globalThis.loadSimPro ? globalThis.loadSimPro() : Promise.resolve() };
+  const loaders = { dashboard: loadDashboardData, lims: loadLIMSAll, analysis: loadAnalysisData, granulometry: loadGranulometryData, flowsheet: loadFlowsheets, dc: loadDesignCriteria, circuit_strategy: () => Promise.resolve(), balance: loadMassBalance, equipment: loadEquipmentV2, economics: loadEconomics, ni43101: globalThis.loadNI43101, reports: globalThis.loadReports, stagegates: globalThis.loadStageGates, risks: globalThis.loadRisks, commissioning: globalThis.loadStageGates, simulation: loadSimulationSection, blockmodel: globalThis.loadBlockModel, analytics: loadAnalyticsDashboard, geotech: loadGeotech, geochem: loadGeochem, automation: loadAutomation, closure: loadClosure, energybalance: loadEnergyBalanceModule, equipmentsizing: loadEquipmentSizingModule, audit: loadAuditLog, geomet_intelligence: loadGeometIntelligence, mineopt: loadMineOptimization, sim_pro: () => globalThis.loadSimPro ? globalThis.loadSimPro() : Promise.resolve() };
   const stateKeys = { dashboard: '_dashboardData', lims: 'samples', analysis: 'analysisData', granulometry: '_psdCharts', flowsheet: 'flowsheets', dc: 'dc', circuit_strategy: '_circuitStrategyResult', balance: 'mbData', equipment: 'merData', economics: 'capex', ni43101: 'ni43101', reports: 'reports', stagegates: 'gates', risks: 'risks', commissioning: 'gates', simulation: null, blockmodel: 'blockModel', analytics: 'analyticsKpis', geotech: 'geotechSlopes', geochem: 'geochemArd', automation: null, closure: 'closureCosts', energybalance: 'ebData', equipmentsizing: 'eqsData', audit: 'auditData', geomet_intelligence: '_geometData', mineopt: 'mineOpt' };
   const stateKey = stateKeys[section];
   const needsLoad = !projectDataIsCurrent() || (section === 'risks'
@@ -17451,8 +17451,11 @@ function renderCircuitStrategy() {
   const geometBlend = strategy?.geomet_blend || recommendation?.geomet_blend || null;
   const active = S.strategyTab || 'recommendation';
   const sourceTemplates = source.templates || [];
+  const isEmptyProjectStrategy = source.mode === 'empty_project';
   const sourceLabel = source.mode === 'project_templates'
     ? `${source.candidate_count || sourceTemplates.length} template(s) projet analysé(s)`
+    : isEmptyProjectStrategy
+      ? 'Aucun template circuit actif avec opérations'
     : 'Aucun résultat calculé';
   const sourceBanner = strategy ? `
 <div class="card" style="margin:10px 0;border-left:3px solid var(--steel);">
@@ -17475,7 +17478,9 @@ function renderCircuitStrategy() {
 </div>` : '';
   const body = active === 'tradeoff'
     ? (tradeoff?.candidates?.length ? tradeoffSectionHTML(tradeoff) : `<div class="card cai-empty"><div class="cai-empty-icon">⚖️</div><div class="empty-title">Trade-off avancé</div><div class="empty-sub">Lancez l'analyse pour comparer les scénarios générés depuis le circuit du projet.</div></div>`)
-    : (recommendation?.recommended ? circuitOptimizerSectionHTML(recommendation) : `<div class="card cai-empty"><div class="cai-empty-icon">⚗️</div><div class="empty-title">Prêt pour l'analyse métallurgique</div><div class="empty-sub" style="max-width:430px;margin:0 auto">Lancez l'analyse pour classer les scénarios du projet et obtenir une recommandation argumentée.</div></div>`);
+    : isEmptyProjectStrategy
+      ? `<div class="card cai-empty"><div class="cai-empty-icon">⚗️</div><div class="empty-title">Aucun scénario circuit disponible</div><div class="empty-sub" style="max-width:520px;margin:0 auto">Créez ou activez un template de circuit avec des opérations projet avant de lancer la stratégie IA. Aucun circuit de démonstration n'est généré pour un nouveau projet.</div></div>`
+      : (recommendation?.recommended ? circuitOptimizerSectionHTML(recommendation) : `<div class="card cai-empty"><div class="cai-empty-icon">⚗️</div><div class="empty-title">Prêt pour l'analyse métallurgique</div><div class="empty-sub" style="max-width:430px;margin:0 auto">Lancez l'analyse pour classer les scénarios du projet et obtenir une recommandation argumentée.</div></div>`);
   return `
 ${renderBreadcrumb('circuit_strategy')}
 ${renderActionBar('circuit_strategy', ACTION_BAR_CONFIG.circuit_strategy)}
@@ -24999,18 +25004,19 @@ function renderBlockModel() {
    MINE & OPTIMISATION — MVP stratégique open pit
 ════════════════════════════════════════════════════════ */
 const MINEOPT_DEFAULTS = {
-  activeTab: 'planning', price: 2400, miningCost: 3.8, processingCost: 21, gaCost: 4,
-  recovery: 89, payable: 99, discountRate: 8, slopeAngle: 48, shellCount: 8, selectedShell: 6,
-  horizonYears: 12, mineCapacityMt: 22, plantCapacityMt: 13, cutoff: 0.45,
-  dilution: 5, miningRecovery: 95, oreLoss: 2, stockpileEnabled: true, noGoPct: 0,
+  activeTab: 'planning', price: null, miningCost: null, processingCost: null, gaCost: null,
+  recovery: null, payable: null, discountRate: null, slopeAngle: null, shellCount: null, selectedShell: null,
+  horizonYears: null, mineCapacityMt: null, plantCapacityMt: null, cutoff: null,
+  dilution: null, miningRecovery: null, oreLoss: null, stockpileEnabled: false, noGoPct: null,
 };
+const MINEOPT_REQUIRED_FIELDS = ['price','miningCost','processingCost','gaCost','recovery','payable','discountRate','slopeAngle','shellCount','selectedShell','horizonYears','mineCapacityMt','plantCapacityMt','dilution','miningRecovery','oreLoss'];
 
 function mineOptStorageKey(suffix) { return `metalflow.mineopt.${S.pid || 'no-project'}.${suffix}`; }
 
 function getMineOptScenario() {
   let saved = {};
   try { saved = JSON.parse(localStorage.getItem(mineOptStorageKey('active')) || '{}'); } catch (_) {}
-  S.mineOpt = S.mineOpt || {};
+  if (!S.mineOpt || S.mineOpt._pid !== S.pid) S.mineOpt = { _pid: S.pid };
   S.mineOpt.scenario = { ...MINEOPT_DEFAULTS, ...saved, ...(S.mineOpt.scenario || {}) };
   return S.mineOpt.scenario;
 }
@@ -25032,15 +25038,15 @@ function readMineOptInputs() {
   ['price','miningCost','processingCost','gaCost','recovery','payable','discountRate','slopeAngle','shellCount','selectedShell','horizonYears','mineCapacityMt','plantCapacityMt','cutoff','dilution','miningRecovery','oreLoss','noGoPct']
     .forEach(k => sc[k] = mineOptReadNumber('mo-' + k, sc[k]));
   sc.stockpileEnabled = !!document.getElementById('mo-stockpileEnabled')?.checked;
-  sc.shellCount = Math.max(3, Math.min(20, Math.round(sc.shellCount)));
-  sc.selectedShell = Math.max(1, Math.min(sc.shellCount, Math.round(sc.selectedShell)));
-  sc.horizonYears = Math.max(1, Math.min(40, Math.round(sc.horizonYears)));
+  if (Number.isFinite(Number(sc.shellCount))) sc.shellCount = Math.max(3, Math.min(20, Math.round(Number(sc.shellCount))));
+  if (Number.isFinite(Number(sc.selectedShell)) && Number.isFinite(Number(sc.shellCount))) sc.selectedShell = Math.max(1, Math.min(sc.shellCount, Math.round(Number(sc.selectedShell))));
+  if (Number.isFinite(Number(sc.horizonYears))) sc.horizonYears = Math.max(1, Math.min(40, Math.round(Number(sc.horizonYears))));
   localStorage.setItem(mineOptStorageKey('active'), JSON.stringify(sc));
   return sc;
 }
 
 async function loadMineOptimization() {
-  S.mineOpt = S.mineOpt || {};
+  if (!S.mineOpt || S.mineOpt._pid !== S.pid) S.mineOpt = { _pid: S.pid };
   if (!S.blockModel && typeof loadBlockModel === 'function') await loadBlockModel();
   if (bmModels && bmModels.length && !S.bmStats && typeof loadBmStats === 'function') {
     try { await loadBmStats(); } catch (_) {}
@@ -25063,7 +25069,7 @@ async function importMineOptimizationBlockModel() {
     S.mineOpt.scenario = getMineOptScenario();
     S.mineOpt.result = computeMineOptimization(S.mineOpt.scenario);
     S.mineOpt.importedFromBlockModelAt = hasImportedBlocks ? new Date().toISOString() : null;
-    toast(hasImportedBlocks ? 'Données Block Model importées dans Mine & Optimisation.' : 'Aucun Block Model importé disponible; le module conserve le cas de démonstration.', hasImportedBlocks ? 'success' : 'warn');
+    toast(hasImportedBlocks ? 'Données Block Model importées dans Mine & Optimisation.' : 'Aucun Block Model importé disponible.', hasImportedBlocks ? 'success' : 'warn');
   } catch (e) {
     toast('Import Block Model impossible: ' + (e.message || e), 'error');
   } finally {
@@ -25075,22 +25081,39 @@ async function importMineOptimizationBlockModel() {
 function mineOptDataset() {
   const summary = bmSummary || {};
   const stats = S.bmStats || {};
-  const project = S.project || {};
-  const projectTph = Number(project.target_tph) || 1500;
-  const fallbackOreTonnage = projectTph * 24 * 365 * 10;
-  const totalTonnage = Number(summary.total_tonnage) || fallbackOreTonnage;
-  const avgGrade = Number(summary.avg_grade) || Number(project.gold_grade_g_t) || 1.1;
-  const blocks = Number(summary.total_blocks) || 120000;
+  const totalTonnage = Number(summary.total_tonnage) || 0;
+  const avgGrade = Number(summary.avg_grade) || null;
+  const blocks = Number(summary.total_blocks) || 0;
+  const hasData = blocks > 0 && totalTonnage > 0 && Number(avgGrade) > 0;
   return {
-    source: Number(summary.total_blocks) > 0 ? 'Block Model importé' : 'Cas de démonstration basé projet',
+    hasData,
+    source: hasData ? 'Block Model importé' : 'Aucun Block Model importé',
     totalTonnage, avgGrade, blocks,
-    byRock: Array.isArray(stats.by_rock_type) && stats.by_rock_type.length ? stats.by_rock_type : [{ rock_type:'Minerai modèle', total_tonnage: totalTonnage, avg_grade: avgGrade, block_count: blocks }],
+    byRock: hasData && Array.isArray(stats.by_rock_type) && stats.by_rock_type.length ? stats.by_rock_type : [],
   };
 }
 
 function computeMineOptimization(scenario = getMineOptScenario()) {
   const ds = mineOptDataset();
   const sc = { ...MINEOPT_DEFAULTS, ...scenario };
+  const missingInputs = MINEOPT_REQUIRED_FIELDS.filter(k => !Number.isFinite(Number(sc[k])));
+  if (!ds.hasData || missingInputs.length) {
+    return {
+      empty: true,
+      scenario: sc,
+      dataset: ds,
+      shells: [],
+      selected: null,
+      schedule: [],
+      reserves: { dilutedT: null, dilutedGrade: null, recoveredKoz: null, conversionPct: null },
+      npv: null,
+      undiscounted: null,
+      missingInputs,
+    };
+  }
+  sc.shellCount = Math.max(3, Math.min(20, Math.round(Number(sc.shellCount))));
+  sc.selectedShell = Math.max(1, Math.min(sc.shellCount, Math.round(Number(sc.selectedShell))));
+  sc.horizonYears = Math.max(1, Math.min(40, Math.round(Number(sc.horizonYears))));
   const noGoFactor = Math.max(0, Math.min(1, 1 - (Number(sc.noGoPct) || 0) / 100));
   const eligibleOre = ds.totalTonnage * noGoFactor;
   const grade = ds.avgGrade;
@@ -25139,6 +25162,9 @@ function computeMineOptimization(scenario = getMineOptScenario()) {
 }
 
 function mineOptKpi(result) {
+  if (!result || result.empty || !result.selected) {
+    return { npvM: null, oreMt: null, wasteMt: null, strip: null, grade: null, metalKoz: null, reserveMt: null, recoveredKoz: null, lom: null };
+  }
   const sel = result.selected || {};
   return { npvM: result.npv / 1e6, oreMt: sel.oreT / 1e6, wasteMt: sel.wasteT / 1e6, strip: sel.strip, grade: sel.grade, metalKoz: sel.metalKoz, reserveMt: result.reserves.dilutedT / 1e6, recoveredKoz: result.reserves.recoveredKoz, lom: result.schedule.length };
 }
@@ -25148,7 +25174,8 @@ function runMineOptimizationScenario() {
   S.mineOpt = S.mineOpt || {};
   S.mineOpt.result = computeMineOptimization(sc);
   saveMineOptimizationScenario();
-  toast('Scénario Mine & Optimisation recalculé.');
+  if (S.mineOpt.result.empty) toast('Scénario non calculé: importez un Block Model et complétez les hypothèses requises.', 'warning');
+  else toast('Scénario Mine & Optimisation recalculé.');
   rerenderSection();
 }
 
@@ -25159,6 +25186,11 @@ function getMineOptRuns() {
 function duplicateMineOptimizationScenario() {
   const sc = readMineOptInputs();
   const result = computeMineOptimization(sc);
+  if (result.empty) {
+    toast('Impossible d’ajouter un scénario vide. Importez un Block Model et complétez les hypothèses.', 'warning');
+    rerenderSection();
+    return;
+  }
   const runs = getMineOptRuns();
   const name = document.getElementById('mo-run-name')?.value.trim() || `Scénario ${runs.length + 1}`;
   runs.unshift({ id: 'mo-' + Date.now(), name, created_at: new Date().toISOString(), scenario: { ...sc }, kpi: mineOptKpi(result) });
@@ -25188,7 +25220,7 @@ function confirmResetMineOptimization() {
 function resetMineOptimization() {
   localStorage.removeItem(mineOptStorageKey('active'));
   localStorage.removeItem(mineOptStorageKey('runs'));
-  S.mineOpt = { scenario: { ...MINEOPT_DEFAULTS }, result: null };
+  S.mineOpt = { _pid: S.pid, scenario: { ...MINEOPT_DEFAULTS }, result: null };
   S.mineOpt.result = computeMineOptimization(S.mineOpt.scenario);
   closeModal();
   toast('Mine & Optimisation réinitialisé.', 'success');
@@ -25198,7 +25230,7 @@ function resetMineOptimization() {
 function loadMineOptRun(id) {
   const run = getMineOptRuns().find(r => r.id === id);
   if (!run) return;
-  S.mineOpt = S.mineOpt || {};
+  if (!S.mineOpt || S.mineOpt._pid !== S.pid) S.mineOpt = { _pid: S.pid };
   S.mineOpt.scenario = { ...MINEOPT_DEFAULTS, ...run.scenario };
   localStorage.setItem(mineOptStorageKey('active'), JSON.stringify(S.mineOpt.scenario));
   S.mineOpt.result = computeMineOptimization(S.mineOpt.scenario);
@@ -25215,6 +25247,10 @@ function setMineOptTab(tab) {
 
 function exportMineOptimizationReport() {
   const result = S.mineOpt?.result || computeMineOptimization(getMineOptScenario());
+  if (result.empty) {
+    toast('Aucun résultat Mine & Optimisation à exporter. Importez un Block Model et renseignez les hypothèses.', 'warning');
+    return;
+  }
   const rows = [
     ['Mine & Optimisation - Rapport MVP'], ['Projet', S.project?.project_name || ''], ['Source données', result.dataset.source], ['VAN / NPV (M$)', (result.npv / 1e6).toFixed(2)], [],
     ['Shell', 'RF', 'Ore Mt', 'Waste Mt', 'Strip', 'Au g/t', 'Valeur M$'],
@@ -25234,14 +25270,19 @@ function renderMineOptimization() {
   const tab = sc.activeTab || 'planning';
   const k = mineOptKpi(result);
   const tabBtn = (id, label) => `<button class="btn btn-sm ${tab===id?'btn-gold':''}" onclick="setMineOptTab('${id}')">${label}</button>`;
-  const numInput = (key, label, step='0.1', unit='') => `<div class="form-group"><label class="form-label">${label}${unit ? ` <span style="color:var(--txt4)">(${unit})</span>` : ''}</label><input class="input mono" id="mo-${key}" type="number" step="${step}" value="${escAttr(sc[key])}"></div>`;
+  const numInput = (key, label, step='0.1', unit='') => `<div class="form-group"><label class="form-label">${label}${unit ? ` <span style="color:var(--txt4)">(${unit})</span>` : ''}</label><input class="input mono" id="mo-${key}" type="number" step="${step}" value="${escAttr(sc[key] ?? '')}"></div>`;
+  const detail = result.empty ? renderMineOptEmpty(result)
+    : tab === 'pit' ? renderMineOptPit(result)
+    : tab === 'reserves' ? renderMineOptReserves(result)
+    : tab === 'compare' ? renderMineOptCompare(result)
+    : renderMineOptPlanning(result);
   return `
 ${renderBreadcrumb('mineopt')}
 ${renderActionBar('mineopt', ACTION_BAR_CONFIG.mineopt)}
-<div class="alert alert-info mb12"><span class="alert-icon">i</span><span>Module MVP stratégique : les résultats utilisent une optimisation économique simplifiée et un séquencement heuristique. Chaque scénario reste versionné localement pour comparaison et audit.</span></div>
+<div class="alert alert-info mb12"><span class="alert-icon">i</span><span>Le module démarre vide. Importez un Block Model puis renseignez les hypothèses économiques, minières et métallurgiques pour calculer les scénarios.</span></div>
 <div class="kpi-grid kpi-grid-4 mb16">
   <div class="kpi"><div class="kpi-label">VAN / NPV</div><div class="kpi-val t-gold">${fmt(k.npvM,1)}<span class="unit">M$</span></div><div class="kpi-sub">${esc(result.dataset.source)}</div></div>
-  <div class="kpi"><div class="kpi-label">Ore in selected shell</div><div class="kpi-val">${fmt(k.oreMt,2)}<span class="unit">Mt</span></div><div class="kpi-sub">Shell ${result.selected.shellNo} · RF ${fmt(result.selected.revenueFactor,2)}</div></div>
+  <div class="kpi"><div class="kpi-label">Ore in selected shell</div><div class="kpi-val">${fmt(k.oreMt,2)}<span class="unit">Mt</span></div><div class="kpi-sub">${result.selected ? `Shell ${result.selected.shellNo} · RF ${fmt(result.selected.revenueFactor,2)}` : 'Non calculé'}</div></div>
   <div class="kpi"><div class="kpi-label">Strip ratio</div><div class="kpi-val">${fmt(k.strip,2)}<span class="unit">t/t</span></div><div class="kpi-sub">${fmt(k.wasteMt,2)} Mt waste</div></div>
   <div class="kpi"><div class="kpi-label">Réserves récupérables</div><div class="kpi-val">${fmt(k.recoveredKoz,0)}<span class="unit">koz</span></div><div class="kpi-sub">${fmt(k.reserveMt,2)} Mt après facteurs</div></div>
 </div>
@@ -25263,8 +25304,23 @@ ${renderActionBar('mineopt', ACTION_BAR_CONFIG.mineopt)}
     <label style="display:flex;gap:8px;align-items:center;margin:6px 0 12px;color:var(--txt2);font-size:12px;"><input id="mo-stockpileEnabled" type="checkbox" ${sc.stockpileEnabled?'checked':''}> Activer stockpile tampon</label>
     <div style="display:flex;gap:8px;flex-wrap:wrap;"><button class="btn btn-gold" onclick="runMineOptimizationScenario()">${icon('bolt')} Recalculer</button><input class="input" id="mo-run-name" style="max-width:220px" placeholder="Nom scénario"><button class="btn" onclick="duplicateMineOptimizationScenario()">Ajouter à la comparaison</button></div>
   </div>
-  <div>${tab === 'pit' ? renderMineOptPit(result) : tab === 'reserves' ? renderMineOptReserves(result) : tab === 'compare' ? renderMineOptCompare(result) : renderMineOptPlanning(result)}</div>
+  <div>${detail}</div>
 </div>`;
+}
+
+function renderMineOptEmpty(result) {
+  const missingData = !result.dataset?.hasData;
+  const missingInputs = result.missingInputs || [];
+  return `<div class="card" style="padding:18px;">
+    <div class="empty" style="padding:18px 10px;">
+      <div class="empty-icon">⛏</div>
+      <div class="empty-title">Aucun scénario Mine & Optimisation calculé</div>
+      <div class="empty-sub" style="max-width:560px;margin:0 auto;">
+        ${missingData ? 'Importez d’abord un Block Model pour fournir le tonnage, les blocs et la teneur.' : 'Complétez les hypothèses requises puis lancez le recalcul.'}
+      </div>
+    </div>
+    ${missingInputs.length ? `<div class="alert alert-info mt16"><span class="alert-icon">i</span><span>Hypothèses manquantes : ${missingInputs.map(k => esc(k)).join(', ')}</span></div>` : ''}
+  </div>`;
 }
 
 function renderMineOptPit(result) {
