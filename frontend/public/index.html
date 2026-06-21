@@ -1841,12 +1841,14 @@ const CFG = {
       {k:'mib_kwh_t',          label:'Mib — Ball mill energy (kWh/t)',   type:'number', step:'0.1'},
       {k:'mic_kwh_t',          label:'Mic — Crushing energy (kWh/t)',    type:'number', step:'0.01'},
       {k:'mih_kwh_t',          label:'Mih — HPGR energy (kWh/t)',       type:'number', step:'0.01'},
+      {k:'smc_scse_kwh_t',     label:'SCSE — SAG Circuit Specific Energy (kWh/t)', type:'number', step:'0.01'},
       // ── Abrasion & Propriétés physiques ──
       {k:'abrasion_index_ai',  label:'Ai — Bond Abrasion Index',        type:'number', step:'0.001'},
       {k:'ucs_mpa',            label:'UCS (MPa)',                        type:'number', step:'0.1'},
       {k:'f80_um',             label:'F80 — Feed size (μm)',             type:'number', step:'1'},
       {k:'p80_target_um',      label:'P80 — Product size (μm)',          type:'number', step:'1'},
-      {k:'bulk_density_t_m3',  label:'SG — Densité réelle (t/m³)',       type:'number', step:'0.01'},
+      {k:'sg',                 label:'SG — Densité réelle solide (t/m³)', type:'number', step:'0.01'},
+      {k:'bulk_density_t_m3',  label:'ρb — Densité apparente bulk (t/m³)', type:'number', step:'0.01'},
       {k:'sag_classification', label:'Classification SAG',               type:'text'},
     ],
     c2: [
@@ -23597,7 +23599,7 @@ function downloadTemplate(code) {
       "Au (g/t)", "Ag (g/t)", "Cu (%)", "Fe (%)", "S total (%)", "S sulfure (%)",
       "As (ppm)", "C organique (%)", "Sb (ppm)", "Hg (ppm)",
       "SiO₂ (%)", "Al₂O₃ (%)", "CaO (%)", "MgO (%)", "Na₂O (%)", "K₂O (%)",
-      "TiO₂ (%)", "MnO (%)", "LOI (950°C) (%)"
+      "TiO₂ (%)", "MnO (%)", "LOI (950°C) (%)", "C total (%)", "S sulfate (%)"
     ];
     const data = [catRow, colHeaders];
     samples.forEach(s => {
