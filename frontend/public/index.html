@@ -10262,19 +10262,28 @@ function renderSamples() {
 ${samples.length === 0 ? `<div class="empty card"><div class="empty-icon">🧪</div><div class="empty-title">Aucun échantillon</div><div class="empty-sub">Ajoutez des échantillons pour commencer à saisir les résultats d'essais.</div></div>` : `
 <div class="card">
   <div class="tbl-wrap">
-  <table class="tbl">
-    <thead><tr><th>ID Affichage</th><th>Phase</th><th>Type</th><th>Lithologie</th><th>Actions</th></tr></thead>
+  <table class="tbl" style="font-size:12px;min-width:1180px">
+    <thead><tr><th>ID Affichage</th><th>Phase</th><th>Type</th><th>Lithologie</th><th class="t-right">Masse totale (kg)</th><th class="t-right">Masse envoyée (kg)</th><th>État oxydation</th><th>Domaine géomét.</th><th>Actions</th></tr></thead>
     <tbody>
-    ${samples.map(s => `<tr>
-      <td class="mono t-gold">${s.sample_id_display || s.id}</td>
+    ${samples.map(s => {
+      const totalMassKg = s.total_mass_kg ?? s.mass_kg;
+      const sentMassKg = s.sent_mass_kg ?? s.mass_sent_kg;
+      const geometDomain = s.domain ?? s.geomet_domain;
+      return `<tr>
+      <td class="mono t-gold">${esc(s.sample_id_display || s.id)}</td>
       <td>${statusBadge(s.phase)}</td>
-      <td><span class="badge badge-gray">${s.sample_type || '—'}</span></td>
-      <td>${s.lithology || '—'}</td>
+      <td><span class="badge badge-gray">${esc(s.sample_type || '—')}</span></td>
+      <td>${esc(s.lithology || '—')}</td>
+      <td class="mono t-right">${fmtAuto(totalMassKg)}</td>
+      <td class="mono t-right">${fmtAuto(sentMassKg)}</td>
+      <td>${esc(s.oxidation_state || '—')}</td>
+      <td>${esc(geometDomain || '—')}</td>
       <td style="white-space:nowrap">
         <button class="btn btn-sm btn-icon" onclick="openEditSample(${JSON.stringify(s).replace(/"/g,'&quot;')})" title="Modifier">${icon('edit')}</button>
         <button class="btn btn-sm btn-danger btn-icon" onclick="confirmDeleteSample('${s.id}','${(s.sample_id_display||'').replace(/'/g,'\\\'')}')" title="Supprimer">${icon('trash')}</button>
       </td>
-    </tr>`).join('')}
+    </tr>`;
+    }).join('')}
     </tbody>
   </table>
   </div>
