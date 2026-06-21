@@ -78,6 +78,29 @@ CREATE TABLE IF NOT EXISTS refresh_sessions (
 CREATE INDEX IF NOT EXISTS idx_refresh_sessions_user ON refresh_sessions(user_id);
 CREATE INDEX IF NOT EXISTS idx_refresh_sessions_token_hash ON refresh_sessions(token_hash);
 
+CREATE TABLE IF NOT EXISTS module_generation_status (
+    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    project_id      UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+    module_code     VARCHAR(50) NOT NULL,
+    status          VARCHAR(20) NOT NULL DEFAULT 'pending'
+                    CHECK (status IN ('pending','ready','generating','complete','stale','error','skipped')),
+    generated_at    TIMESTAMPTZ,
+    generated_by    UUID REFERENCES users(id) ON DELETE SET NULL,
+    source_hash     VARCHAR(64),
+    input_count     INTEGER DEFAULT 0,
+    triggered_by    VARCHAR(50),
+    warnings        JSONB NOT NULL DEFAULT '[]',
+    errors          JSONB NOT NULL DEFAULT '[]',
+    input_snapshot  JSONB NOT NULL DEFAULT '{}',
+    created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    UNIQUE(project_id, module_code)
+);
+CREATE INDEX IF NOT EXISTS idx_mgs_project ON module_generation_status(project_id);
+CREATE INDEX IF NOT EXISTS idx_mgs_status ON module_generation_status(project_id, status);
+CREATE INDEX IF NOT EXISTS idx_mgs_module_code ON module_generation_status(module_code);
+CREATE INDEX IF NOT EXISTS idx_mgs_generated ON module_generation_status(generated_at DESC NULLS LAST);
+
 -- =============================================================================
 -- LIMS: Samples & Test Results
 -- =============================================================================
