@@ -48,3 +48,15 @@ def test_g1_flotation_template_columns_are_bootstrapped():
             f"ALTER TABLE IF EXISTS lims_flotation ADD COLUMN IF NOT EXISTS {column}" in schema
             or f"{column} NUMERIC" in schema
         )
+
+
+def test_h1_elution_template_columns_are_bootstrapped():
+    schema = (Path(__file__).resolve().parents[1] / "schema.sql").read_text()
+    for column in LIMS_FIELDS["h1"]:
+        if column == "sample_id":
+            continue
+        assert (
+            f"ALTER TABLE IF EXISTS lims_elution ADD COLUMN IF NOT EXISTS {column}" in schema
+            or f"{column} NUMERIC" in schema
+            or f"{column} TEXT" in schema
+        )

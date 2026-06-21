@@ -301,6 +301,21 @@ CREATE TABLE IF NOT EXISTS lims_elution (
     cycle_time_h                NUMERIC, carbon_loading_g_t NUMERIC,
     created_at                  TIMESTAMPTZ DEFAULT NOW()
 );
+ALTER TABLE IF EXISTS lims_elution ADD COLUMN IF NOT EXISTS type_test TEXT;
+ALTER TABLE IF EXISTS lims_elution ADD COLUMN IF NOT EXISTS charbon_type TEXT;
+ALTER TABLE IF EXISTS lims_elution ADD COLUMN IF NOT EXISTS charge_charbon_g_l NUMERIC;
+ALTER TABLE IF EXISTS lims_elution ADD COLUMN IF NOT EXISTS au_solution_ini_mg_l NUMERIC;
+ALTER TABLE IF EXISTS lims_elution ADD COLUMN IF NOT EXISTS au_solution_fin_mg_l NUMERIC;
+ALTER TABLE IF EXISTS lims_elution ADD COLUMN IF NOT EXISTS kinetique_adsorption TEXT;
+ALTER TABLE IF EXISTS lims_elution ADD COLUMN IF NOT EXISTS elution_t_c NUMERIC;
+ALTER TABLE IF EXISTS lims_elution ADD COLUMN IF NOT EXISTS eluant_cn_g_l NUMERIC;
+ALTER TABLE IF EXISTS lims_elution ADD COLUMN IF NOT EXISTS eluant_naoh_g_l NUMERIC;
+ALTER TABLE IF EXISTS lims_elution ADD COLUMN IF NOT EXISTS debit_bv_h NUMERIC;
+ALTER TABLE IF EXISTS lims_elution ADD COLUMN IF NOT EXISTS temps_elution_h NUMERIC;
+ALTER TABLE IF EXISTS lims_elution ADD COLUMN IF NOT EXISTS au_elue_mg_l NUMERIC;
+ALTER TABLE IF EXISTS lims_elution ADD COLUMN IF NOT EXISTS recup_au_elution_pct NUMERIC;
+ALTER TABLE IF EXISTS lims_elution ADD COLUMN IF NOT EXISTS fines_charbon_pct NUMERIC;
+ALTER TABLE IF EXISTS lims_elution ADD COLUMN IF NOT EXISTS observations TEXT;
 
 CREATE TABLE IF NOT EXISTS lims_environmental (
     id                      UUID PRIMARY KEY DEFAULT gen_random_uuid(),
