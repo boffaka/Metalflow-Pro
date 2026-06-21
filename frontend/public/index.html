@@ -23340,27 +23340,16 @@ function downloadTemplate(code) {
       "ID Affichage (Ex: MET-001)", "Phase (SCOPING, PFS, FS...)",
       "Type (Variability, Composite, Geometallurgical, Bulk, CRM, Blank)",
       "Lithologie (oxide, sulphide, transition...)",
-      "Source / Horizon", "Profondeur / Intervalle",
       "Masse totale (kg)", "Masse envoyée (kg)",
-      "Date prélèvement (YYYY-MM-DD)", "Date réception lab (YYYY-MM-DD)",
-      "Méthode prélèvement", "Protocole QAQC",
-      "Standard CRM inséré", "Fréquence duplicata", "Fréquence blanc",
-      "Conditionnement", "État oxydation (Fresh, Transitional, Oxidized, Supergene)",
-      "Domaine géomét.", "Statut", "Observations"
+      "État oxydation (Fresh, Transitional, Oxidized, Supergene)",
+      "Domaine géomét."
     ];
     const data = [headers];
-    data.push(["SAM-001", "PFS", "Variability", "sulphide", "Zone A – RC-001", "0–50 m",
-               "25", "5", "2026-01-15", "2026-01-20", "¼ carotte", "QAQC-01",
-               "CRM-Au-1", "1:20", "1:40", "Sac hermétique", "Fresh", "Domain-A", "Reçu", ""]);
-    data.push(["SAM-002", "PFS", "Composite", "oxide", "Zone B – RC-005", "0–80 m",
-               "50", "10", "2026-01-16", "2026-01-22", "Composite proportionnel", "QAQC-01",
-               "CRM-Au-2", "1:20", "1:40", "Sac 50kg", "Oxidized", "Domain-B", "Reçu", "Test principal"]);
 
     const ws = XLSX.utils.aoa_to_sheet(data);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "SAM-00 Echantillonnage");
-    ws['!cols'] = headers.map(() => ({wch: 22}));
-    ws['!cols'][0] = {wch: 28};
+    ws['!cols'] = [{wch: 29}, {wch: 30}, {wch: 57}, {wch: 37}, {wch: 23}, {wch: 13}, {wch: 51}, {wch: 23}];
     XLSX.writeFile(wb, `MET_SAM00_Echantillonnage.xlsx`);
     toast(`Template SAM-00 Échantillonnage téléchargé (${headers.length} colonnes).`);
     return;
@@ -23854,6 +23843,9 @@ async function importLIMSTemplate(event, code) {
     }
 
     if (code === 'samples') {
+      const headerRow = rows[dataStartRow - 1] || [];
+      const normHeader = headerRow.map(h => String(h || '').toLowerCase());
+      const isCompactSam00 = normHeader[4]?.includes('masse') && normHeader[4]?.includes('totale');
       // Build all sample bodies first, then bulk POST.
       const bodies = [];
       const lineRefs = [];
@@ -23868,14 +23860,22 @@ async function importLIMSTemplate(event, code) {
         if (phase) body.phase = phase;
         if (type) body.sample_type = type;
         if (lith) body.lithology = lith;
-        const samFields = ['source_horizon','depth_interval','total_mass_kg','sent_mass_kg',
-          'collection_date','reception_date','collection_method','qaqc_protocol',
-          'crm_standard','duplicate_freq','blank_freq','packaging',
-          'oxidation_state','domain','status','observations'];
-        samFields.forEach((k, idx) => {
-          const val = row[4 + idx];
-          if (val !== undefined && val !== "" && val !== null) body[k] = val;
-        });
+        if (isCompactSam00) {
+          const compactFields = ['total_mass_kg','sent_mass_kg','oxidation_state','domain'];
+          compactFields.forEach((k, idx) => {
+            const val = row[4 + idx];
+            if (val !== undefined && val !== "" && val !== null) body[k] = val;
+          });
+        } else {
+          const samFields = ['source_horizon','depth_interval','total_mass_kg','sent_mass_kg',
+            'collection_date','reception_date','collection_method','qaqc_protocol',
+            'crm_standard','duplicate_freq','blank_freq','packaging',
+            'oxidation_state','domain','status','observations'];
+          samFields.forEach((k, idx) => {
+            const val = row[4 + idx];
+            if (val !== undefined && val !== "" && val !== null) body[k] = val;
+          });
+        }
         bodies.push(body);
         lineRefs.push(i + 1);
       }
