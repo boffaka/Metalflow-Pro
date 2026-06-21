@@ -109,6 +109,25 @@ CREATE TABLE IF NOT EXISTS lims_samples (
     observations            TEXT,
     created_at              TIMESTAMPTZ DEFAULT NOW()
 );
+ALTER TABLE IF EXISTS lims_samples ADD COLUMN IF NOT EXISTS source_horizon TEXT;
+ALTER TABLE IF EXISTS lims_samples ADD COLUMN IF NOT EXISTS total_mass_kg NUMERIC;
+ALTER TABLE IF EXISTS lims_samples ADD COLUMN IF NOT EXISTS sent_mass_kg NUMERIC;
+ALTER TABLE IF EXISTS lims_samples ADD COLUMN IF NOT EXISTS collection_date DATE;
+ALTER TABLE IF EXISTS lims_samples ADD COLUMN IF NOT EXISTS reception_date DATE;
+ALTER TABLE IF EXISTS lims_samples ADD COLUMN IF NOT EXISTS collection_method TEXT;
+ALTER TABLE IF EXISTS lims_samples ADD COLUMN IF NOT EXISTS duplicate_freq TEXT;
+ALTER TABLE IF EXISTS lims_samples ADD COLUMN IF NOT EXISTS blank_freq TEXT;
+ALTER TABLE IF EXISTS lims_samples ADD COLUMN IF NOT EXISTS domain TEXT;
+ALTER TABLE IF EXISTS lims_samples ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'Reçu';
+ALTER TABLE IF EXISTS lims_samples ADD COLUMN IF NOT EXISTS sort_order INTEGER DEFAULT 0;
+UPDATE lims_samples SET sent_mass_kg = mass_sent_kg WHERE sent_mass_kg IS NULL AND mass_sent_kg IS NOT NULL;
+UPDATE lims_samples SET collection_date = sampling_date WHERE collection_date IS NULL AND sampling_date IS NOT NULL;
+UPDATE lims_samples SET reception_date = lab_receipt_date WHERE reception_date IS NULL AND lab_receipt_date IS NOT NULL;
+UPDATE lims_samples SET collection_method = sampling_method WHERE collection_method IS NULL AND sampling_method IS NOT NULL;
+UPDATE lims_samples SET duplicate_freq = duplicate_frequency WHERE duplicate_freq IS NULL AND duplicate_frequency IS NOT NULL;
+UPDATE lims_samples SET blank_freq = blank_frequency WHERE blank_freq IS NULL AND blank_frequency IS NOT NULL;
+UPDATE lims_samples SET domain = geomet_domain WHERE domain IS NULL AND geomet_domain IS NOT NULL;
+UPDATE lims_samples SET status = sample_status WHERE status IS NULL AND sample_status IS NOT NULL;
 
 CREATE TABLE IF NOT EXISTS lims_a1 (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),

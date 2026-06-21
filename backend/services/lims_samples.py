@@ -17,24 +17,6 @@ except ImportError:  # pragma: no cover
 logger = logging.getLogger("mpdpms.services.lims_samples")
 
 
-_INSERT_SAMPLE_SQL = """
-INSERT INTO lims_samples (
-    project_id, sample_id_display, phase, sample_type, lithology,
-    provenance, mass_kg, representativity, waste_rock_dilution_pct,
-    source_horizon, depth_interval, total_mass_kg, sent_mass_kg,
-    collection_date, reception_date, collection_method, qaqc_protocol,
-    crm_standard, duplicate_freq, blank_freq, packaging,
-    oxidation_state, domain, status, observations, sort_order
-) VALUES (
-    %(project_id)s, %(sample_id_display)s, %(phase)s, %(sample_type)s, %(lithology)s,
-    %(provenance)s, %(mass_kg)s, %(representativity)s, %(waste_rock_dilution_pct)s,
-    %(source_horizon)s, %(depth_interval)s, %(total_mass_kg)s, %(sent_mass_kg)s,
-    %(collection_date)s, %(reception_date)s, %(collection_method)s, %(qaqc_protocol)s,
-    %(crm_standard)s, %(duplicate_freq)s, %(blank_freq)s, %(packaging)s,
-    %(oxidation_state)s, %(domain)s, %(status)s, %(observations)s, %(sort_order)s
-) RETURNING *
-"""
-
 _SAMPLE_FIELDS = (
     "sample_id_display", "phase", "sample_type", "lithology",
     "provenance", "mass_kg", "representativity", "waste_rock_dilution_pct",
@@ -43,6 +25,49 @@ _SAMPLE_FIELDS = (
     "crm_standard", "duplicate_freq", "blank_freq", "packaging",
     "oxidation_state", "domain", "status", "observations",
 )
+
+_SAMPLE_FIELD_ALIASES = {
+    "sent_mass_kg": ("sent_mass_kg", "mass_sent_kg"),
+    "collection_date": ("collection_date", "sampling_date"),
+    "reception_date": ("reception_date", "lab_receipt_date"),
+    "collection_method": ("collection_method", "sampling_method"),
+    "duplicate_freq": ("duplicate_freq", "duplicate_frequency"),
+    "blank_freq": ("blank_freq", "blank_frequency"),
+    "domain": ("domain", "geomet_domain"),
+    "status": ("status", "sample_status"),
+}
+
+
+def _insert_sample(cur, params: dict[str, Any]) -> dict[str, Any]:
+    """Insert using only columns that exist in the deployed lims_samples table.
+
+    Railway may have either the compact bootstrap schema or the enriched SAM-00
+    schema. This keeps imports compatible without requiring a destructive DB
+    migration before users can upload samples.
+    """
+    cur.execute(
+        "SELECT column_name FROM information_schema.columns "
+        "WHERE table_schema='public' AND table_name='lims_samples'"
+    )
+    existing = {r["column_name"] if isinstance(r, dict) else r[0] for r in cur.fetchall()}
+    columns = []
+    values = {}
+
+    for field in ("project_id", "sort_order", *_SAMPLE_FIELDS):
+        aliases = _SAMPLE_FIELD_ALIASES.get(field, (field,))
+        target = next((name for name in aliases if name in existing), None)
+        if target is None:
+            continue
+        columns.append(target)
+        values[target] = params.get(field)
+
+    if "sample_id_display" not in columns:
+        raise RuntimeError("lims_samples.sample_id_display column is required")
+    placeholders = ", ".join(f"%({c})s" for c in columns)
+    quoted_cols = ", ".join(columns)
+    cur.execute(f"INSERT INTO lims_samples ({quoted_cols}) VALUES ({placeholders}) RETURNING *", values)
+    cols = [d[0] for d in cur.description]
+    return dict(zip(cols, cur.fetchone()))
 
 
 def _signal_pipeline(pid: str, user_id: str | None) -> None:
@@ -74,9 +99,7 @@ def create_sample(
         params[field] = getattr(sample, field, None)
 
     with transaction() as cur:
-        cur.execute(_INSERT_SAMPLE_SQL, params)
-        cols = [d[0] for d in cur.description]
-        row = dict(zip(cols, cur.fetchone()))
+        row = _insert_sample(cur, params)
 
         register_after_commit(lambda: _signal_pipeline(project_id, user_id))
         return row
@@ -124,9 +147,7 @@ def create_samples_bulk(
                 params[field] = getattr(sample, field, None)
             cur.execute("SAVEPOINT row")
             try:
-                cur.execute(_INSERT_SAMPLE_SQL, params)
-                cols = [d[0] for d in cur.description]
-                accepted.append(dict(zip(cols, cur.fetchone())))
+                accepted.append(_insert_sample(cur, params))
                 cur.execute("RELEASE SAVEPOINT row")
             except Exception as e:
                 cur.execute("ROLLBACK TO SAVEPOINT row")
