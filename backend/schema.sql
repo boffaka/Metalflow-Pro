@@ -281,6 +281,16 @@ CREATE TABLE IF NOT EXISTS lims_flotation (
     frother_dosage_g_t      NUMERIC, collector_dosage_g_t NUMERIC,
     created_at              TIMESTAMPTZ DEFAULT NOW()
 );
+ALTER TABLE IF EXISTS lims_flotation ADD COLUMN IF NOT EXISTS au_alim_g_t NUMERIC;
+ALTER TABLE IF EXISTS lims_flotation ADD COLUMN IF NOT EXISTS p80_alim_um NUMERIC;
+ALTER TABLE IF EXISTS lims_flotation ADD COLUMN IF NOT EXISTS concentrate_wt_pct NUMERIC;
+ALTER TABLE IF EXISTS lims_flotation ADD COLUMN IF NOT EXISTS au_concentrate_g_t NUMERIC;
+ALTER TABLE IF EXISTS lims_flotation ADD COLUMN IF NOT EXISTS au_tail_g_t NUMERIC;
+ALTER TABLE IF EXISTS lims_flotation ADD COLUMN IF NOT EXISTS temps_total_min NUMERIC;
+ALTER TABLE IF EXISTS lims_flotation ADD COLUMN IF NOT EXISTS collecteur_g_t NUMERIC;
+ALTER TABLE IF EXISTS lims_flotation ADD COLUMN IF NOT EXISTS moussant_g_t NUMERIC;
+ALTER TABLE IF EXISTS lims_flotation ADD COLUMN IF NOT EXISTS depressant_g_t NUMERIC;
+ALTER TABLE IF EXISTS lims_flotation ADD COLUMN IF NOT EXISTS recup_s_pct NUMERIC;
 
 CREATE TABLE IF NOT EXISTS lims_elution (
     id                          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
