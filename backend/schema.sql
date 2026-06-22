@@ -1322,15 +1322,18 @@ CREATE TABLE IF NOT EXISTS design_criteria_v2 (
     industry_default NUMERIC,
     enabled BOOLEAN DEFAULT TRUE,
     sort_order INTEGER DEFAULT 0,
+    version INTEGER DEFAULT 1,
     formula TEXT,
     dag_key TEXT,
     value_kind TEXT DEFAULT 'number',
+    updated_by UUID REFERENCES users(id),
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 CREATE INDEX IF NOT EXISTS idx_dc_v2_project ON design_criteria_v2(project_id);
 CREATE INDEX IF NOT EXISTS idx_dc_v2_template ON design_criteria_v2(template_id);
 CREATE INDEX IF NOT EXISTS idx_dc_v2_opcode ON design_criteria_v2(template_id, op_code);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_dc_v2_template_ref ON design_criteria_v2(template_id, ref_number);
 
 -- Circuit compilations: snapshot of flowsheet -> circuit_template compilation (v3).
 CREATE TABLE IF NOT EXISTS circuit_compilations (
