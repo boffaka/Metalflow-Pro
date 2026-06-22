@@ -363,6 +363,13 @@ def ensure_schema_compatibility() -> None:
             cur.execute("ALTER TABLE flowshheets RENAME TO flowsheets")
             logger.warning("schema compatibility: renamed legacy table flowshheets -> flowsheets")
 
+        # ── Design Criteria v2 metadata alignment (defensive migration) ──────
+        # Some production databases were created from an older partial schema
+        # where design_criteria_v2 existed without metadata columns used by the
+        # circuit operation workflow. Keep this idempotent so startup repairs
+        # the drift even when Alembic is already marked as current.
+        _ensure_design_criteria_v2_columns(cur)
+
         # ── lims_m1 column alignment (defensive fix for migration drift) ──────
         # Migrations 000008 and 000029 created lims_m1 with different column
         # sets, neither matching LIMS_FIELDS["m1"] in routes/lims.py.
@@ -383,6 +390,43 @@ def ensure_schema_compatibility() -> None:
         if cur is not None:
             cur.close()
         release(c)
+
+
+_DESIGN_CRITERIA_V2_REQUIRED_COLUMNS = [
+    ("version", "INTEGER DEFAULT 1"),
+    ("updated_by", "UUID REFERENCES users(id)"),
+]
+
+
+def _ensure_design_criteria_v2_columns(cur) -> None:
+    """Repair design_criteria_v2 metadata drift (idempotent, non-destructive)."""
+    cur.execute("SELECT to_regclass('public.design_criteria_v2')")
+    if cur.fetchone()[0] is None:
+        return
+
+    cur.execute(
+        "SELECT column_name FROM information_schema.columns "
+        "WHERE table_schema = 'public' AND table_name = 'design_criteria_v2'"
+    )
+    existing = {row[0] for row in cur.fetchall()}
+    missing = [(col, dtype) for col, dtype in _DESIGN_CRITERIA_V2_REQUIRED_COLUMNS if col not in existing]
+
+    if missing:
+        logger.warning(
+            "design_criteria_v2 schema drift: adding %d missing column(s): %s",
+            len(missing),
+            [col for col, _ in missing],
+        )
+        for col, dtype in missing:
+            cur.execute(f"ALTER TABLE design_criteria_v2 ADD COLUMN IF NOT EXISTS {col} {dtype}")
+
+    cur.execute(
+        "CREATE UNIQUE INDEX IF NOT EXISTS idx_dc_v2_template_ref "
+        "ON design_criteria_v2(template_id, ref_number)"
+    )
+
+    if missing:
+        logger.info("design_criteria_v2 schema drift corrected — %d column(s) added", len(missing))
 
 
 # Columns required by LIMS_FIELDS["m1"] in routes/lims.py that were missing
