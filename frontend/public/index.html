@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="api-origin" content="">
 <title>MetalFlow Pro — MPDPMS v3</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
@@ -440,6 +441,7 @@ html,body{height:100%;font-family:var(--sans);background:var(--bg);background-im
 .toast-success{border-color:rgba(34,197,94,.3);color:var(--green2)}
 .toast-error{border-color:rgba(239,68,68,.3);color:var(--red2)}
 .toast-info{border-color:rgba(59,130,246,.3);color:var(--blue2)}
+.toast-warning{border-color:rgba(245,166,35,.35);color:var(--gold)}
 @keyframes toast-in{from{transform:translateX(20px);opacity:0}to{transform:none;opacity:1}}
 /* ── Loading spinner ── */
 .spinner{display:inline-block;width:14px;height:14px;border:2px solid var(--border2);border-top-color:var(--gold);border-radius:50%;animation:spin .6s linear infinite;flex-shrink:0}
@@ -1727,7 +1729,22 @@ div[style*="border:1px solid rgba(245,158,11"]{
    Mirrors backend/constants.py::TROY_OZ_PER_GRAM = 1/31.1035
 ═══════════════════════════════════════════════════════ */
 const TROY_OZ_PER_GRAM = 1 / 31.1035;  // g → troy oz (mirrors backend/constants.py)
-const API_ORIGIN = 'https://metalflow-pro-production.up.railway.app';
+const TOKEN_STORAGE_KEY = 'mpdpms_access_token';
+const METALFLOW_BACKEND_ORIGIN = 'https://metalflow-pro-production.up.railway.app';
+const API_ORIGIN = (() => {
+  const meta = document.querySelector('meta[name="api-origin"]')?.content?.trim();
+  if (meta) return meta.replace(/\/$/, '');
+  if (window.location.protocol === 'file:') {
+    return METALFLOW_BACKEND_ORIGIN;
+  }
+  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+    return `${window.location.protocol}//${window.location.hostname}:8000`;
+  }
+  if (window.location.hostname === 'metalflow-frontend-production.up.railway.app') {
+    return METALFLOW_BACKEND_ORIGIN;
+  }
+  return window.location.origin;
+})();
 
 /* ════════════════════════════════════════════════════════
    CONFIG
@@ -2040,7 +2057,7 @@ const SECTION_META_JS = {
 ═══════════════════════════════════════════════════════ */
 const APP_BUILD_ID = '2026-05-18-analysis-circuit-route-v2';
 const S = {
-  token: null,
+  token: (() => { try { return localStorage.getItem(TOKEN_STORAGE_KEY); } catch (_) { return null; } })(),
   userEmail: null,
   page: 'login',          // login | projects | project
   pid: null,              // current project id
@@ -2240,6 +2257,20 @@ function parseProjectNumberInput(id) {
 /* ════════════════════════════════════════════════════════
    API CLIENT
 ═══════════════════════════════════════════════════════ */
+function authHeaders(extra = {}) {
+  const headers = { ...extra };
+  if (S.token && !headers.Authorization) headers.Authorization = `Bearer ${S.token}`;
+  return headers;
+}
+
+function persistAccessToken(token) {
+  S.token = token || null;
+  try {
+    if (token) localStorage.setItem(TOKEN_STORAGE_KEY, token);
+    else localStorage.removeItem(TOKEN_STORAGE_KEY);
+  } catch (_) { /* private browsing */ }
+}
+
 async function api(methodOrPath, pathOrOptions, body) {
   let method = methodOrPath;
   let path = pathOrOptions;
@@ -2257,10 +2288,9 @@ async function api(methodOrPath, pathOrOptions, body) {
     extraHeaders = opts.headers || {};
   }
 
-  const headers = { ...extraHeaders };
+  const headers = authHeaders({ ...extraHeaders });
   const isFormBody = (typeof FormData !== 'undefined') && payload instanceof FormData;
-  if (!isFormBody) headers['Content-Type'] = 'application/json';
-  if (S.token && !headers.Authorization) headers.Authorization = `Bearer ${S.token}`;
+  if (!isFormBody && !headers['Content-Type']) headers['Content-Type'] = 'application/json';
 
   let reqBody = undefined;
   if (payload !== undefined && payload !== null) {
@@ -2272,7 +2302,7 @@ async function api(methodOrPath, pathOrOptions, body) {
   try {
     res = await fetch(CFG.api + path, { method, headers, body: reqBody, credentials: 'include' });
   } catch (e) {
-    throw new Error(`Impossible de joindre le serveur — vérifiez que le backend tourne sur ${window.location.host}`);
+    throw new Error(`Impossible de joindre le serveur — vérifiez que le backend est accessible (${API_ORIGIN})`);
   }
   if (res.status === 401) {
     S.userEmail = null; S.userRole = null; S.userFullName = null;
@@ -2693,7 +2723,7 @@ function renderLoginPage() {
             <label class="form-label" style="color:var(--txt3,#8896AE);">Mot de passe</label>
             <input class="input" type="password" id="login-pwd" placeholder="••••••••" autocomplete="current-password" style="background:var(--bg,#06080E);border-color:var(--border2,#1D2C3E);color:var(--txt1,#F4F8FF);">
           </div>
-          <button class="btn" style="width:100%;margin-top:12px;justify-content:center;padding:12px;background:linear-gradient(135deg,#F5A623,#C98214);color:#06080E;font-weight:700;font-size:14px;border:none;border-radius:10px;" id="btn-login" onclick="doLogin()">
+          <button class="btn" style="width:100%;margin-top:12px;justify-content:center;padding:12px;background:linear-gradient(135deg,#F5A623,#C98214);color:#06080E;font-weight:700;font-size:14px;border:none;border-radius:10px;" id="btn-login">
             <span id="login-spinner" style="display:none" class="spinner"></span>
             Se connecter
           </button>
@@ -2770,6 +2800,7 @@ async function doLogin() {
     const data = await api('POST', '/auth/login', { email, password: pwd });
     if (data?.user || data?.access_token) {
       S.token = data.access_token || null;
+      persistAccessToken(S.token);
       S.userEmail = data.user?.email || email;
       S.userRole = data.user?.role || 'Read-only';
       S.userFullName = data.user?.full_name || email;
@@ -2807,7 +2838,10 @@ async function doRegister() {
       showLoginError(data?.detail || 'Erreur lors de la création du compte.');
     }
   } catch(e) {
-    showLoginError(e.message || 'Erreur serveur');
+    const msg = (e.message || '').includes('403') || (e.message || '').toLowerCase().includes('project manager')
+      ? 'La création de compte est réservée aux administrateurs. Contactez votre gestionnaire de projet.'
+      : (e.message || 'Erreur serveur');
+    showLoginError(msg);
   } finally {
     if (btn) btn.disabled = false;
     if (sp) sp.style.display = 'none';
@@ -3014,6 +3048,7 @@ async function openProject(id) {
 async function doLogout() {
   try { await api('POST', '/auth/logout', { refresh_token: '' }); } catch (_) { /* ignore */ }
   resetProjectScopedState();
+  persistAccessToken(null);
   S.token = null;
   S.userEmail = null; S.userRole = null; S.userFullName = null;
   S.page = 'login';
@@ -3030,6 +3065,20 @@ async function restoreSessionFromCookie() {
     S.userFullName = me.full_name || me.email;
     return true;
   } catch (_) {
+    if (!S.token) return false;
+    try {
+      const refreshed = await api('POST', '/auth/refresh', { refresh_token: '' });
+      if (refreshed?.access_token) {
+        persistAccessToken(refreshed.access_token);
+        const me = await api('GET', '/auth/me');
+        if (!me?.email) return false;
+        S.userEmail = me.email;
+        S.userRole = me.role || 'Read-only';
+        S.userFullName = me.full_name || me.email;
+        return true;
+      }
+    } catch (_) { /* fall through */ }
+    persistAccessToken(null);
     return false;
   }
 }
@@ -3439,7 +3488,7 @@ async function loadFlowsheets() {
 async function checkFlowsheetCoherence() {
   if (!S.pid) return;
   try {
-    const r = await api('GET', `/projects/${S.pid}/flowsheets/cohérence`);
+    const r = await api('GET', `/projects/${S.pid}/flowsheets/coherence`);
     S._fsCoherence = r;
   } catch { S._fsCoherence = null; }
 }
@@ -4332,6 +4381,7 @@ async function exportNI43101(format) {
     toast(`Export ${format.toUpperCase()} en cours...`);
     const resp = await fetch(`${API_ORIGIN}/api/v1/projects/${S.pid}/ni43101/export/${format}?lang=${S.ni43101Lang || 'fr'}`, {
       credentials: 'include',
+      headers: authHeaders(),
     });
     if (!resp.ok) { const e = await resp.json().catch(() => ({})); throw new Error(e.detail || `HTTP ${resp.status}`); }
     const blob = await resp.blob();
@@ -4379,6 +4429,7 @@ async function doImportSection(sectionId, sectionNum, fileInput) {
     const resp = await fetch(`${API_ORIGIN}/api/v1/projects/${S.pid}/ni43101/sections/import`, {
       method: 'POST',
       credentials: 'include',
+      headers: authHeaders(),
       body: formData,
     });
     if (!resp.ok) {
@@ -4611,9 +4662,7 @@ async function loadSimulationSection() {
   if (!S.pid) return;
   _simInit();
   const _apiv2 = async (path) => {
-    const headers = {};
-    if (S.token) headers.Authorization = `Bearer ${S.token}`;
-    const res = await fetch(API_ORIGIN + path, { credentials: 'include', headers });
+    const res = await fetch(API_ORIGIN + path, { credentials: 'include', headers: authHeaders() });
     if (!res.ok) throw new Error(`HTTP ${res.status} ${path}`);
     return res.json();
   };
@@ -16895,7 +16944,7 @@ function dcShowSnapshotDetail(snapshotId) {
     return;
   }
   const checksum = snap.checksum_sha256 || '';
-  const verifyUrl = `${API_ORIGIN}/snapshots/verify/${encodeURIComponent(snap.id)}`;
+  const verifyUrl = `${window.location.origin}/#snapshot-verify/${encodeURIComponent(snap.id)}`;
   const qrSvg = _dcGenerateQrSvg(verifyUrl, 4);
   const qrFallback = `<div style="width:140px;height:140px;display:flex;align-items:center;justify-content:center;background:#f3f4f6;color:#6b7280;font-size:10px;text-align:center;padding:10px;">QR indisponible (lib non chargée)</div>`;
 
@@ -22763,6 +22812,7 @@ window.uploadReport = async function(e) {
     const res = await fetch(`${API_ORIGIN}/api/v1/projects/${S.pid}/reports`, {
       method: 'POST',
       credentials: 'include',
+      headers: authHeaders(),
       body: fd,
     });
     if (!res.ok) {
@@ -25478,7 +25528,7 @@ async function uploadAnalyticsCSV(input) {
   result.innerHTML = '<span class="spinner"></span> Import...';
   const form = new FormData(); form.append('file', file);
   try {
-    const r = await fetch(`${CFG.api}/projects/${S.pid}/analytics/import-csv`, { method:'POST', credentials: 'include', body: form });
+    const r = await fetch(`${CFG.api}/projects/${S.pid}/analytics/import`, { method:'POST', credentials: 'include', headers: authHeaders(), body: form });
     const d = await r.json();
     if (!r.ok) throw new Error(d.detail || 'Erreur');
     result.innerHTML = `<div class="alert alert-success">${d.rows_imported} lignes importées</div>`;
@@ -26037,7 +26087,7 @@ async function gistmActivate(basisId) {
 
 function gistmDownloadMemorandum(basisId) {
   const url = `${CFG.api}/projects/${S.pid}/gistm/design-basis/${basisId}/export.pdf`;
-  fetch(url, { credentials: 'include' })
+  fetch(url, { credentials: 'include', headers: authHeaders() })
     .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.blob(); })
     .then(blob => {
       const a = document.createElement('a');
@@ -28028,9 +28078,7 @@ S.simPro = S.simPro || {
 async function loadSimPro() {
   if (!S.pid) return;
   try {
-    const headers = {};
-    if (S.token) headers.Authorization = `Bearer ${S.token}`;
-    const res = await fetch(API_ORIGIN + '/api/v2/unit-library', { credentials: 'include', headers });
+    const res = await fetch(API_ORIGIN + '/api/v2/unit-library', { credentials: 'include', headers: authHeaders() });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const lib = await res.json();
     S.simPro.units = lib?.units || {};
@@ -28053,7 +28101,7 @@ async function loadSimPro() {
 
 async function _simProApi(path, body) {
   const url = API_ORIGIN + '/api/v1/sim-pro' + path;
-  const opt = { method: body ? 'POST' : 'GET', credentials: 'include', headers: { 'Content-Type': 'application/json' } };
+  const opt = { method: body ? 'POST' : 'GET', credentials: 'include', headers: authHeaders({ 'Content-Type': 'application/json' }) };
   if (body) opt.body = JSON.stringify(body);
   const res = await fetch(url, opt);
   if (!res.ok) {

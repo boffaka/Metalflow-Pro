@@ -1089,7 +1089,19 @@ html,body{height:100%;font-family:var(--sans);background:var(--bg);background-im
    Mirrors backend/constants.py::TROY_OZ_PER_GRAM = 1/31.1035
 ═══════════════════════════════════════════════════════ */
 const TROY_OZ_PER_GRAM = 1 / 31.1035;  // g → troy oz (mirrors backend/constants.py)
-const API_ORIGIN = 'https://metalflow-pro-production.up.railway.app';
+const METALFLOW_BACKEND_ORIGIN = 'https://metalflow-pro-production.up.railway.app';
+const API_ORIGIN = (() => {
+  if (window.location.protocol === 'file:') {
+    return METALFLOW_BACKEND_ORIGIN;
+  }
+  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+    return `${window.location.protocol}//${window.location.hostname}:8000`;
+  }
+  if (window.location.hostname === 'metalflow-frontend-production.up.railway.app') {
+    return METALFLOW_BACKEND_ORIGIN;
+  }
+  return METALFLOW_BACKEND_ORIGIN;
+})();
 
 /* ════════════════════════════════════════════════════════
    CONFIG
@@ -1586,7 +1598,7 @@ async function api(methodOrPath, pathOrOptions, body) {
   try {
     res = await fetch(CFG.api + path, { method, headers, body: reqBody, credentials: 'include' });
   } catch (e) {
-    throw new Error(`Impossible de joindre le serveur — vérifiez que le backend tourne sur ${window.location.host}`);
+    throw new Error(`Impossible de joindre le serveur — vérifiez que le backend est accessible (${API_ORIGIN})`);
   }
   if (res.status === 401) {
     S.userEmail = null; S.userRole = null; S.userFullName = null;

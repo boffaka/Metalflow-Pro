@@ -9,6 +9,7 @@ pytestmark = pytest.mark.no_db
 
 
 BACKEND = Path(__file__).resolve().parents[1]
+REPO_ROOT = BACKEND.parent
 
 
 def test_monolithic_generators_use_selected_circuit_template():
@@ -92,3 +93,16 @@ def test_root_html_forces_no_cache_for_production_updates():
     assert "X-MetalFlow-Build" in source
     assert "APP_BUILD_ID" in source
     assert APP_BUILD_ID in html
+
+
+def test_static_frontends_resolve_api_origin_to_backend_service():
+    backend_html = (BACKEND / "MetalFlowPro_v3_1.html").read_text(encoding="utf-8")
+    frontend_html = (REPO_ROOT / "frontend" / "public" / "index.html").read_text(encoding="utf-8")
+
+    for html in (backend_html, frontend_html):
+        assert "const METALFLOW_BACKEND_ORIGIN = 'https://metalflow-pro-production.up.railway.app';" in html
+        assert "window.location.protocol === 'file:'" in html
+        assert "window.location.hostname === 'metalflow-frontend-production.up.railway.app'" in html
+        assert "return METALFLOW_BACKEND_ORIGIN;" in html
+
+    assert "Impossible de joindre le serveur — vérifiez que le backend est accessible (${API_ORIGIN})" in backend_html
