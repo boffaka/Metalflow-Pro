@@ -16,6 +16,33 @@ from typing import Any
 import yaml
 
 try:
+    from .dc_formulas import (
+        as_fraction,
+        bond_energy_kwh_t,
+        circular_diameter_m,
+        cylindrical_volume_diameter_m,
+        installed_power_kw,
+        residence_volume_m3,
+        roundup_units,
+        shaft_power_kw,
+        slurry_density_t_m3,
+        slurry_volume_m3h,
+    )
+except ImportError:  # pragma: no cover - supports direct script imports
+    from dc_formulas import (  # type: ignore[no-redef]
+        as_fraction,
+        bond_energy_kwh_t,
+        circular_diameter_m,
+        cylindrical_volume_diameter_m,
+        installed_power_kw,
+        residence_volume_m3,
+        roundup_units,
+        shaft_power_kw,
+        slurry_density_t_m3,
+        slurry_volume_m3h,
+    )
+
+try:
     from ..constants import TROY_OZ_PER_GRAM
 except ImportError:  # pragma: no cover - supports direct script imports
     from constants import TROY_OZ_PER_GRAM
@@ -221,13 +248,9 @@ def _bond_power_bm(p: dict) -> float:
     wi = p.get("avg_bwi", 14.0)
     f80 = p.get("bm_f80_um", 3000)  # BM feed = upstream product in µm
     p80 = p.get("avg_p80_um", 75.0)  # BM product target in µm
-    eff = _normalize_fraction(p.get("mech_efficiency", 0.95), default=0.95)
-    margin = _normalize_fraction(p.get("bm_install_margin_pct", 10.0), default=0.10)
-    p80 = max(p80, 1.0)
-    f80 = max(f80, p80 + 1.0)
-    w = 10.0 * wi * (1.0 / math.sqrt(p80) - 1.0 / math.sqrt(f80))
-    shaft_kw = w * tph
-    installed_kw = shaft_kw / max(eff, 0.5) * (1.0 + margin)
+    w = bond_energy_kwh_t(wi, f80, p80)
+    shaft_kw = shaft_power_kw(w, tph)
+    installed_kw = installed_power_kw(shaft_kw, p.get("mech_efficiency", 0.95), p.get("bm_install_margin_pct", 10.0))
     return round(installed_kw, 0)
 
 
@@ -239,24 +262,14 @@ def _bond_power_sag(p: dict) -> float:
     wi = p.get("avg_bwi", 14.0)
     f80_mm = p.get("sag_f80_mm", 100.0)  # SAG feed in mm
     p80_mm = p.get("sag_p80_mm", 2.0)    # SAG discharge in mm
-    eff = _normalize_fraction(p.get("mech_efficiency", 0.95), default=0.95)
     # Convert mm → µm for Bond equation
-    f80 = max(f80_mm * 1000, 1.0)
-    p80 = max(p80_mm * 1000, 1.0)
-    f80 = max(f80, p80 + 1.0)
-    w = 10.0 * wi * (1.0 / math.sqrt(p80) - 1.0 / math.sqrt(f80))
-    return round(w * tph / max(eff, 0.5), 0)
+    w = bond_energy_kwh_t(wi, f80_mm * 1000, p80_mm * 1000)
+    return round(installed_power_kw(shaft_power_kw(w, tph), p.get("mech_efficiency", 0.95), 0), 0)
 
 
 def _normalize_fraction(value: Any, default: float) -> float:
     """Accept either a fraction (0.95) or a percent (95) from PDC rows."""
-    try:
-        v = float(value)
-    except (TypeError, ValueError):
-        return default
-    if v > 1.5:
-        v /= 100.0
-    return v
+    return as_fraction(value, default)
 
 
 def _crush_product(p: dict) -> float:
@@ -308,14 +321,12 @@ def _regrind_specific_energy(p: dict) -> float:
 def _regrind_shaft_power(p: dict) -> float:
     feed = p.get("regrind_feed_tph", 0)
     energy = p.get("regrind_specific_energy_kwh_t", 0)
-    return round(feed * energy, 0)
+    return round(shaft_power_kw(energy, feed), 0)
 
 
 def _regrind_power(p: dict) -> float:
     shaft = _regrind_shaft_power(p)
-    eff = _normalize_fraction(p.get("regrind_mech_efficiency", 0.94), default=0.94)
-    margin = _normalize_fraction(p.get("regrind_install_margin_pct", 0.15), default=0.15)
-    return round(shaft / max(eff, 0.5) * (1.0 + margin), 0)
+    return round(installed_power_kw(shaft, p.get("regrind_mech_efficiency", 0.94), p.get("regrind_install_margin_pct", 0.15)), 0)
 
 
 def _leach_feed(p: dict) -> float:
@@ -329,27 +340,29 @@ def _leach_feed(p: dict) -> float:
 
 def _slurry_density(p: dict) -> float:
     sg = p.get("ore_sg", 2.75)
-    pct = p.get("cil_pct_solids", 45.0) / 100.0
-    return round(1.0 / ((pct / sg) + (1.0 - pct) / 1.0), 4)
+    return round(slurry_density_t_m3(sg, p.get("cil_pct_solids", 45.0)), 4)
 
 
 def _volumetric_flow(p: dict) -> float:
     feed = p.get("leach_feed_tph", 0)
-    sg = p.get("slurry_sg", 1.4)
-    pct = p.get("cil_pct_solids", 45.0) / 100.0
-    return round(feed / max(sg * pct, 0.01), 1)
+    ore_sg = p.get("ore_sg") or p.get("solids_sg") or 2.75
+    if p.get("ore_sg") or p.get("solids_sg"):
+        return round(slurry_volume_m3h(feed, ore_sg, p.get("cil_pct_solids", 45.0)), 1)
+    cs = max(as_fraction(p.get("cil_pct_solids", 45.0), 0.45), 0.01)
+    pulp_sg = max(float(p.get("slurry_sg", 1.4) or 1.4), 0.01)
+    return round(float(feed) / (pulp_sg * cs), 1)
 
 
 def _residence_volume(p: dict) -> float:
     flow = p.get("vol_flow_m3h", 0)
     srt = p.get("cil_srt_h", 24.0)
-    return round(flow * srt, 0)
+    return round(residence_volume_m3(flow, srt), 0)
 
 
 def _tank_count(p: dict) -> int:
     vol = p.get("cil_volume_m3", 0)
     max_vol = p.get("max_vol_per_tank", 1200)
-    return max(math.ceil(vol / max(max_vol, 1)), 1)
+    return roundup_units(vol, max_vol)
 
 
 def _tank_geometry(p: dict) -> float:
@@ -358,7 +371,7 @@ def _tank_geometry(p: dict) -> float:
     hd = p.get("cil_hd_ratio", 1.0)
     vol_per = vol / max(n, 1)
     # V = pi/4 * D^2 * H, H = hd*D → V = pi/4 * D^3 * hd
-    d = (4 * vol_per / (math.pi * hd)) ** (1 / 3)
+    d = cylindrical_volume_diameter_m(vol_per, hd)
     return round(d, 2)
 
 
@@ -394,7 +407,7 @@ def _thickener_area(p: dict) -> float:
 
 def _circular_diameter(p: dict) -> float:
     area = p.get("thickener_area_m2", 0)
-    return round(math.sqrt(4 * area / math.pi), 1)
+    return round(circular_diameter_m(area), 1)
 
 
 def _unit_count_by_max(p: dict) -> int:

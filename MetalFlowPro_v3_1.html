@@ -8411,6 +8411,7 @@ window.calculateCircuitSizing = function() {
 
 globalThis.renderGranulometry = function() {
   if (!S.psdTab) S.psdTab = 'crushing';
+  if (S.psdTab === 'bond_calc' || S.psdTab === 'circuit_sizing') S.psdTab = 'crushing';
   _psdInitV2();
   if (!S._psdCharts) S._psdCharts = {};
   S.psdSamples = S.psdSamples || [];
@@ -8979,8 +8980,6 @@ ${a2tests.length ? `<div class="card mb14" style="padding:14px">
   const tabContent = S.psdTab === 'params'          ? _tabParams()
                    : S.psdTab === 'lims'            ? _tabLIMS()
                    : S.psdTab === 'psd_interactive'  ? renderPsdInteractiveTab()
-                   : S.psdTab === 'bond_calc'        ? renderBondCalcTab()
-                   : S.psdTab === 'circuit_sizing'   ? renderCircuitSizingTab()
                    : S.psdTab === 'grinding'         ? circuitHtml('Broyage primaire — SAG · BM · Cyclones', cGrind)
                    : S.psdTab === 'regrind'          ? circuitHtml('Rebroyage' + (has_isamill ? ' — BM · IsaMill' : ' — BM'), cRegrind)
                    : S.psdTab === 'p80_optimal'  ? renderPsdP80OptimalTab()
@@ -9058,8 +9057,6 @@ ${renderActionBar('granulometry', ACTION_BAR_CONFIG.granulometry)}
   <div class="tab ${S.psdTab==='grinding'?'active':''}" onclick="switchPSDTab('grinding')">⚙ Broyage</div>
   <div class="tab ${S.psdTab==='regrind'?'active':''}" onclick="switchPSDTab('regrind')">🔩 Rebroyage${has_isamill?' · IsaMill':''}</div>
   <div class="tab ${S.psdTab==='psd_interactive'?'active':''}" onclick="switchPSDTab('psd_interactive')">📊 PSD Interactif</div>
-  <div class="tab ${S.psdTab==='bond_calc'?'active':''}" onclick="switchPSDTab('bond_calc')">⚡ Calculateur Bond</div>
-  <div class="tab ${S.psdTab==='circuit_sizing'?'active':''}" onclick="switchPSDTab('circuit_sizing')">🔧 Dimensionnement</div>
   <div class="tab ${S.psdTab==='params'?'active':''}" onclick="switchPSDTab('params')">📋 Paramètres</div>
   <div class="tab ${S.psdTab==='p80_optimal'?'active':''}" onclick="switchPSDTab('p80_optimal')">⚡ P80 Optimal</div>
   <div class="tab ${S.psdTab==='scenarios'?'active':''}" onclick="switchPSDTab('scenarios')">🔬 Scénarios</div>
@@ -9069,6 +9066,7 @@ ${renderActionBar('granulometry', ACTION_BAR_CONFIG.granulometry)}
 };
 
 window.switchPSDTab = function(t) {
+  if (t === 'bond_calc' || t === 'circuit_sizing') t = 'crushing';
   S.psdTab = t;
   rerenderSection();
 };
@@ -11203,6 +11201,15 @@ function buildFlowsheetRecommendation(tests) {
     : (flotRec != null ? metCapRecPct(flotRec) : null);
   const recGravFlotLix = (d1LeachRec != null && rGravityPlant != null && flotRec != null)
     ? metGravityFlotationLeach(rGravityPlant, flotRec, d1LeachRec) : null;
+  const ultraRegrindBonus = Math.max(1.5, Math.min(4.5,
+    (sTot != null && sTot > 2 ? 2.0 : 0.8) +
+    (flotRec != null && flotRec > 80 ? 1.2 : 0.6) +
+    (bwi != null && bwi > 16 ? -0.4 : 0.2)
+  ));
+  const recGravFlotUltra = recGravFlotLix != null
+    ? metCapRecPct(recGravFlotLix + ultraRegrindBonus, 96)
+    : null;
+  const ultraLeachLabel = leachType === 'CIP' ? 'Leach CIP' : 'CIL';
 
   const schemes = [
     { key: 'direct', short: leachType + ' direct', label: leachType + ' direct — minerai entier', rec: recDirect,
@@ -11225,6 +11232,12 @@ function buildFlowsheetRecommendation(tests) {
       capex: 'Très élevé', opex: 'Très élevé', complexity: 'Très élevée',
       note: 'Séquence gravité → flottation reliquat → lixiviation concentré.',
       color: '#8B5CF6', sulfides: 'Oui', coarseGold: 'Oui' },
+    { key: 'grav_flot_ultra_leach', short: 'Grav. + flot. + UF + ' + ultraLeachLabel,
+      label: 'Gravity + Flotation + Rebroyage ultrafin + ' + ultraLeachLabel, rec: recGravFlotUltra,
+      formula: 'R = R_grav+flot+lix + bonus UF (libération concentré, cap 96%)',
+      capex: 'Très élevé+', opex: 'Très élevé+', complexity: 'Très élevée',
+      note: 'Route avancée : gravité → flottation → rebroyage ultrafin du concentré → ' + ultraLeachLabel + '. Le choix CIL/CIP suit la recommandation Stange/LIMS.',
+      color: '#EC4899', sulfides: 'Oui', coarseGold: 'Oui' },
   ];
 
   const coverage = [
@@ -11357,6 +11370,16 @@ function buildFlowsheetRecommendation(tests) {
         sTot != null && sTot > 2 ? 12 : 0,
         sTot != null && sTot < 2 && d1LeachRec != null && d1LeachRec > 88 ? -18 : 0,
       ]), recoveryPct: schemeRec('grav_flot_leach') },
+    { key: 'grav_flot_ultra_leach', name: 'Gravity + Flotation + Rebroyage ultrafin + ' + ultraLeachLabel, color: '#EC4899',
+      desc: 'Concentré flotté rebroyé ultrafin puis ' + ultraLeachLabel + ' selon la recommandation CIL/CIP',
+      score: scoreOption('grav_flot_ultra_leach', 38, [
+        grgPct != null && grgPct > 20 ? 12 : 0,
+        flotRec != null ? (flotRec > 80 ? 24 : flotRec > 60 ? 12 : -8) : 0,
+        sTot != null && sTot > 2 ? 18 : -8,
+        d1LeachRec != null ? (d1LeachRec > 80 ? 8 : d1LeachRec >= 70 ? 4 : -8) : 0,
+        bwi != null && bwi > 18 ? -6 : 0,
+        leachType === 'CIL' ? 3 : 0,
+      ]), recoveryPct: schemeRec('grav_flot_ultra_leach') },
   ];
   options.sort((a, b) => b.score - a.score);
   options.forEach(o => {
@@ -16060,7 +16083,9 @@ function dcInstalledPower(shaftKw, efficiencyPct, marginPct) {
 function dcSlurryDensity(solidsSg, solidsPct) {
   const sg = Number(solidsSg), pct = Number(solidsPct);
   if (!Number.isFinite(sg) || !Number.isFinite(pct)) return null;
-  return 1 + (sg - 1) * pct / 100;
+  const cs = pct > 1.5 ? pct / 100 : pct;
+  if (cs <= 0 || cs >= 1) return null;
+  return 1 / (cs / sg + (1 - cs));
 }
 
 function dcVolumetricSlurryFlow(solidsTph, solidsSg, solidsPct) {

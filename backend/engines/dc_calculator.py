@@ -14,6 +14,39 @@ import math
 import logging
 
 try:
+    from .dc_formulas import (
+        bond_energy_kwh_t,
+        circular_diameter_m,
+        cylindrical_volume_diameter_m,
+        corrected_bond_energy_kwh_t,
+        hpgr_total_roll_tph,
+        installed_power_kw,
+        mill_design_tph as formula_mill_design_tph,
+        residence_volume_m3,
+        rowland_ef4,
+        rowland_ef5,
+        shaft_power_kw,
+        slurry_density_t_m3,
+        slurry_volume_m3h,
+    )
+except ImportError:  # pragma: no cover - supports direct script imports
+    from dc_formulas import (  # type: ignore[no-redef]
+        bond_energy_kwh_t,
+        circular_diameter_m,
+        cylindrical_volume_diameter_m,
+        corrected_bond_energy_kwh_t,
+        hpgr_total_roll_tph,
+        installed_power_kw,
+        mill_design_tph as formula_mill_design_tph,
+        residence_volume_m3,
+        rowland_ef4,
+        rowland_ef5,
+        shaft_power_kw,
+        slurry_density_t_m3,
+        slurry_volume_m3h,
+    )
+
+try:
     from ..constants import TROY_OZ_PER_GRAM
 except ImportError:  # pragma: no cover - supports direct script imports
     from constants import TROY_OZ_PER_GRAM
@@ -306,7 +339,7 @@ def _recalculate_all_impl(project_id: str, template_id: str, cursor) -> dict:
         or _get("milling plant equipment design factor", default=None)
         or 15.0
     )
-    mill_design_tph = plant_tph * (1 + concentrator_design_factor / 100)
+    mill_design_tph = formula_mill_design_tph(plant_tph, concentrator_design_factor)
     mill_nominal_tph = plant_tph
     crushing_nominal_tph = (
         mill_nominal_tph * grinding_avail / crushing_avail
@@ -351,9 +384,9 @@ def _recalculate_all_impl(project_id: str, template_id: str, cursor) -> dict:
     pc_margin = pc_margin / 100 if pc_margin and pc_margin > 1.5 else (pc_margin or 0.30)
     pc_p80_um = max(float(pc_p80_um or 1), 1.0)
     pc_f80_um = max(float(pc_f80_um or pc_p80_um + 1), pc_p80_um + 1.0)
-    pc_energy = max(0.0, 10 * cwi * (1 / math.sqrt(pc_p80_um) - 1 / math.sqrt(pc_f80_um)))
-    pc_shaft_power = pc_energy * crushing_tph
-    pc_installed_power = pc_shaft_power / max(pc_eff, 0.5) * (1 + pc_margin)
+    pc_energy = bond_energy_kwh_t(cwi, pc_f80_um, pc_p80_um)
+    pc_shaft_power = shaft_power_kw(pc_energy, crushing_tph)
+    pc_installed_power = installed_power_kw(pc_shaft_power, pc_eff, pc_margin)
     calcs["GIRATOIRE:ratio de réduction"] = pc_f80_um / pc_p80_um
     calcs["GIRATOIRE:ratio de reduction"] = pc_f80_um / pc_p80_um
     calcs["GIRATOIRE:énergie bond"] = pc_energy
@@ -372,9 +405,9 @@ def _recalculate_all_impl(project_id: str, template_id: str, cursor) -> dict:
     sc_f80_um = max(float(sc_f80_um or pc_p80_um), 1.0)
     sc_p80_um = max(float(sc_p80_um or 35000), 1.0)
     sc_f80_um = max(sc_f80_um, sc_p80_um + 1.0)
-    sc_energy = max(0.0, 10 * cwi * (1 / math.sqrt(sc_p80_um) - 1 / math.sqrt(sc_f80_um)))
-    sc_shaft_power = sc_energy * screen_oversize_design_tph
-    sc_installed_power = sc_shaft_power / max(sc_eff, 0.5) * (1 + sc_margin)
+    sc_energy = bond_energy_kwh_t(cwi, sc_f80_um, sc_p80_um)
+    sc_shaft_power = shaft_power_kw(sc_energy, screen_oversize_design_tph)
+    sc_installed_power = installed_power_kw(sc_shaft_power, sc_eff, sc_margin)
     calcs["CONE:ratio de réduction"] = sc_f80_um / sc_p80_um
     calcs["CONE:ratio de reduction"] = sc_f80_um / sc_p80_um
     calcs["CONE:énergie bond"] = sc_energy
@@ -388,8 +421,8 @@ def _recalculate_all_impl(project_id: str, template_id: str, cursor) -> dict:
     hpgr_fresh_nominal_tph = mill_nominal_tph
     hpgr_recycle_pct = _get("recycle ratio", "HPGR", 25.0)
     hpgr_recycle = hpgr_recycle_pct / 100 if hpgr_recycle_pct and hpgr_recycle_pct > 1.5 else (hpgr_recycle_pct or 0.25)
-    hpgr_total_tph = hpgr_fresh_tph * (1 + hpgr_recycle)
-    hpgr_total_nominal_tph = hpgr_fresh_nominal_tph * (1 + hpgr_recycle)
+    hpgr_total_tph = hpgr_total_roll_tph(hpgr_fresh_tph, hpgr_recycle)
+    hpgr_total_nominal_tph = hpgr_total_roll_tph(hpgr_fresh_nominal_tph, hpgr_recycle)
     hpgr_f80_um = _to_um(_get("f80 alimentation", "HPGR", sc_p80_um), sc_p80_um, convert_small_mm=True)
     hpgr_p80_um = _to_um(_get("p80 produit", "HPGR", _get("coupure crible", "HPGR", 6000)), 6000, convert_small_mm=True)
     calcs["HPGR:circuit processing rate"] = hpgr_fresh_tph
@@ -435,7 +468,7 @@ def _recalculate_all_impl(project_id: str, template_id: str, cursor) -> dict:
     p80_um = _to_um(_get("p80 cible", "BALL_MILL", _get("product p80", "BALL_MILL", 75)), 75)
     # Detect upstream: HPGR takes priority over SAG (if both exist, unusual)
     sag_p80_um = _to_um(_get("product p80", "SAG_MILL") or _get("discharge p80", "SAG_MILL"), None, convert_small_mm=True)
-    f80_um = hpgr_p80_um or sag_p80_um or sc_p80_um or 3000
+    f80_um = (hpgr_p80_um * 0.75) if hpgr_p80_um else (sag_p80_um or sc_p80_um or 3000)
     calcs["BALL_MILL:f80 alimentation"] = f80_um
     calcs["BALL_MILL:p80 cible"] = p80_um
     calcs["BALL_MILL:ratio de réduction"] = f80_um / p80_um if p80_um else None
@@ -443,13 +476,25 @@ def _recalculate_all_impl(project_id: str, template_id: str, cursor) -> dict:
     if p80_um and f80_um and bwi:
         p80_um = max(p80_um, 1.0)
         f80_um = max(f80_um, p80_um + 1.0)
-        bm_energy = 10 * bwi * (1/math.sqrt(p80_um) - 1/math.sqrt(f80_um))
+        bm_energy = corrected_bond_energy_kwh_t(
+            bwi,
+            f80_um,
+            p80_um,
+            1,
+            1,
+            1,
+            rowland_ef4(bwi, f80_um, p80_um),
+            rowland_ef5(p80_um),
+            1,
+            1,
+            1,
+        )
         calcs["BALL_MILL:énergie bond non corrigée"] = round(max(bm_energy, 0), 4)
         calcs["BALL_MILL:energie bond non corrigee"] = round(max(bm_energy, 0), 4)
         calcs["BALL_MILL:énergie corrigée"] = round(max(bm_energy, 0), 4)
         calcs["BALL_MILL:energie corrigee"] = round(max(bm_energy, 0), 4)
-        bm_shaft_power = bm_fresh_tph * max(bm_energy, 0)
-        bm_installed_power = bm_shaft_power / max(bm_motor_eff, 0.5) * (1 + bm_install_margin)
+        bm_shaft_power = shaft_power_kw(bm_energy, bm_fresh_tph)
+        bm_installed_power = installed_power_kw(bm_shaft_power, bm_motor_eff, bm_install_margin)
         calcs["BALL_MILL:puissance arbre"] = round(bm_shaft_power, 0)
         calcs["BALL_MILL:installed power"] = round(bm_installed_power, 0)
         calcs["BALL_MILL:motor power"] = round(bm_installed_power, 0)
@@ -467,9 +512,9 @@ def _recalculate_all_impl(project_id: str, template_id: str, cursor) -> dict:
     verti_factor = verti_factor if verti_factor and verti_factor <= 1.5 else (verti_factor or 70) / 100
     if verti_f80_um and verti_p80_um and verti_bwi:
         verti_f80_um = max(verti_f80_um, verti_p80_um + 1.0)
-        verti_energy = max(0.0, 10 * verti_bwi * (1 / math.sqrt(verti_p80_um) - 1 / math.sqrt(verti_f80_um))) * verti_factor
-        verti_shaft_kw = verti_feed_tph * verti_energy
-        verti_installed_kw = verti_shaft_kw / max(verti_eff, 0.5) * 1.10
+        verti_energy = bond_energy_kwh_t(verti_bwi, verti_f80_um, verti_p80_um) * verti_factor
+        verti_shaft_kw = shaft_power_kw(verti_energy, verti_feed_tph)
+        verti_installed_kw = installed_power_kw(verti_shaft_kw, verti_eff, 10)
         calcs["VERTIMILL:débit alimentation"] = verti_feed_tph
         calcs["VERTIMILL:debit alimentation"] = verti_feed_tph
         calcs["VERTIMILL:f80 alimentation"] = verti_f80_um
@@ -559,7 +604,7 @@ def _recalculate_all_impl(project_id: str, template_id: str, cursor) -> dict:
     thk_conc_ua = _get("settling flux", "EPAISSISSEUR_CONC") or _get("solids settling", "EPAISSISSEUR_CONC", 0.25)
     if thk_conc_ua and thk_conc_ua > 0:
         thk_conc_area = (regrind_feed_tph * plant_hpd) / thk_conc_ua if thk_conc_ua > 0 else 500
-        thk_conc_diam = math.sqrt(4 * thk_conc_area / math.pi)
+        thk_conc_diam = circular_diameter_m(thk_conc_area)
         calcs["EPAISSISSEUR_CONC:thickening area"] = round(thk_conc_area, 0)
         calcs["EPAISSISSEUR_CONC:thickener diameter"] = round(thk_conc_diam, 1)
 
@@ -576,21 +621,21 @@ def _recalculate_all_impl(project_id: str, template_id: str, cursor) -> dict:
 
     leach_pct_solids = _get("feed % solid", "LEACH_CUVES") or _get("leach feed % solid", "LEACH_CUVES") or _get("% solid", "LEACH_CUVES", 40)
     if leach_pct_solids > 1: leach_pct_solids /= 100
-    leach_pulp_sg = 1 / (leach_pct_solids / conc_sg + (1 - leach_pct_solids) / 1.0)
-    leach_pulp_m3h = leach_feed_tph / (leach_pct_solids * leach_pulp_sg) if leach_pct_solids > 0 and leach_pulp_sg > 0 else leach_feed_tph
+    leach_pulp_sg = slurry_density_t_m3(conc_sg, leach_pct_solids)
+    leach_pulp_m3h = slurry_volume_m3h(leach_feed_tph, conc_sg, leach_pct_solids)
     calcs["LEACH_CUVES:pulp - feed volumetric"] = round(leach_pulp_m3h, 0)
     calcs["LEACH_CUVES:pulp specific gravity"] = round(leach_pulp_sg, 2)
 
     # Leach tank sizing
     if leach_srt and leach_n_tanks:
         _air_holdup = _get("air hold", "LEACH_CUVES", 5) / 100
-        leach_vol_total = leach_pulp_m3h * leach_srt
+        leach_vol_total = residence_volume_m3(leach_pulp_m3h, leach_srt)
         leach_vol_per_tank = leach_vol_total / max(leach_n_tanks, 1)
         calcs["LEACH_CUVES:total live volume"] = round(leach_vol_total, 0)
         calcs["LEACH_CUVES:total live volume per tank"] = round(leach_vol_per_tank, 0)
         hd_ratio = _get("ratio h/d", "LEACH_CUVES", 1.5)
         if hd_ratio > 0 and leach_vol_per_tank > 0:
-            d_live = (4 * leach_vol_per_tank / (math.pi * hd_ratio)) ** (1/3)
+            d_live = cylindrical_volume_diameter_m(leach_vol_per_tank, hd_ratio)
             h_live = d_live * hd_ratio
             calcs["LEACH_CUVES:live diameter"] = round(d_live, 1)
             calcs["LEACH_CUVES:live height"] = round(h_live, 1)
@@ -615,9 +660,9 @@ def _recalculate_all_impl(project_id: str, template_id: str, cursor) -> dict:
     nominal_calcs["CIP:feed cip tanks"] = round(cip_feed_nominal_tph, 1)
 
     if 0 < cip_pct_solids < 1 and conc_sg > 0:
-        cip_pulp_sg = 1 / (cip_pct_solids / conc_sg + (1 - cip_pct_solids) / 1.0)
+        cip_pulp_sg = slurry_density_t_m3(conc_sg, cip_pct_solids)
         if cip_pulp_sg > 0:
-            cip_pulp_m3h = cip_feed_tph / (cip_pct_solids * cip_pulp_sg)
+            cip_pulp_m3h = slurry_volume_m3h(cip_feed_tph, conc_sg, cip_pct_solids)
         else:
             cip_pulp_m3h = cip_feed_tph * 3  # fallback if SG is invalid
         calcs["CIP:pulp - feed volumetric"] = round(cip_pulp_m3h, 0)
@@ -626,13 +671,13 @@ def _recalculate_all_impl(project_id: str, template_id: str, cursor) -> dict:
         cip_pulp_m3h = cip_feed_tph * 3
 
     if cip_srt and cip_n_tanks:
-        cip_vol_total = cip_pulp_m3h * cip_srt
+        cip_vol_total = residence_volume_m3(cip_pulp_m3h, cip_srt)
         cip_vol_per_tank = cip_vol_total / max(cip_n_tanks, 1)
         calcs["CIP:total live volume"] = round(cip_vol_total, 0)
         calcs["CIP:total live volume per tank"] = round(cip_vol_per_tank, 0)
         hd = _get("ratio h/d", "CIP", 1.5)
         if hd > 0 and cip_vol_per_tank > 0:
-            d = (4 * cip_vol_per_tank / (math.pi * hd)) ** (1/3)
+            d = cylindrical_volume_diameter_m(cip_vol_per_tank, hd)
             h = d * hd
             calcs["CIP:live diameter"] = round(d, 1)
             calcs["CIP:live height"] = round(h, 1)
@@ -667,7 +712,7 @@ def _recalculate_all_impl(project_id: str, template_id: str, cursor) -> dict:
     tails_ua = _get("settling flux", "EPAISSISSEUR") or _get("solids settling", "EPAISSISSEUR", 0.75)
     if tails_ua and tails_ua > 0:
         tails_area = (plant_tph * plant_hpd) / tails_ua
-        tails_diam = math.sqrt(4 * tails_area / math.pi)
+        tails_diam = circular_diameter_m(tails_area)
         calcs["EPAISSISSEUR:thickening area"] = round(tails_area, 0)
         calcs["EPAISSISSEUR:thickener diameter"] = round(tails_diam, 0)
 

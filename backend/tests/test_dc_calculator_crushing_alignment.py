@@ -118,7 +118,7 @@ def test_recalculate_all_propagates_nominal_and_psd_through_hpgr_ball_vertimill(
     assert cur.nominal_updates["r20"] == pytest.approx(1596 * 1.25, abs=0.1)
     assert cur.updates["r22"] == pytest.approx(mill_design, abs=0.1)
     assert cur.nominal_updates["r22"] == pytest.approx(1596, abs=0.1)
-    assert cur.updates["r23"] == pytest.approx(6500, abs=0.1)
+    assert cur.updates["r23"] == pytest.approx(6500 * 0.75, abs=0.1)
     assert cur.updates["r24"] == pytest.approx(90, abs=0.1)
     assert cur.updates["r25"] == pytest.approx(mill_design, abs=0.1)
     assert cur.nominal_updates["r25"] == pytest.approx(1596, abs=0.1)
