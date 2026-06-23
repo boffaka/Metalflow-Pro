@@ -16136,6 +16136,7 @@ function dcCeil(value) {
 function dcBondEnergy(wi, f80Um, p80Um) {
   const w = Number(wi), f80 = Number(f80Um), p80 = Number(p80Um);
   if (![w, f80, p80].every(v => Number.isFinite(v) && v > 0)) return null;
+  if (f80 <= p80) return null;
   return 10 * w * (1 / Math.sqrt(p80) - 1 / Math.sqrt(f80));
 }
 
@@ -16331,6 +16332,10 @@ function dcCriterionNumber(row, fallback = null) {
   return dcFirstFinite(row?.design_value, row?.nominal_value, fallback);
 }
 
+function dcIsWorkIndexRow(label) {
+  return /\b(cwi|bwi|rwi|dwi|awi|scse)\b|work index|bond bwi|bond cwi|indice de travail/.test(label);
+}
+
 function dcEquipmentFormulaContext({ basis, sp, b1Avg, a1Avg }) {
   return {
     designTph: basis.designTph,
@@ -16388,7 +16393,7 @@ function dcApplyEquipmentFormulaGroup(group, ctx) {
       row = dcSetCalculatedCriterion(row, st.feedTph, 'Débit design usine issu des critères généraux', 1);
     } else if (/ratio.*reduction|r80|rr =|rr\b/.test(label)) {
       row = dcSetCalculatedCriterion(row, st.f80 && st.p80 ? st.f80 / st.p80 : null, 'F80 / P80', 2);
-    } else if (/energie bond|bond.*w|energie.*non corrigee/.test(label)) {
+    } else if (!dcIsWorkIndexRow(label) && (/energie bond|energie.*non corrigee|\bw\s*=/.test(label))) {
       const wi = /crush|concass|cwi/.test(label + op) ? st.cwi : st.bwi;
       row = dcSetCalculatedCriterion(row, dcBondEnergy(wi, st.f80, st.p80), '10 × Wi × (1/√P80 - 1/√F80)', 3);
     } else if (/f80,opt|optimal feed/.test(label)) {
