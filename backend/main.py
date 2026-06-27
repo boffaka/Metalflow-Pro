@@ -368,27 +368,15 @@ def ensure_schema_compatibility() -> None:
             logger.warning("schema compatibility: renamed legacy table flowshheets -> flowsheets")
 
         # ── Design Criteria v2 metadata alignment (defensive migration) ──────
-        # Some production databases were created from an older partial schema
-        # where design_criteria_v2 existed without metadata columns used by the
-        # circuit operation workflow. Keep this idempotent so startup repairs
-        # the drift even when Alembic is already marked as current.
         _ensure_design_criteria_v2_columns(cur)
 
         # ── lims_m1 column alignment (defensive fix for migration drift) ──────
-        # Migrations 000008 and 000029 created lims_m1 with different column
-        # sets, neither matching LIMS_FIELDS["m1"] in routes/lims.py.
-        # Migration 000042 adds the missing columns via Alembic, but this
-        # guard ensures the fix is applied even if Alembic is not running
-        # (BOOTSTRAP_SCHEMA mode, manual DB restore, etc.).
         _ensure_lims_m1_columns(cur)
 
         # ── All other LIMS tables (defensive fix — migration 000043) ─────────
         _ensure_all_lims_columns(cur)
 
         # ── lims_detox table (defensive fix — migration 000029 drift) ────────
-        # schema.sql creates lims_dtx; migration 000029 creates lims_detox.
-        # The routes and template use lims_detox. Create it if absent and
-        # copy any existing data from lims_dtx.
         _ensure_lims_detox_table(cur)
 
         c.commit()
@@ -396,15 +384,14 @@ def ensure_schema_compatibility() -> None:
         c.rollback()
         logger.exception("schema compatibility check failed")
         raise
-
-    # ── design_criteria_v2: fix crusher design vs nominal ────────────────────
-    # Isolated in its own transaction so failures here never abort the rest of
-    # the startup (schema fixes above must be committed first anyway).
-    _fix_crusher_design_nominal_safe()
     finally:
         if cur is not None:
             cur.close()
         release(c)
+
+    # ── design_criteria_v2: fix crusher design vs nominal ────────────────────
+    # Isolated in its own connection/transaction — never aborts the startup above.
+    _fix_crusher_design_nominal_safe()
 
 
 _DESIGN_CRITERIA_V2_REQUIRED_COLUMNS = [
