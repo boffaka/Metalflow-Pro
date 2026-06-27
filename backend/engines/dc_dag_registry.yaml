@@ -45,6 +45,15 @@ inputs:
 
 nodes:
   # --- Crushing ---
+  # crusher_design_tph = plant_tph × (grinding_avail/crushing_avail) × (1 + design_factor)
+  # Note: crushing_avail_pct and concentrator_design_factor_pct use DC defaults when absent.
+  crusher_design_tph:
+    depends_on: [target_tph, availability_pct]
+    formula_ref: "crusher_design_rate"
+    section: "crushing"
+    min: 500
+    max: 15000
+
   pc_p80_mm:
     depends_on: [pc_css_mm]
     formula_ref: "crush_product"

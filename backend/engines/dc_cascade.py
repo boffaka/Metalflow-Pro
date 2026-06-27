@@ -239,6 +239,32 @@ def _cascade_recalculate_impl(
 # Each formula takes a params dict and returns a float.
 # These wrap the existing calculations from design.py and dc_calculator.py.
 
+def _crusher_design_rate(p: dict) -> float:
+    """Crusher design feed rate.
+
+    Formula (PDC workbook):
+      crusher_design_tph = plant_tph × (grinding_avail / crushing_avail) × (1 + design_factor)
+
+    Where:
+      grinding_avail  = mill availability (from project availability_pct, default 92%)
+      crushing_avail  = crusher operating factor (typical 75% for primary gyratory)
+      design_factor   = concentrator equipment design margin (typical 15%)
+
+    This ensures crusher capacity > plant nominal throughput to compensate for
+    fewer crusher operating hours vs. the continuous mill circuit.
+    """
+    plant_tph = float(p.get("target_tph") or 0)
+    if plant_tph <= 0:
+        return 0.0
+    grinding_avail = float(p.get("availability_pct") or 92) / 100
+    crushing_avail = float(p.get("crushing_avail_pct") or 75) / 100
+    design_factor = float(p.get("concentrator_design_factor_pct") or 15) / 100
+    if crushing_avail <= 0:
+        crushing_avail = 0.75
+    avail_ratio = grinding_avail / crushing_avail
+    return round(plant_tph * avail_ratio * (1 + design_factor), 0)
+
+
 def _bond_power_bm(p: dict) -> float:
     """Bond 3rd Law for BALL MILL: W = 10 × Wi × (1/√P80 - 1/√F80) [kWh/t]
     F80 = ball mill feed (from SAG/HPGR product, in µm)
@@ -481,6 +507,7 @@ def _energy_cost(p: dict) -> float:
 
 
 _FORMULAS = {
+    "crusher_design_rate": _crusher_design_rate,
     "bond_power_bm": _bond_power_bm,
     "bond_power_sag": _bond_power_sag,
     "crush_product": _crush_product,

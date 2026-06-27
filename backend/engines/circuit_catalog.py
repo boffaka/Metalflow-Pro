@@ -79,7 +79,7 @@ CATALOG = [
             # Ordre PDF: Type → Débit → F80 → F100 → OSS → P80 → Ratio → CWi
             # → W → P_shaft → η → marge → P_install → ouverture → modèle.
             _c("01", "Concasseur primaire", "Type concasseur",                    "-",     None, None, None, None, [],                   source="M"),
-            _c("02", "Concasseur primaire", "Débit design alimentation",          "t/h",   1800, 1800, 1800, 1800, [1200, 3000],          source="P", dag_key="target_tph"),
+            _c("02", "Concasseur primaire", "Débit design alimentation",          "t/h",   1800, 1800, 1800, 1800, [1200, 3000],          source="C", dag_key="crusher_design_tph"),
             _c("03", "Concasseur primaire", "F80 alimentation (ROM)",             "µm",  600000, 528000, 528000, 528000, [400000, 700000],source="D", dag_key="rom_f80_mm"),
             _c("04", "Concasseur primaire", "F100 alimentation (top size)",       "µm", 1000000, 1000000, 1000000, 1000000, [600000, 1200000], source="C"),
             _c("05", "Concasseur primaire", "OSS (Open Side Setting)",            "mm",     175, 165, 165, 165, [125, 250],               source="D", dag_key="pc_css_mm"),

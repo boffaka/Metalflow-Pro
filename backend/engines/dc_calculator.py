@@ -63,6 +63,18 @@ logger = logging.getLogger("mpdpms.dc_calculator")
 # `dc_dag_registry.yaml`. Non-matching calcs stay unmapped (they're just
 # legacy display values, not used by the cascade).
 _CALC_TO_DAG_KEY: dict[str, str] = {
+    # Crusher — design rate is NOT target_tph; it includes availability correction + design margin.
+    # dag_key="crusher_design_tph" prevents the DAG cascade from overwriting with raw target_tph.
+    "GIRATOIRE:débit design alimentation":  "crusher_design_tph",
+    "GIRATOIRE:debit design alimentation":  "crusher_design_tph",
+    "GIRATOIRE:processing rate":            "crusher_design_tph",
+    "CONE:processing rate":                 "cone_design_tph",
+    "CONE:débit alim":                      "cone_design_tph",
+    "CONE:debit alim":                      "cone_design_tph",
+    "CRIBLE:processing rate":               "screen_design_tph",
+    "CRIBLE:débit alimentation":            "screen_design_tph",
+    "CRIBLE:debit alimentation":            "screen_design_tph",
+    # Ball mill
     "BALL_MILL:installed power": "bm_power_kw",
     "BALL_MILL:motor power":     "bm_power_kw",
     "BALL_MILL:power":           "bm_power_kw",
