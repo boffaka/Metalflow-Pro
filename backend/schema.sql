@@ -473,10 +473,27 @@ CREATE TABLE IF NOT EXISTS lims_c2c (
 );
 
 -- dtx: Détoxification CN
+-- Table canonique utilisée par les routes LIMS (code: dtx → table: lims_detox)
+CREATE TABLE IF NOT EXISTS lims_detox (
+    id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    project_id  UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+    sample_id   UUID REFERENCES lims_samples(id) ON DELETE CASCADE,
+    cn_wad_mg_l NUMERIC, cn_total_mg_l NUMERIC, cn_free_mg_l NUMERIC,
+    scn_mg_l NUMERIC, ph_final NUMERIC, cu_mg_l NUMERIC, fe_mg_l NUMERIC,
+    ni_mg_l NUMERIC, zn_mg_l NUMERIC, as_mg_l NUMERIC, hg_ug_l NUMERIC,
+    pb_mg_l NUMERIC, consomm_so2_kg_t NUMERIC, consomm_h2o2_kg_t NUMERIC,
+    consomm_cuso4_kg_t NUMERIC, consomm_cao_kg_t NUMERIC,
+    duree_traitement_min NUMERIC, cn_wad_rebound_24h NUMERIC,
+    cn_wad_rebound_7d NUMERIC,
+    created_at  TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_lims_detox_project ON lims_detox(project_id);
+CREATE INDEX IF NOT EXISTS idx_lims_detox_sample  ON lims_detox(sample_id);
+-- Table legacy lims_dtx (ancien nom dans schema < migration 000029) — conservée pour compatibilité
 CREATE TABLE IF NOT EXISTS lims_dtx (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     project_id UUID REFERENCES projects(id) ON DELETE CASCADE,
-    sample_id UUID REFERENCES lims_samples(id) ON DELETE CASCADE,
+    sample_id  UUID REFERENCES lims_samples(id) ON DELETE CASCADE,
     cn_wad_mg_l NUMERIC, cn_total_mg_l NUMERIC, cn_free_mg_l NUMERIC,
     scn_mg_l NUMERIC, ph_final NUMERIC, cu_mg_l NUMERIC, fe_mg_l NUMERIC,
     ni_mg_l NUMERIC, zn_mg_l NUMERIC, as_mg_l NUMERIC, hg_ug_l NUMERIC,
