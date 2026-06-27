@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "frontend",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["serve", "-l", "tcp://0.0.0.0:3333", "/Users/finabaden/Desktop/MetalFlow Pro/frontend/public"],
+      "port": 3333
+    }
+  ]
+}

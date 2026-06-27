@@ -2633,157 +2633,300 @@ function drawEconSensibiliteCharts() {
 function renderLoginPage() {
   const showRegister = S._showRegister || false;
   return `
-<div class="auth-shell" style="min-height:100vh;background:var(--app-bg,#06080E);display:flex;flex-direction:column;">
+<style>
+@keyframes lp-drift{0%{transform:translate(0,0) scale(1)}50%{transform:translate(-18px,22px) scale(1.04)}100%{transform:translate(0,0) scale(1)}}
+@keyframes lp-drift2{0%{transform:translate(0,0) scale(1)}50%{transform:translate(14px,-16px) scale(1.03)}100%{transform:translate(0,0) scale(1)}}
+@keyframes lp-pulse{0%,100%{opacity:.55}50%{opacity:1}}
+@keyframes lp-slide-up{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+@keyframes lp-flow{0%{stroke-dashoffset:120}100%{stroke-dashoffset:0}}
+.lp-anim-1{animation:lp-drift 14s ease-in-out infinite}
+.lp-anim-2{animation:lp-drift2 18s ease-in-out infinite}
+.lp-pulse{animation:lp-pulse 3s ease-in-out infinite}
+.lp-slide-up{animation:lp-slide-up .55s ease both}
+.lp-slide-up-2{animation:lp-slide-up .55s .1s ease both}
+.lp-slide-up-3{animation:lp-slide-up .55s .2s ease both}
+.lp-slide-up-4{animation:lp-slide-up .55s .3s ease both}
+.lp-slide-up-5{animation:lp-slide-up .55s .4s ease both}
+.lp-flow-line{stroke-dasharray:120;animation:lp-flow 2s linear infinite}
+.lp-feat-card{background:rgba(14,21,35,.7);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:18px 16px;transition:all .22s;cursor:default;backdrop-filter:blur(8px);}
+.lp-feat-card:hover{border-color:var(--accent-c,rgba(245,166,35,.3));background:rgba(245,166,35,.04);transform:translateY(-2px);box-shadow:0 12px 32px rgba(0,0,0,.35),0 0 0 1px var(--accent-c,rgba(245,166,35,.18));}
+.lp-feat-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:12px;flex-shrink:0;}
+.lp-input{width:100%;padding:11px 14px;background:rgba(6,8,14,.8);border:1px solid rgba(40,58,82,.9);border-radius:9px;color:#F0F4FA;font-size:13.5px;outline:none;transition:border-color .18s,box-shadow .18s;font-family:inherit;box-sizing:border-box;}
+.lp-input:focus{border-color:#F5A623;box-shadow:0 0 0 3px rgba(245,166,35,.12);}
+.lp-input::placeholder{color:#3E5068;}
+.lp-btn-primary{width:100%;padding:13px;background:linear-gradient(135deg,#F5A623 0%,#E08A0A 100%);color:#060A0E;font-weight:700;font-size:14px;border:none;border-radius:10px;cursor:pointer;transition:all .18s;letter-spacing:.2px;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 20px rgba(245,166,35,.28);}
+.lp-btn-primary:hover{transform:translateY(-1px);box-shadow:0 8px 28px rgba(245,166,35,.38);}
+.lp-btn-primary:active{transform:translateY(0);box-shadow:0 2px 10px rgba(245,166,35,.2);}
+.lp-btn-primary:disabled{opacity:.55;cursor:not-allowed;transform:none;}
+.lp-btn-secondary{width:100%;padding:13px;background:linear-gradient(135deg,#0EC9B7 0%,#0A9888 100%);color:#060A0E;font-weight:700;font-size:14px;border:none;border-radius:10px;cursor:pointer;transition:all .18s;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 20px rgba(14,201,183,.22);}
+.lp-btn-secondary:hover{transform:translateY(-1px);box-shadow:0 8px 28px rgba(14,201,183,.34);}
+.lp-btn-secondary:disabled{opacity:.55;cursor:not-allowed;transform:none;}
+.lp-tab-btn{flex:1;padding:10px 8px;border:none;background:transparent;font-size:13px;font-weight:600;cursor:pointer;border-radius:8px;transition:all .18s;font-family:inherit;}
+.lp-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:999px;font-size:11px;font-weight:600;letter-spacing:.4px;}
+.lp-process-node{display:flex;flex-direction:column;align-items:center;gap:5px;}
+.lp-process-box{width:58px;height:42px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;letter-spacing:.5px;text-align:center;line-height:1.2;}
+.lp-main-grid{max-width:1140px;width:100%;display:grid;grid-template-columns:1.1fr .9fr;gap:64px;align-items:center;}
+.lp-topbar-badges{display:flex;align-items:center;gap:10px;}
+@media(max-width:900px){
+  .lp-main-grid{grid-template-columns:1fr!important;gap:36px!important;}
+  .lp-topbar-badges{display:none!important;}
+  h1.lp-h1{font-size:30px!important;}
+  .lp-process-node .lp-process-box{width:46px!important;height:36px!important;font-size:8px!important;}
+}
+</style>
+<div class="auth-shell" style="min-height:100vh;background:#050810;display:flex;flex-direction:column;overflow:hidden;position:relative;">
 
-  <!-- ═══ HERO SECTION ═══ -->
-  <div class="auth-hero" style="flex:1;display:flex;align-items:center;justify-content:center;padding:40px 20px;">
-    <div class="auth-grid" style="max-width:1100px;width:100%;display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center;">
+  <!-- ─── Animated background orbs ─── -->
+  <div style="position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;">
+    <div class="lp-anim-1" style="position:absolute;top:-15%;left:-10%;width:600px;height:600px;background:radial-gradient(circle,rgba(245,166,35,.055) 0%,transparent 68%);"></div>
+    <div class="lp-anim-2" style="position:absolute;bottom:-20%;right:-8%;width:700px;height:700px;background:radial-gradient(circle,rgba(14,201,183,.04) 0%,transparent 65%);"></div>
+    <div style="position:absolute;top:45%;left:40%;width:400px;height:400px;background:radial-gradient(circle,rgba(91,164,245,.025) 0%,transparent 70%);"></div>
+    <!-- Grid overlay -->
+    <svg style="position:absolute;inset:0;width:100%;height:100%;opacity:.028" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="lp-grid" x="0" y="0" width="52" height="52" patternUnits="userSpaceOnUse"><path d="M52 0L0 0 0 52" fill="none" stroke="#8896AE" stroke-width=".7"/></pattern></defs><rect width="100%" height="100%" fill="url(#lp-grid)"/></svg>
+  </div>
 
-      <!-- Left: Branding + Features -->
-      <div class="auth-intro">
-        <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
-          <div style="width:48px;height:48px;background:linear-gradient(135deg,#F5A623,#C98214);border-radius:12px;display:flex;align-items:center;justify-content:center;">
-            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#F4F8FF" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-          </div>
-          <div>
-            <div style="font-size:11px;font-weight:600;color:#F5A623;letter-spacing:1px;">MPDPMS v4.0</div>
-            <div style="font-size:28px;font-weight:800;color:#F4F8FF;line-height:1;">MetalFlow Pro</div>
-          </div>
+  <!-- ═══ TOPBAR ═══ -->
+  <div style="position:relative;z-index:10;padding:18px 32px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,.04);">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div style="width:36px;height:36px;background:linear-gradient(135deg,#F5A623,#C98214);border-radius:9px;display:flex;align-items:center;justify-content:center;box-shadow:0 0 16px rgba(245,166,35,.3);flex-shrink:0;">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#060A0E" stroke-width="2.2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+      </div>
+      <div>
+        <div style="font-size:16px;font-weight:800;color:#F0F4FA;letter-spacing:-.3px;line-height:1;">MetalFlow Pro</div>
+        <div style="font-size:9.5px;color:#F5A623;letter-spacing:1.5px;text-transform:uppercase;font-weight:600;margin-top:1px;">MPDPMS v4.0</div>
+      </div>
+    </div>
+    <div class="lp-topbar-badges" style="display:flex;align-items:center;gap:10px;">
+      <div class="lp-badge" style="background:rgba(14,201,183,.1);border:1px solid rgba(14,201,183,.22);color:#0EC9B7;">
+        <div class="lp-pulse" style="width:6px;height:6px;background:#0EC9B7;border-radius:50%;"></div>
+        NI 43-101 Compliant
+      </div>
+      <div class="lp-badge" style="background:rgba(91,164,245,.1);border:1px solid rgba(91,164,245,.2);color:#5BA4F5;">
+        Stage-Gate EPCM
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ MAIN CONTENT ═══ -->
+  <div style="position:relative;z-index:5;flex:1;display:flex;align-items:center;justify-content:center;padding:32px 24px;">
+    <div class="lp-main-grid">
+
+      <!-- ─── LEFT: Marketing ─── -->
+      <div>
+
+        <!-- Eyebrow -->
+        <div class="lp-slide-up" style="display:inline-flex;align-items:center;gap:8px;padding:6px 14px;background:rgba(245,166,35,.08);border:1px solid rgba(245,166,35,.2);border-radius:999px;margin-bottom:24px;">
+          <svg viewBox="0 0 16 16" width="13" height="13" fill="#F5A623"><path d="M8 1l1.8 3.6L14 5.4l-3 2.9.7 4.1L8 10.4 4.3 12.4l.7-4.1-3-2.9 4.2-.8z"/></svg>
+          <span style="font-size:11px;font-weight:700;color:#F5A623;letter-spacing:.8px;text-transform:uppercase;">Plateforme Métallurgique Professionnelle</span>
         </div>
 
-        <h1 style="font-size:36px;font-weight:800;color:#F4F8FF;line-height:1.2;margin:24px 0 16px;">
-          La plateforme intelligente pour la <span style="color:#F5A623;">conception d'usines minières</span>
+        <!-- Headline -->
+        <h1 class="lp-h1 lp-slide-up-2" style="font-size:42px;font-weight:900;color:#F0F4FA;line-height:1.12;margin:0 0 20px;letter-spacing:-.8px;">
+          De la géologie au<br>
+          <span style="background:linear-gradient(90deg,#F5A623,#FFD166);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">lingot d'or</span>
+          — en un seul outil
         </h1>
 
-        <p style="font-size:16px;color:#94A3B8;line-height:1.6;margin-bottom:32px;">
-          De l'exploration au commissioning — LIMS, critères de conception, bilan massique,
-          simulation rigoureuse et optimisation Mine-to-Mill dans un seul outil intégré.
+        <!-- Subheadline -->
+        <p class="lp-slide-up-3" style="font-size:16px;color:#7A90A8;line-height:1.7;margin-bottom:32px;max-width:520px;">
+          MetalFlow Pro unifie le <strong style="color:#9DB8CC;">LIMS</strong>, les critères de conception, le bilan massique,
+          la simulation procédé et l'optimisation Mine-to-Mill dans une seule plateforme
+          conforme <strong style="color:#9DB8CC;">NI 43-101</strong>.
         </p>
 
-        <!-- Feature cards -->
-        <div class="auth-features" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-          <div style="background:var(--gold4,rgba(245,166,35,.07));border:1px solid var(--gold3,rgba(245,166,35,.16));border-radius:12px;padding:16px;transition:border-color .2s,box-shadow .2s;" onmouseover="this.style.boxShadow='0 0 0 1px rgba(245,166,35,.25),0 8px 24px rgba(245,166,35,.08)'" onmouseout="this.style.boxShadow=''">
-            <div style="font-size:18px;margin-bottom:6px;color:var(--gold,#F5A623);">⚙</div>
-            <div style="font-size:13px;font-weight:700;color:var(--txt1,#F4F8FF);">60+ Opérations unitaires</div>
-            <div style="font-size:11px;color:var(--txt4,#63758C);margin-top:3px;line-height:1.5;">Circuit composable avec critères de conception professionnels</div>
-          </div>
-          <div style="background:var(--blue3,rgba(91,164,245,.08));border:1px solid rgba(91,164,245,.18);border-radius:12px;padding:16px;transition:border-color .2s,box-shadow .2s;" onmouseover="this.style.boxShadow='0 0 0 1px rgba(91,164,245,.25),0 8px 24px rgba(91,164,245,.08)'" onmouseout="this.style.boxShadow=''">
-            <div style="font-size:18px;margin-bottom:6px;color:var(--blue,#5BA4F5);">📊</div>
-            <div style="font-size:13px;font-weight:700;color:var(--txt1,#F4F8FF);">Bilan massique circuit par circuit</div>
-            <div style="font-size:11px;color:var(--txt4,#63758C);margin-top:3px;line-height:1.5;">Monte Carlo 5 000 sims + empreinte carbone intégrée</div>
-          </div>
-          <div style="background:var(--teal3,rgba(0,196,176,.08));border:1px solid rgba(0,196,176,.18);border-radius:12px;padding:16px;transition:border-color .2s,box-shadow .2s;" onmouseover="this.style.boxShadow='0 0 0 1px rgba(0,196,176,.25),0 8px 24px rgba(0,196,176,.08)'" onmouseout="this.style.boxShadow=''">
-            <div style="font-size:18px;margin-bottom:6px;color:var(--teal,#00C4B0);">🏭</div>
-            <div style="font-size:13px;font-weight:700;color:var(--txt1,#F4F8FF);">MER professionnel 400+ items</div>
-            <div style="font-size:11px;color:var(--txt4,#63758C);margin-top:3px;line-height:1.5;">Registre mécanique avec WBS, vendeurs et CAPEX</div>
-          </div>
-          <div style="background:var(--purple3,rgba(157,120,240,.08));border:1px solid rgba(157,120,240,.18);border-radius:12px;padding:16px;transition:border-color .2s,box-shadow .2s;" onmouseover="this.style.boxShadow='0 0 0 1px rgba(157,120,240,.25),0 8px 24px rgba(157,120,240,.08)'" onmouseout="this.style.boxShadow=''">
-            <div style="font-size:18px;margin-bottom:6px;color:var(--purple,#9D78F0);">⛏</div>
-            <div style="font-size:13px;font-weight:700;color:var(--txt1,#F4F8FF);">Mine-to-Mill (Innovation)</div>
-            <div style="font-size:11px;color:var(--txt4,#63758C);margin-top:3px;line-height:1.5;">Block Model → LOM 15 ans → NPV avec intervalles de confiance</div>
+        <!-- Process flow diagram -->
+        <div class="lp-slide-up-3" style="background:rgba(12,17,28,.75);border:1px solid rgba(40,58,82,.7);border-radius:14px;padding:18px 20px;margin-bottom:28px;backdrop-filter:blur(8px);">
+          <div style="font-size:10px;font-weight:600;color:#3E5068;letter-spacing:1.2px;text-transform:uppercase;margin-bottom:14px;">Flux Mine-to-Mill intégré</div>
+          <div style="display:flex;align-items:center;gap:4px;overflow-x:auto;padding-bottom:4px;">
+            <div class="lp-process-node">
+              <div class="lp-process-box" style="background:rgba(14,201,183,.12);border:1px solid rgba(14,201,183,.25);color:#0EC9B7;">BLOC<br>MODÈLE</div>
+              <div style="font-size:9px;color:#3E5068;margin-top:3px;">Géologie</div>
+            </div>
+            <svg width="24" height="20" viewBox="0 0 24 20"><path d="M2 10 L22 10 M16 4 L22 10 L16 16" stroke="#2B3C56" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg>
+            <div class="lp-process-node">
+              <div class="lp-process-box" style="background:rgba(157,120,240,.12);border:1px solid rgba(157,120,240,.25);color:#9D78F0;">LIMS<br>Tests</div>
+              <div style="font-size:9px;color:#3E5068;margin-top:3px;">Labo</div>
+            </div>
+            <svg width="24" height="20" viewBox="0 0 24 20"><path d="M2 10 L22 10 M16 4 L22 10 L16 16" stroke="#2B3C56" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg>
+            <div class="lp-process-node">
+              <div class="lp-process-box" style="background:rgba(245,166,35,.12);border:1px solid rgba(245,166,35,.28);color:#F5A623;font-size:8px;">CRITÈRES<br>DESIGN</div>
+              <div style="font-size:9px;color:#3E5068;margin-top:3px;">Ingénierie</div>
+            </div>
+            <svg width="24" height="20" viewBox="0 0 24 20"><path d="M2 10 L22 10 M16 4 L22 10 L16 16" stroke="#2B3C56" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg>
+            <div class="lp-process-node">
+              <div class="lp-process-box" style="background:rgba(91,164,245,.12);border:1px solid rgba(91,164,245,.25);color:#5BA4F5;font-size:8px;">BILAN<br>MASSIQUE</div>
+              <div style="font-size:9px;color:#3E5068;margin-top:3px;">Procédé</div>
+            </div>
+            <svg width="24" height="20" viewBox="0 0 24 20"><path d="M2 10 L22 10 M16 4 L22 10 L16 16" stroke="#2B3C56" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg>
+            <div class="lp-process-node">
+              <div class="lp-process-box" style="background:rgba(248,138,68,.12);border:1px solid rgba(248,138,68,.25);color:#F88A44;font-size:8px;">SIM &<br>OPTIM</div>
+              <div style="font-size:9px;color:#3E5068;margin-top:3px;">Monte Carlo</div>
+            </div>
+            <svg width="24" height="20" viewBox="0 0 24 20"><path d="M2 10 L22 10 M16 4 L22 10 L16 16" stroke="#2B3C56" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg>
+            <div class="lp-process-node">
+              <div class="lp-process-box" style="background:rgba(46,204,138,.12);border:1px solid rgba(46,204,138,.28);color:#2ECC8A;font-size:8px;">NI 43-101<br>Rapport</div>
+              <div style="font-size:9px;color:#3E5068;margin-top:3px;">CIM / JORC</div>
+            </div>
           </div>
         </div>
 
-        <div class="auth-compliance" style="margin-top:24px;display:flex;gap:24px;align-items:center;flex-wrap:wrap;">
-          <div style="display:flex;align-items:center;gap:6px;">
-            <div style="width:7px;height:7px;background:var(--teal,#00C4B0);border-radius:50%;box-shadow:0 0 6px rgba(0,196,176,.5);"></div>
-            <span style="font-size:12px;color:var(--txt3,#8896AE);">NI 43-101 Compliant</span>
+        <!-- Feature grid -->
+        <div class="lp-slide-up-4" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:28px;">
+          <div class="lp-feat-card" style="--accent-c:rgba(245,166,35,.3);">
+            <div class="lp-feat-icon" style="background:rgba(245,166,35,.1);border:1px solid rgba(245,166,35,.2);">
+              <svg viewBox="0 0 20 20" width="20" height="20" fill="none" stroke="#F5A623" stroke-width="1.6"><circle cx="10" cy="10" r="8"/><path d="M10 6v4l3 3"/><path d="M6 10h.01M14 10h.01M10 6h.01M10 14h.01"/></svg>
+            </div>
+            <div style="font-size:12.5px;font-weight:700;color:#E8EEF7;margin-bottom:4px;">60+ Opérations unitaires</div>
+            <div style="font-size:11px;color:#4A6075;line-height:1.55;">Concassage, broyage, gravité, flottation, CIL/CIP, élution, électrolyse</div>
           </div>
-          <div style="display:flex;align-items:center;gap:6px;">
-            <div style="width:7px;height:7px;background:var(--blue,#5BA4F5);border-radius:50%;box-shadow:0 0 6px rgba(91,164,245,.5);"></div>
-            <span style="font-size:12px;color:var(--txt3,#8896AE);">Stage-Gate EPCM</span>
+          <div class="lp-feat-card" style="--accent-c:rgba(91,164,245,.3);">
+            <div class="lp-feat-icon" style="background:rgba(91,164,245,.1);border:1px solid rgba(91,164,245,.2);">
+              <svg viewBox="0 0 20 20" width="20" height="20" fill="none" stroke="#5BA4F5" stroke-width="1.6"><path d="M3 15l4-4 4 2 6-8"/><rect x="2" y="2" width="16" height="16" rx="2"/></svg>
+            </div>
+            <div style="font-size:12.5px;font-weight:700;color:#E8EEF7;margin-bottom:4px;">Bilan massique dynamique</div>
+            <div style="font-size:11px;color:#4A6075;line-height:1.55;">Monte Carlo 5 000 sims · empreinte carbone · eau · réactifs intégrés</div>
           </div>
-          <div style="display:flex;align-items:center;gap:6px;">
-            <div style="width:7px;height:7px;background:var(--gold,#F5A623);border-radius:50%;box-shadow:0 0 6px rgba(245,166,35,.5);"></div>
-            <span style="font-size:12px;color:var(--txt3,#8896AE);">ESG / Carbon Tracking</span>
+          <div class="lp-feat-card" style="--accent-c:rgba(14,201,183,.3);">
+            <div class="lp-feat-icon" style="background:rgba(14,201,183,.1);border:1px solid rgba(14,201,183,.2);">
+              <svg viewBox="0 0 20 20" width="20" height="20" fill="none" stroke="#0EC9B7" stroke-width="1.6"><path d="M4 8h12M4 12h8M9 16H4M9 4H4v12h12V9"/><path d="M12 4l4 5h-4V4z"/></svg>
+            </div>
+            <div style="font-size:12.5px;font-weight:700;color:#E8EEF7;margin-bottom:4px;">MER 400+ postes CAPEX</div>
+            <div style="font-size:11px;color:#4A6075;line-height:1.55;">Registre mécanique complet : WBS, vendeurs, facteurs de contingence</div>
+          </div>
+          <div class="lp-feat-card" style="--accent-c:rgba(157,120,240,.3);">
+            <div class="lp-feat-icon" style="background:rgba(157,120,240,.1);border:1px solid rgba(157,120,240,.2);">
+              <svg viewBox="0 0 20 20" width="20" height="20" fill="none" stroke="#9D78F0" stroke-width="1.6"><path d="M10 2L2 7v6l8 5 8-5V7L10 2z"/><path d="M2 7l8 5M18 7l-8 5M10 12v8"/></svg>
+            </div>
+            <div style="font-size:12.5px;font-weight:700;color:#E8EEF7;margin-bottom:4px;">Intelligence géométallurgique</div>
+            <div style="font-size:11px;color:#4A6075;line-height:1.55;">Block Model → LOM 15 ans → NPV · optimisation GADE · IMBO</div>
+          </div>
+        </div>
+
+        <!-- Stats strip -->
+        <div class="lp-slide-up-5" style="display:flex;gap:0;border:1px solid rgba(40,58,82,.7);border-radius:12px;overflow:hidden;background:rgba(8,12,22,.6);">
+          <div style="flex:1;padding:14px 16px;text-align:center;border-right:1px solid rgba(40,58,82,.7);">
+            <div style="font-size:20px;font-weight:800;color:#F5A623;">434</div>
+            <div style="font-size:9.5px;color:#3E5068;text-transform:uppercase;letter-spacing:.8px;margin-top:2px;">Critères design</div>
+          </div>
+          <div style="flex:1;padding:14px 16px;text-align:center;border-right:1px solid rgba(40,58,82,.7);">
+            <div style="font-size:20px;font-weight:800;color:#5BA4F5;">5 000</div>
+            <div style="font-size:9.5px;color:#3E5068;text-transform:uppercase;letter-spacing:.8px;margin-top:2px;">Sims Monte Carlo</div>
+          </div>
+          <div style="flex:1;padding:14px 16px;text-align:center;border-right:1px solid rgba(40,58,82,.7);">
+            <div style="font-size:20px;font-weight:800;color:#0EC9B7;">49</div>
+            <div style="font-size:9.5px;color:#3E5068;text-transform:uppercase;letter-spacing:.8px;margin-top:2px;">Modules actifs</div>
+          </div>
+          <div style="flex:1;padding:14px 16px;text-align:center;">
+            <div style="font-size:20px;font-weight:800;color:#9D78F0;">15+</div>
+            <div style="font-size:9.5px;color:#3E5068;text-transform:uppercase;letter-spacing:.8px;margin-top:2px;">Ans LOM horizon</div>
           </div>
         </div>
       </div>
 
-      <!-- Right: Login / Register Card -->
-      <div class="auth-form-column">
-        <div class="auth-panel" style="background:var(--card,#0D121B);border:1px solid var(--gold3,rgba(245,166,35,.16));border-radius:16px;padding:32px;backdrop-filter:blur(24px);box-shadow:0 30px 60px rgba(0,0,0,.5),inset 0 1px rgba(255,255,255,.04);">
+      <!-- ─── RIGHT: Auth Card ─── -->
+      <div class="lp-slide-up-2">
+        <div style="background:rgba(10,14,24,.88);border:1px solid rgba(50,72,100,.7);border-radius:18px;padding:34px;backdrop-filter:blur(28px);box-shadow:0 40px 80px rgba(0,0,0,.6),0 0 0 1px rgba(245,166,35,.05),inset 0 1px 0 rgba(255,255,255,.04);">
 
-          <!-- Tab switcher -->
-          <div style="display:flex;margin-bottom:24px;background:var(--bg,#06080E);border-radius:10px;padding:3px;border:1px solid var(--border,#16202E);">
-            <button onclick="S._showRegister=false;render()" style="flex:1;padding:10px;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:.2s;${!showRegister ? 'background:rgba(245,166,35,0.15);color:#F5A623;' : 'background:transparent;color:#63758C;'}">Se connecter</button>
-            <button onclick="S._showRegister=true;render()" style="flex:1;padding:10px;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:.2s;${showRegister ? 'background:rgba(0,196,176,0.15);color:#2EE8D8;' : 'background:transparent;color:#63758C;'}">Créer un compte</button>
+          <!-- Card header -->
+          <div style="text-align:center;margin-bottom:26px;">
+            <div style="width:52px;height:52px;background:linear-gradient(135deg,rgba(245,166,35,.18),rgba(245,166,35,.06));border:1px solid rgba(245,166,35,.25);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;">
+              <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="#F5A623" stroke-width="1.8"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+            </div>
+            <div style="font-size:19px;font-weight:800;color:#F0F4FA;letter-spacing:-.3px;">${showRegister ? 'Créer votre compte' : 'Accéder à MetalFlow Pro'}</div>
+            <div style="font-size:12px;color:#4A6075;margin-top:5px;">${showRegister ? 'Plateforme métallurgique professionnelle' : 'Plateforme réservée aux ingénieurs métallurgistes'}</div>
           </div>
 
+          <!-- Tab switcher -->
+          <div style="display:flex;background:rgba(6,8,14,.8);border-radius:11px;padding:3px;border:1px solid rgba(30,42,61,.9);margin-bottom:22px;">
+            <button class="lp-tab-btn" onclick="S._showRegister=false;render()" style="${!showRegister ? 'background:rgba(245,166,35,.14);color:#F5A623;box-shadow:0 1px 4px rgba(0,0,0,.3);' : 'color:#3E5068;'}">Se connecter</button>
+            <button class="lp-tab-btn" onclick="S._showRegister=true;render()" style="${showRegister ? 'background:rgba(14,201,183,.12);color:#0EC9B7;box-shadow:0 1px 4px rgba(0,0,0,.3);' : 'color:#3E5068;'}">Créer un compte</button>
+          </div>
+
+          <!-- Alerts -->
           <div id="login-error" style="display:none" class="alert alert-error mb12"><span class="alert-icon">⚠</span><span id="login-error-msg"></span></div>
           <div id="login-success" style="display:none" class="alert alert-success mb12"><span class="alert-icon">✓</span><span id="login-success-msg"></span></div>
 
           ${!showRegister ? `
-          <!-- LOGIN FORM -->
-          <div class="form-group">
-            <label class="form-label" style="color:var(--txt3,#8896AE);">Adresse courriel</label>
-            <input class="input" type="email" id="login-email" placeholder="votre@email.com" autocomplete="email" style="background:var(--bg,#06080E);border-color:var(--border2,#1D2C3E);color:var(--txt1,#F4F8FF);">
+          <!-- LOGIN -->
+          <div style="margin-bottom:14px;">
+            <label style="display:block;font-size:11.5px;font-weight:600;color:#5A7080;margin-bottom:6px;letter-spacing:.3px;">ADRESSE COURRIEL</label>
+            <input class="lp-input" type="email" id="login-email" placeholder="ingenieur@minier.com" autocomplete="email">
           </div>
-          <div class="form-group">
-            <label class="form-label" style="color:var(--txt3,#8896AE);">Mot de passe</label>
-            <input class="input" type="password" id="login-pwd" placeholder="••••••••" autocomplete="current-password" style="background:var(--bg,#06080E);border-color:var(--border2,#1D2C3E);color:var(--txt1,#F4F8FF);">
+          <div style="margin-bottom:6px;">
+            <label style="display:block;font-size:11.5px;font-weight:600;color:#5A7080;margin-bottom:6px;letter-spacing:.3px;">MOT DE PASSE</label>
+            <input class="lp-input" type="password" id="login-pwd" placeholder="••••••••••" autocomplete="current-password">
           </div>
-          <button class="btn" style="width:100%;margin-top:12px;justify-content:center;padding:12px;background:linear-gradient(135deg,#F5A623,#C98214);color:#06080E;font-weight:700;font-size:14px;border:none;border-radius:10px;" id="btn-login">
+          <div style="text-align:right;margin-bottom:20px;">
+            <span style="font-size:11px;color:#3A5270;cursor:pointer;">Mot de passe oublié ?</span>
+          </div>
+          <button class="lp-btn-primary" id="btn-login" onclick="doLogin()">
             <span id="login-spinner" style="display:none" class="spinner"></span>
+            <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10h14M10 3l7 7-7 7"/></svg>
             Se connecter
           </button>
+          <div style="text-align:center;margin-top:18px;font-size:12px;color:#3A5270;">
+            Pas encore de compte ?&nbsp;<a href="#" onclick="S._showRegister=true;render();return false" style="color:#0EC9B7;font-weight:600;text-decoration:none;">Inscrivez-vous gratuitement →</a>
+          </div>
           ` : `
-          <!-- REGISTER FORM -->
-          <div class="form-group">
-            <label class="form-label" style="color:var(--txt3,#8896AE);">Nom complet</label>
-            <input class="input" type="text" id="reg-name" placeholder="Jean Dupont" style="background:var(--bg,#06080E);border-color:var(--border2,#1D2C3E);color:var(--txt1,#F4F8FF);">
+          <!-- REGISTER -->
+          <div style="margin-bottom:13px;">
+            <label style="display:block;font-size:11.5px;font-weight:600;color:#5A7080;margin-bottom:6px;letter-spacing:.3px;">NOM COMPLET</label>
+            <input class="lp-input" type="text" id="reg-name" placeholder="Dr. Jean Dupont, P.Eng." autocomplete="name">
           </div>
-          <div class="form-group">
-            <label class="form-label" style="color:var(--txt3,#8896AE);">Adresse courriel</label>
-            <input class="input" type="email" id="reg-email" placeholder="votre@email.com" autocomplete="email" style="background:var(--bg,#06080E);border-color:var(--border2,#1D2C3E);color:var(--txt1,#F4F8FF);">
+          <div style="margin-bottom:13px;">
+            <label style="display:block;font-size:11.5px;font-weight:600;color:#5A7080;margin-bottom:6px;letter-spacing:.3px;">ADRESSE COURRIEL</label>
+            <input class="lp-input" type="email" id="reg-email" placeholder="jean.dupont@minier.com" autocomplete="email">
           </div>
-          <div class="form-group">
-            <label class="form-label" style="color:var(--txt3,#8896AE);">Mot de passe (min. 8 caractères)</label>
-            <input class="input" type="password" id="reg-pwd" placeholder="••••••••" autocomplete="new-password" style="background:var(--bg,#06080E);border-color:var(--border2,#1D2C3E);color:var(--txt1,#F4F8FF);">
+          <div style="margin-bottom:13px;">
+            <label style="display:block;font-size:11.5px;font-weight:600;color:#5A7080;margin-bottom:6px;letter-spacing:.3px;">MOT DE PASSE <span style="color:#2B3C56;">(min. 8 caractères)</span></label>
+            <input class="lp-input" type="password" id="reg-pwd" placeholder="••••••••••" autocomplete="new-password">
           </div>
-          <div class="form-group">
-            <label class="form-label" style="color:var(--txt3,#8896AE);">Confirmer le mot de passe</label>
-            <input class="input" type="password" id="reg-pwd2" placeholder="••••••••" autocomplete="new-password" style="background:var(--bg,#06080E);border-color:var(--border2,#1D2C3E);color:var(--txt1,#F4F8FF);">
+          <div style="margin-bottom:20px;">
+            <label style="display:block;font-size:11.5px;font-weight:600;color:#5A7080;margin-bottom:6px;letter-spacing:.3px;">CONFIRMER LE MOT DE PASSE</label>
+            <input class="lp-input" type="password" id="reg-pwd2" placeholder="••••••••••" autocomplete="new-password">
           </div>
-          <button class="btn" style="width:100%;margin-top:12px;justify-content:center;padding:12px;background:linear-gradient(135deg,var(--teal,#00C4B0),#008A7C);color:#F9FAFB;font-weight:700;font-size:14px;border:none;border-radius:10px;box-shadow:0 4px 16px rgba(0,196,176,.25);" id="btn-register" onclick="doRegister()">
+          <button class="lp-btn-secondary" id="btn-register" onclick="doRegister()">
             <span id="reg-spinner" style="display:none" class="spinner"></span>
+            <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 2v16M2 10h16"/></svg>
             Créer mon compte
           </button>
+          <div style="text-align:center;margin-top:18px;font-size:12px;color:#3A5270;">
+            Déjà un compte ?&nbsp;<a href="#" onclick="S._showRegister=false;render();return false" style="color:#F5A623;font-weight:600;text-decoration:none;">Se connecter →</a>
+          </div>
           `}
 
-          <div style="text-align:center;margin-top:20px;font-size:11px;color:var(--txt4,#63758C);">
-            ${!showRegister ? 'Pas encore de compte ? <a href="#" onclick="S._showRegister=true;render();return false" style="color:var(--teal2,#2EE8D8);text-decoration:none;">Inscrivez-vous</a>' : 'Déjà un compte ? <a href="#" onclick="S._showRegister=false;render();return false" style="color:var(--gold,#F5A623);text-decoration:none;">Connectez-vous</a>'}
+          <!-- Security note -->
+          <div style="margin-top:22px;padding-top:18px;border-top:1px solid rgba(30,42,61,.8);display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;">
+            <div style="display:flex;align-items:center;gap:5px;font-size:10.5px;color:#2E4358;">
+              <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="#2E4358" stroke-width="1.5"><rect x="3" y="7" width="10" height="7" rx="1.5"/><path d="M5 7V5a3 3 0 016 0v2"/></svg>
+              Connexion sécurisée JWT
+            </div>
+            <div style="display:flex;align-items:center;gap:5px;font-size:10.5px;color:#2E4358;">
+              <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="#2E4358" stroke-width="1.5"><path d="M8 1l1.5 3 3.5.5-2.5 2.5.6 3.5L8 9l-3.1 1.5.6-3.5L3 4.5 6.5 4z"/></svg>
+              Données isolées par projet
+            </div>
+            <div style="display:flex;align-items:center;gap:5px;font-size:10.5px;color:#2E4358;">
+              <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="#2E4358" stroke-width="1.5"><path d="M8 2a6 6 0 100 12A6 6 0 008 2zm0 4v3l2 1.5"/></svg>
+              Audit trail complet
+            </div>
           </div>
         </div>
 
-        <div style="text-align:center;margin-top:16px;font-size:10px;color:var(--txt4,#63758C);opacity:.6;">
-          MetalFlow Pro · MPDPMS v4.0 · Metallurgical Process Design & Project Management System
+        <!-- Powered by -->
+        <div style="text-align:center;margin-top:14px;font-size:10px;color:#1E2E3E;letter-spacing:.3px;">
+          Metallurgical Process Design &amp; Project Management System · v4.0
         </div>
       </div>
     </div>
   </div>
 
-  <!-- ═══ FOOTER STATS ═══ -->
-  <div class="auth-stats" style="border-top:1px solid var(--border,#16202E);padding:20px 40px;display:flex;justify-content:center;gap:48px;background:var(--bg2,#0C1018);">
-    <div style="text-align:center;">
-      <div style="font-size:22px;font-weight:800;color:var(--gold,#F5A623);">49</div>
-      <div style="font-size:10px;color:var(--txt4,#63758C);text-transform:uppercase;letter-spacing:.5px;">API Endpoints</div>
-    </div>
-    <div style="text-align:center;">
-      <div style="font-size:22px;font-weight:800;color:var(--blue,#5BA4F5);">60+</div>
-      <div style="font-size:10px;color:var(--txt4,#63758C);text-transform:uppercase;letter-spacing:.5px;">Opérations unitaires</div>
-    </div>
-    <div style="text-align:center;">
-      <div style="font-size:22px;font-weight:800;color:var(--teal,#00C4B0);">434</div>
-      <div style="font-size:10px;color:var(--txt4,#63758C);text-transform:uppercase;letter-spacing:.5px;">Critères de conception</div>
-    </div>
-    <div style="text-align:center;">
-      <div style="font-size:22px;font-weight:800;color:var(--purple,#9D78F0);">9</div>
-      <div style="font-size:10px;color:var(--txt4,#63758C);text-transform:uppercase;letter-spacing:.5px;">Modèles cinétiques</div>
-    </div>
-    <div style="text-align:center;">
-      <div style="font-size:22px;font-weight:800;color:var(--red,#F06B6B);">5 000</div>
-      <div style="font-size:10px;color:var(--txt4,#63758C);text-transform:uppercase;letter-spacing:.5px;">Simulations Monte Carlo</div>
+  <!-- ═══ FOOTER ═══ -->
+  <div style="position:relative;z-index:5;border-top:1px solid rgba(20,30,45,.9);padding:14px 40px;display:flex;align-items:center;justify-content:space-between;background:rgba(5,8,16,.7);">
+    <div style="font-size:10px;color:#1E2E3E;">© 2025 MetalFlow Pro — Tous droits réservés</div>
+    <div style="display:flex;gap:24px;align-items:center;">
+      <span style="font-size:10px;color:#1E2E3E;">NI 43-101 · CIM Standards</span>
+      <span style="font-size:10px;color:#1E2E3E;">Stage-Gate EPCM</span>
+      <span style="font-size:10px;color:#1E2E3E;">ESG / Carbon Tracking</span>
     </div>
   </div>
 </div>`;
