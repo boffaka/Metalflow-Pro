@@ -9,10 +9,12 @@ try:
     from ..auth import project_user
     from ..db import qone, execute
     from ..helpers import compute_annual_t, compute_daily_opex
+    from .. import config as cfg
 except ImportError:
     from auth import project_user
     from db import qone, execute
     from helpers import compute_annual_t, compute_daily_opex
+    import config as cfg
 
 logger = logging.getLogger("mpdpms.working_capital")
 
@@ -63,7 +65,7 @@ def _compute_bfr_inline(pid: str, row: dict) -> dict:
         op_hours_day     = float(project.get("operating_hours_day") or 24.0)
         availability_pct = float(project.get("availability_pct") or 92.0)
         float(project.get("gold_grade_g_t") or 0)
-        gold_price       = float(project.get("gold_price_usd_oz") or 2340)
+        gold_price       = float(project.get("gold_price_usd_oz") or cfg.DEFAULT_GOLD_PRICE_USD_OZ)
 
         annual_t = compute_annual_t(target_tph, op_hours_day, availability_pct)
 

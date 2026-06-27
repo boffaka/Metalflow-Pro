@@ -11,6 +11,11 @@ import math
 from dataclasses import dataclass, field
 from typing import Any
 
+try:
+    from .. import config as cfg
+except ImportError:
+    import config as cfg
+
 logger = logging.getLogger("mpdpms.sim_unit_library")
 
 # ── Physical constants ────────────────────────────────────────────────────────
@@ -1175,7 +1180,7 @@ def _calc_product_sink(inlet_streams, params, feed_input, design_capacity_tph, a
     sum(s.volume_flow for s in inlet_streams.values())
 
     avg_grade = total_gold / max(total_mass, 0.001) * 1000
-    gold_price = float(params.get("gold_price_usd", 2000))
+    gold_price = float(params.get("gold_price_usd", cfg.DEFAULT_GOLD_PRICE_USD_OZ))
     oz_per_hour = total_gold / 0.0311035
     revenue_usd_h = oz_per_hour * gold_price
 
@@ -1982,9 +1987,9 @@ UNIT_REGISTRY: dict[str, dict] = {
         "unit_type": "product_sink",
         "display_name": "Puits de produit",
         "category": "utilities",
-        "default_params": {"gold_price_usd": 2000},
+        "default_params": {"gold_price_usd": cfg.DEFAULT_GOLD_PRICE_USD_OZ},
         "param_schema": [
-            _ps("gold_price_usd", "Prix de l'or", default=2000, unit="USD/oz", min_v=500, max_v=5000),
+            _ps("gold_price_usd", "Prix de l'or", default=cfg.DEFAULT_GOLD_PRICE_USD_OZ, unit="USD/oz", min_v=500, max_v=5000),
         ],
         "inlet_ports": ["feed"],
         "outlet_ports": [],  # sink

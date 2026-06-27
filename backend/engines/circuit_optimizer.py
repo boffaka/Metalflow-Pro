@@ -16,8 +16,10 @@ logger = logging.getLogger("mpdpms.circuit_optimizer")
 
 try:
     from ..constants import TROY_OZ_PER_GRAM
+    from .. import config as cfg
 except ImportError:  # pragma: no cover - supports direct script imports
     from constants import TROY_OZ_PER_GRAM
+    import config as cfg
 
 # ─── Circuit Library ─────────────────────────────────────────────────────────
 
@@ -401,7 +403,7 @@ def extract_ore_profile(pid: str, db_qall, db_qone) -> dict:
         "nacn_kg_t": _avg(d1, "nacn_consumption_kg_t", 0.5),
         "flot_recovery_pct": _avg(g1, "recovery_pct", 0.0),
         "throughput_tph": float(project.get("target_tph") or 913),
-        "gold_price": float(project.get("gold_price_usd_oz") or 2340),
+        "gold_price": float(project.get("gold_price_usd_oz") or cfg.DEFAULT_GOLD_PRICE_USD_OZ),
         "availability_pct": float(project.get("availability_pct") or 92),
         "op_hours_day": float(project.get("operating_hours_day") or 22),
         "mine_life_years": int(project.get("mine_life_years") or 14),

@@ -3,6 +3,13 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from .database import Base
 from datetime import datetime
+import sys, os
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+try:
+    import config as _cfg
+    _DEFAULT_GOLD_PRICE = _cfg.DEFAULT_GOLD_PRICE_USD_OZ
+except Exception:
+    _DEFAULT_GOLD_PRICE = 2340
 
 class User(Base):
     __tablename__ = "users"
@@ -34,7 +41,7 @@ class Project(Base):
     process_options = Column(String)
 
     # Economic parameters
-    gold_price_usd_oz = Column(Numeric, default=2340)
+    gold_price_usd_oz = Column(Numeric, default=_DEFAULT_GOLD_PRICE)
     discount_rate_pct = Column(Numeric, default=5)
     mine_life_years = Column(Integer, default=10)
     operating_hours_day = Column(Numeric, default=24)

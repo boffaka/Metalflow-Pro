@@ -24,9 +24,11 @@ from fastapi import APIRouter, Body, Depends, HTTPException
 try:
     from ..auth import current_user, project_user
     from ..db import execute, qall, qone
+    from .. import config as cfg
 except ImportError:
     from auth import current_user, project_user
     from db import execute, qall, qone
+    import config as cfg
 
 try:
     from ..engines.flowsheet_graph_engine import FlowsheetGraphEngine
@@ -97,13 +99,26 @@ def _load_graph(gid: str) -> FlowsheetGraph:
 def _get_project_context(pid: str) -> ProjectContext:
     row = qone("SELECT target_tph, gold_price_usd_oz FROM projects WHERE id=%s", (pid,))
     tph = float(row["target_tph"]) if row and row.get("target_tph") else 1000.0
-    price = float(row["gold_price_usd_oz"]) if row and row.get("gold_price_usd_oz") else 2000.0
+    price = float(row["gold_price_usd_oz"]) if row and row.get("gold_price_usd_oz") else cfg.DEFAULT_GOLD_PRICE_USD_OZ
     return ProjectContext(target_tph=tph, gold_price_usd=price)
 
 
 def _get_graph_project_id(gid: str) -> str | None:
     row = qone("SELECT project_id FROM flowsheet_graphs WHERE id=%s", (gid,))
     return str(row["project_id"]) if row else None
+
+
+def _ensure_graph_access(gid: str, user: dict) -> str:
+    """Verify the current user can access the project owning gid. Returns pid."""
+    try:
+        from ..auth import ensure_project_access
+    except ImportError:
+        from auth import ensure_project_access
+    pid = _get_graph_project_id(gid)
+    if not pid:
+        raise HTTPException(404, "Flowsheet non trouvé")
+    ensure_project_access(pid, user)
+    return pid
 
 
 def _stream_to_dict(s: SimStream | Any) -> dict:
@@ -302,6 +317,7 @@ def clone_flowsheet(pid: str, gid: str, body: dict = Body(...), user=Depends(pro
 
 @router.post("/api/v2/flowsheets/{gid}/nodes", status_code=201)
 def add_node(gid: str, body: dict = Body(...), user=Depends(current_user)):
+    _ensure_graph_access(gid, user)
     g = qone("SELECT id FROM flowsheet_graphs WHERE id=%s", (gid,))
     if not g:
         raise HTTPException(404, "Flowsheet non trouvé")
@@ -343,6 +359,7 @@ def add_node(gid: str, body: dict = Body(...), user=Depends(current_user)):
 
 @router.put("/api/v2/flowsheets/{gid}/nodes/{nid}")
 def update_node(gid: str, nid: str, body: dict = Body(...), user=Depends(current_user)):
+    _ensure_graph_access(gid, user)
     n = qone("SELECT id, params FROM fg_nodes WHERE id=%s AND graph_id=%s", (nid, gid))
     if not n:
         raise HTTPException(404, "Nœud non trouvé")
@@ -360,6 +377,7 @@ def update_node(gid: str, nid: str, body: dict = Body(...), user=Depends(current
 
 @router.delete("/api/v2/flowsheets/{gid}/nodes/{nid}", status_code=204)
 def delete_node(gid: str, nid: str, user=Depends(current_user)):
+    _ensure_graph_access(gid, user)
     n = qone("SELECT id FROM fg_nodes WHERE id=%s AND graph_id=%s", (nid, gid))
     if not n:
         raise HTTPException(404, "Nœud non trouvé")
@@ -368,6 +386,7 @@ def delete_node(gid: str, nid: str, user=Depends(current_user)):
 
 @router.post("/api/v2/flowsheets/{gid}/edges", status_code=201)
 def add_edge(gid: str, body: dict = Body(...), user=Depends(current_user)):
+    _ensure_graph_access(gid, user)
     g = qone("SELECT id FROM flowsheet_graphs WHERE id=%s", (gid,))
     if not g:
         raise HTTPException(404, "Flowsheet non trouvé")
@@ -386,6 +405,7 @@ def add_edge(gid: str, body: dict = Body(...), user=Depends(current_user)):
 
 @router.delete("/api/v2/flowsheets/{gid}/edges/{eid}", status_code=204)
 def delete_edge(gid: str, eid: str, user=Depends(current_user)):
+    _ensure_graph_access(gid, user)
     e = qone("SELECT id FROM fg_edges WHERE id=%s AND graph_id=%s", (eid, gid))
     if not e:
         raise HTTPException(404, "Arête non trouvée")
@@ -394,6 +414,7 @@ def delete_edge(gid: str, eid: str, user=Depends(current_user)):
 
 @router.get("/api/v2/flowsheets/{gid}/validate")
 def validate_flowsheet(gid: str, user=Depends(current_user)):
+    _ensure_graph_access(gid, user)
     g = qone("SELECT id FROM flowsheet_graphs WHERE id=%s", (gid,))
     if not g:
         raise HTTPException(404, "Flowsheet non trouvé")
@@ -454,7 +475,7 @@ def _run_simulation_and_store(
     """Run simulation, persist results, return result payload."""
     graph = _load_graph(gid)
     pid = _get_graph_project_id(gid)
-    ctx = _get_project_context(pid) if pid else ProjectContext(target_tph=1000.0, gold_price_usd=2000.0)
+    ctx = _get_project_context(pid) if pid else ProjectContext(target_tph=1000.0, gold_price_usd=cfg.DEFAULT_GOLD_PRICE_USD_OZ)
 
     # Adjust feed rate from feed_input if provided
     feed_rate_override = feed_input.get("feed_rate_tph")
@@ -639,6 +660,7 @@ def _run_simulation_and_store(
 @router.post("/api/v2/flowsheets/{gid}/simulate")
 def run_simulation(gid: str, body: dict = Body(...), user=Depends(current_user)):
     """Synchronous route — FastAPI runs sync routes in thread pool automatically."""
+    _ensure_graph_access(gid, user)
     g = qone("SELECT id FROM flowsheet_graphs WHERE id=%s", (gid,))
     if not g:
         raise HTTPException(404, "Flowsheet non trouvé")
@@ -664,6 +686,7 @@ def get_simulation_run(run_id: str, user=Depends(current_user)):
     )
     if not row:
         raise HTTPException(404, "Run non trouvé")
+    _ensure_graph_access(str(row["graph_id"]), user)
     return dict(row)
 
 
@@ -699,6 +722,7 @@ def get_simulation_run_results(run_id: str, user=Depends(current_user)):
 
 @router.get("/api/v2/flowsheets/{gid}/simulation-runs")
 def list_simulation_runs(gid: str, user=Depends(current_user)):
+    _ensure_graph_access(gid, user)
     g = qone("SELECT id FROM flowsheet_graphs WHERE id=%s", (gid,))
     if not g:
         raise HTTPException(404, "Flowsheet non trouvé")
@@ -759,7 +783,7 @@ def _evaluate_objective(
     ctx = (
         _get_project_context(pid)
         if pid
-        else ProjectContext(target_tph=float(feed_input.get("feed_rate_tph", 1000)), gold_price_usd=2000.0)
+        else ProjectContext(target_tph=float(feed_input.get("feed_rate_tph", 1000)), gold_price_usd=cfg.DEFAULT_GOLD_PRICE_USD_OZ)
     )
     try:
         result = _engine.run(graph, ctx)
@@ -870,6 +894,7 @@ def _run_ga(
 
 @router.post("/api/v2/flowsheets/{gid}/optimize")
 def create_optimization_job(gid: str, body: dict = Body(...), user=Depends(current_user)):
+    _ensure_graph_access(gid, user)
     g = qone("SELECT id FROM flowsheet_graphs WHERE id=%s", (gid,))
     if not g:
         raise HTTPException(404, "Flowsheet non trouvé")
@@ -928,6 +953,7 @@ def get_optimization_job(job_id: str, user=Depends(current_user)):
     )
     if not row:
         raise HTTPException(404, "Job non trouvé")
+    _ensure_graph_access(str(row["graph_id"]), user)
     return dict(row)
 
 
@@ -939,6 +965,7 @@ def get_optimization_job_results(job_id: str, user=Depends(current_user)):
     )
     if not row:
         raise HTTPException(404, "Job non trouvé")
+    _ensure_graph_access(str(row["graph_id"]), user)
     return dict(row)
 
 
@@ -949,6 +976,7 @@ def get_optimization_job_results(job_id: str, user=Depends(current_user)):
 
 @router.post("/api/v2/flowsheets/{gid}/bottleneck-analysis")
 def bottleneck_analysis(gid: str, body: dict = Body(default={}), user=Depends(current_user)):
+    _ensure_graph_access(gid, user)
     g = qone("SELECT id FROM flowsheet_graphs WHERE id=%s", (gid,))
     if not g:
         raise HTTPException(404, "Flowsheet non trouvé")
@@ -1004,6 +1032,7 @@ def bottleneck_analysis(gid: str, body: dict = Body(default={}), user=Depends(cu
 
 @router.post("/api/v2/flowsheets/{gid}/expansion-scenarios", status_code=201)
 def create_expansion_scenario(gid: str, body: dict = Body(...), user=Depends(current_user)):
+    _ensure_graph_access(gid, user)
     g = qone("SELECT id FROM flowsheet_graphs WHERE id=%s", (gid,))
     if not g:
         raise HTTPException(404, "Flowsheet non trouvé")
@@ -1022,6 +1051,7 @@ def create_expansion_scenario(gid: str, body: dict = Body(...), user=Depends(cur
 
 @router.get("/api/v2/flowsheets/{gid}/expansion-scenarios")
 def list_expansion_scenarios(gid: str, user=Depends(current_user)):
+    _ensure_graph_access(gid, user)
     g = qone("SELECT id FROM flowsheet_graphs WHERE id=%s", (gid,))
     if not g:
         raise HTTPException(404, "Flowsheet non trouvé")
@@ -1035,6 +1065,7 @@ def list_expansion_scenarios(gid: str, user=Depends(current_user)):
 
 @router.put("/api/v2/flowsheets/{gid}/expansion-scenarios/{sid}")
 def update_expansion_scenario(gid: str, sid: str, body: dict = Body(...), user=Depends(current_user)):
+    _ensure_graph_access(gid, user)
     s = qone("SELECT id FROM fg_expansion_scenarios WHERE id=%s AND graph_id=%s", (sid, gid))
     if not s:
         raise HTTPException(404, "Scénario non trouvé")
@@ -1055,7 +1086,7 @@ def update_expansion_scenario(gid: str, sid: str, body: dict = Body(...), user=D
 
 
 def _evaluate_expansion_economics(
-    base_kpis: dict, scenario_kpis: dict, modifications: list[dict], gold_price: float = 2000.0
+    base_kpis: dict, scenario_kpis: dict, modifications: list[dict], gold_price: float = cfg.DEFAULT_GOLD_PRICE_USD_OZ
 ) -> dict:
     """Compute expansion NPV, IRR, payback from two simulation KPI dicts."""
     capex = sum(float(m.get("capex_estimate", 0)) for m in modifications)
@@ -1093,6 +1124,7 @@ def _evaluate_expansion_economics(
 
 @router.post("/api/v2/flowsheets/{gid}/expansion-scenarios/{sid}/evaluate")
 def evaluate_expansion_scenario(gid: str, sid: str, body: dict = Body(default={}), user=Depends(current_user)):
+    _ensure_graph_access(gid, user)
     scenario = qone(
         "SELECT id, modifications, target_increase_pct FROM fg_expansion_scenarios WHERE id=%s AND graph_id=%s",
         (sid, gid),
@@ -1100,7 +1132,7 @@ def evaluate_expansion_scenario(gid: str, sid: str, body: dict = Body(default={}
     if not scenario:
         raise HTTPException(404, "Scénario non trouvé")
 
-    gold_price = float(body.get("gold_price", 2000.0))
+    gold_price = float(body.get("gold_price", cfg.DEFAULT_GOLD_PRICE_USD_OZ))
     modifications = scenario.get("modifications") or []
     target_pct = float(scenario.get("target_increase_pct") or 0)
 
@@ -1138,6 +1170,7 @@ def evaluate_expansion_scenario(gid: str, sid: str, body: dict = Body(default={}
 
 @router.get("/api/v2/flowsheets/{gid}/expansion-scenarios/compare")
 def compare_expansion_scenarios(gid: str, user=Depends(current_user)):
+    _ensure_graph_access(gid, user)
     g = qone("SELECT id FROM flowsheet_graphs WHERE id=%s", (gid,))
     if not g:
         raise HTTPException(404, "Flowsheet non trouvé")

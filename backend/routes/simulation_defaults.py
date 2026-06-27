@@ -26,9 +26,11 @@ from fastapi import APIRouter, Depends
 try:
     from ..auth import project_user
     from ..db import qone
+    from .. import config as cfg
 except ImportError:  # pragma: no cover
     from auth import project_user
     from db import qone
+    import config as cfg
 
 
 router = APIRouter(prefix="/api/v1/projects", tags=["simulation"])
@@ -212,7 +214,7 @@ def _entry(key: str, value: Optional[float], source: str) -> dict:
 
 # ORM/API factory values — treated as "unset" so LIMS / industry defaults apply.
 _FACTORY_PROJECT_SENTINELS: dict[str, float] = {
-    "gold_price_usd_oz": 2340.0,
+    "gold_price_usd_oz": cfg.DEFAULT_GOLD_PRICE_USD_OZ,
     "mine_life_years": 10.0,
     "discount_rate_pct": 5.0,
     "availability_pct": 92.0,

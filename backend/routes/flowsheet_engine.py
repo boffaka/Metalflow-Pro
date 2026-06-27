@@ -8,8 +8,12 @@ from typing import Any
 
 from fastapi import APIRouter, HTTPException, Depends
 
-from auth import project_user
-from db import qone, qall
+try:
+    from ..auth import project_user
+    from ..db import qone, qall
+except ImportError:  # pragma: no cover - supports direct script imports
+    from auth import project_user
+    from db import qone, qall
 
 logger = logging.getLogger("mpdpms.flowsheet_engine")
 

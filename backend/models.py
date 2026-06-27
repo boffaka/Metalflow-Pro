@@ -7,8 +7,10 @@ from typing import Optional
 from pydantic import BaseModel, Field, ConfigDict, field_validator
 try:
     from .security import validate_password_strength
+    from . import config as cfg
 except ImportError:  # pragma: no cover - supports direct script imports
     from security import validate_password_strength
+    import config as cfg
 
 
 # ─── Auth ────────────────────────────────────────────────────────────────────
@@ -37,7 +39,7 @@ class LoginOut(BaseModel):
 
 class RefreshTokenIn(BaseModel):
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
-    refresh_token: str
+    refresh_token: str = ""
 
 
 # ─── Users / Admin ───────────────────────────────────────────────────────────
@@ -97,7 +99,7 @@ class ProjectIn(BaseModel):
     capacity_mtpa: Optional[float] = Field(default=None, ge=0)
     process_options: Optional[str] = Field(default=None, max_length=2000)
     # Economic parameters
-    gold_price_usd_oz: Optional[float] = Field(default=2340, ge=0)
+    gold_price_usd_oz: Optional[float] = Field(default=cfg.DEFAULT_GOLD_PRICE_USD_OZ, ge=0)
     discount_rate_pct: Optional[float] = Field(default=5, ge=0, le=100)
     mine_life_years: Optional[int] = Field(default=10, ge=0)
     operating_hours_day: Optional[float] = Field(

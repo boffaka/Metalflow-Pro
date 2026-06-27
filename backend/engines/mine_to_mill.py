@@ -40,9 +40,11 @@ logger = logging.getLogger("mpdpms.mine_to_mill")
 try:
     from ..constants import TROY_OZ_PER_GRAM
     from ..settings import get_settings
+    from .. import config as cfg
 except ImportError:
     from constants import TROY_OZ_PER_GRAM
     from settings import get_settings
+    import config as cfg
 
 _SETTINGS = get_settings()
 GRID_CO2_KG_KWH = _SETTINGS.grid_co2_kg_kwh
@@ -476,7 +478,7 @@ def _simulate_lom_impl(project_id: str, template_id: str,
     run_id = str(uuid.uuid4())
 
     econ = _load_project_economics(project_id, cursor)
-    gold_price = econ.get("gold_price_usd_oz") or 2340.0
+    gold_price = econ.get("gold_price_usd_oz") or cfg.DEFAULT_GOLD_PRICE_USD_OZ
     discount_5 = 0.05
     discount_8 = 0.08
     capex_musd = econ.get("capex_musd") or 150.0
@@ -906,7 +908,7 @@ def _monte_carlo_lom_impl(project_id: str, template_id: str,
     rng = np.random.default_rng(seed=None)  # random seed for true MC
 
     econ = _load_project_economics(project_id, cursor)
-    base_gold_price = econ.get("gold_price_usd_oz") or 2340.0
+    base_gold_price = econ.get("gold_price_usd_oz") or cfg.DEFAULT_GOLD_PRICE_USD_OZ
     capex_musd = econ.get("capex_musd") or 150.0
     capex_usd = capex_musd * 1e6
     design_tph = econ.get("target_tph") or 1517.0

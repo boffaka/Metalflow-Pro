@@ -48,8 +48,10 @@ except ImportError:  # pragma: no cover - supports direct script imports
 
 try:
     from ..constants import TROY_OZ_PER_GRAM
+    from .. import config as cfg
 except ImportError:  # pragma: no cover - supports direct script imports
     from constants import TROY_OZ_PER_GRAM
+    import config as cfg
 
 logger = logging.getLogger("mpdpms.dc_calculator")
 
@@ -276,7 +278,7 @@ def _recalculate_all_impl(project_id: str, template_id: str, cursor) -> dict:
     plant_avail = float(_row_val(proj, 2, "availability_pct") or 92) / 100
     plant_hpd = float(_row_val(proj, 3, "operating_hours_day") or 22.1)
     _mine_life = int(_row_val(proj, 4, "mine_life_years") or 15)
-    au_price = float(_row_val(proj, 5, "gold_price_usd_oz") or 2340)
+    au_price = float(_row_val(proj, 5, "gold_price_usd_oz") or cfg.DEFAULT_GOLD_PRICE_USD_OZ)
     ore_sg = _get("density", "GIRATOIRE", 2.74) or _get("average density", default=2.74)
     _humidity = _get("humidity", default=3.0)
 

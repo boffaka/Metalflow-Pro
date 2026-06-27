@@ -6,10 +6,16 @@ focused on mineral processing testwork, recovery methods, and QP closing items.
 from __future__ import annotations
 import logging
 
-import config as cfg
-from db import qall, qone
-from constants import TROY_OZ_PER_GRAM
-from settings import get_settings as _get_settings
+try:
+    from .. import config as cfg
+    from ..db import qall, qone
+    from ..constants import TROY_OZ_PER_GRAM
+    from ..settings import get_settings as _get_settings
+except ImportError:  # pragma: no cover - supports direct script imports
+    import config as cfg
+    from db import qall, qone
+    from constants import TROY_OZ_PER_GRAM
+    from settings import get_settings as _get_settings
 
 _SETTINGS = _get_settings()
 
@@ -137,7 +143,7 @@ def _gen_1(phase, data):
     tph = float(p["target_tph"] or 0) if p and p.get("target_tph") else 0
     grade = float(p["gold_grade_g_t"] or 0) if p and p.get("gold_grade_g_t") else 0
     mine_life = int(p["mine_life_years"] or 10) if p and p.get("mine_life_years") else 10
-    gold_price = float(p.get("gold_price_usd_oz") or 2340) if p else 2340
+    gold_price = float(p.get("gold_price_usd_oz") or cfg.DEFAULT_GOLD_PRICE_USD_OZ) if p else cfg.DEFAULT_GOLD_PRICE_USD_OZ
 
     phase_map = {"scoping": "Etude de cadrage (Scoping)", "pfs": "Etude de prefaisabilite (PFS)", "fs": "Etude de faisabilite (FS)"}
     phase_en = {"scoping": "Scoping Study", "pfs": "Pre-Feasibility Study (PFS)", "fs": "Feasibility Study (FS)"}
@@ -2083,7 +2089,7 @@ def _gen_15(phase, data):
                 "title_en": "Mineral Reserve Estimates",
                 "content_fr": fr, "content_en": en}
 
-    gold_price = float(p.get("gold_price_usd_oz") or 2340) if p else 2340
+    gold_price = float(p.get("gold_price_usd_oz") or cfg.DEFAULT_GOLD_PRICE_USD_OZ) if p else cfg.DEFAULT_GOLD_PRICE_USD_OZ
     rec = float(p.get("availability_pct") or 92) if p else 92
 
     fr = (
@@ -3030,7 +3036,7 @@ def _gen_18(phase, data):
 
 def _gen_19(phase, data):
     p = data["project"]
-    gold_price = float(p.get("gold_price_usd_oz") or 2340) if p else 2340
+    gold_price = float(p.get("gold_price_usd_oz") or cfg.DEFAULT_GOLD_PRICE_USD_OZ) if p else cfg.DEFAULT_GOLD_PRICE_USD_OZ
     commodity = p.get("commodity", "Au") if p else "Au"
 
     fr = (
@@ -3175,7 +3181,7 @@ def _gen_22(phase, data):
         return {"key": "22", "title_fr": "Analyse economique", "title_en": "Economic Analysis",
                 "content_fr": "Donnees insuffisantes.", "content_en": "Insufficient data."}
 
-    gold_price = float(p.get("gold_price_usd_oz") or 2340)
+    gold_price = float(p.get("gold_price_usd_oz") or cfg.DEFAULT_GOLD_PRICE_USD_OZ)
     discount_rate = float(p.get("discount_rate_pct") or 5)
     mine_life = int(p.get("mine_life_years") or 10)
     tph = float(p.get("target_tph") or 0)

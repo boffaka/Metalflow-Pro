@@ -142,9 +142,9 @@ FLOTATION_S_THRESHOLD_PCT = _env_float("FLOTATION_S_THRESHOLD_PCT", 3.0)
 # Economics & funding (single source for gold price & quick-estimate fallbacks)
 # =============================================================================
 _gold_price_raw = os.getenv("DEFAULT_GOLD_PRICE_USD_OZ") or os.getenv("ECON_DEFAULT_GOLD_PRICE_USD_OZ")
-# Aligned with industry_defaults.yaml (2200 USD/oz — 2024/2025 spot reference).
-# Previously 1900.0 — below current market and inconsistent with the YAML reference.
-DEFAULT_GOLD_PRICE_USD_OZ = float(_gold_price_raw) if _gold_price_raw not in (None, "") else 2200.0
+# 2340 USD/oz — consensus across simulation_defaults, engines, and routes (2025 market reference).
+# Override via DEFAULT_GOLD_PRICE_USD_OZ env var for project-level sensitivity.
+DEFAULT_GOLD_PRICE_USD_OZ = float(_gold_price_raw) if _gold_price_raw not in (None, "") else 2340.0
 LOW_GOLD_PRICE_ALERT_THR_USD_OZ = _env_float("LOW_GOLD_PRICE_ALERT_THR_USD_OZ", 2000.0)
 
 FUNDING_FALLBACK_TPH = _env_float("FUNDING_FALLBACK_TPH", 500.0)

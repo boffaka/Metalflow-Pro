@@ -32,6 +32,11 @@ from typing import Any
 
 import numpy as np
 
+try:
+    from .. import config as cfg
+except ImportError:
+    import config as cfg
+
 logger = logging.getLogger("mpdpms.nsga2_optimizer")
 
 # ============================================================================
@@ -153,7 +158,7 @@ def _evaluate_individual(x: np.ndarray, project_id: str,
     annual_tonnes = ov.get("annual_tonnes", 0.0)
     opex_annual = opex_per_t * annual_tonnes if opex_per_t and annual_tonnes else 0
     sustaining = capex_musd * 1e6 * 0.03
-    gold_price = econ.get("gold_price_usd_oz") or 2340.0
+    gold_price = econ.get("gold_price_usd_oz") or cfg.DEFAULT_GOLD_PRICE_USD_OZ
     royalty = annual_oz * gold_price * 0.05 if annual_oz > 0 else 0
     aisc = (opex_annual + sustaining + royalty) / annual_oz if annual_oz > 0 else 9999.0
 

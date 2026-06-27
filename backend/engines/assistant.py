@@ -14,8 +14,10 @@ import logging
 
 try:
     from ..constants import TROY_OZ_PER_GRAM
+    from .. import config as cfg
 except ImportError:  # pragma: no cover - supports direct script imports
     from constants import TROY_OZ_PER_GRAM
+    import config as cfg
 
 try:
     from ..settings import get_settings
@@ -163,7 +165,7 @@ def _query_production(pid: str, db_qone, db_qall) -> str:
         grade = float(p.get("gold_grade_g_t") or 0)
         avail = float(p.get("availability_pct") or 92) / 100
         op_h = float(p.get("operating_hours_day") or 22)
-        gold_price = float(p.get("gold_price_usd_oz") or 2340)
+        gold_price = float(p.get("gold_price_usd_oz") or cfg.DEFAULT_GOLD_PRICE_USD_OZ)
 
         rec_row = db_qone(
             "SELECT AVG(au_recovery_pct) as avg FROM lims_d1 WHERE project_id=%s AND au_recovery_pct IS NOT NULL",

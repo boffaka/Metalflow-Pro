@@ -17,12 +17,14 @@ try:
     from ..engines.gade_engine import run_gade, train_recovery_model
     from ..engines.prd_engine import compute_lom, detect_critical_periods, compute_lom_summary
     from ..engines.imbo_engine import optimize_blend
+    from .. import config as cfg
 except ImportError:
     from auth import project_user
     from db import execute, qall, qone
     from engines.gade_engine import run_gade, train_recovery_model
     from engines.prd_engine import compute_lom, detect_critical_periods, compute_lom_summary
     from engines.imbo_engine import optimize_blend
+    import config as cfg
 
 logger = logging.getLogger("mpdpms.geomet_v2")
 router = APIRouter()
@@ -213,8 +215,8 @@ def run_prd_analysis(pid: str, body: dict = Body(...), user=Depends(project_user
             (session_id,),
         )
         for d in domains:
-            # Heuristique : utiliser valeur sauvegardée ou défaut 89%
-            recovery_by_domain[d["domain_code"]] = 0.89
+            # Heuristique : utiliser valeur sauvegardée ou défaut industrie
+            recovery_by_domain[d["domain_code"]] = cfg.DEFAULT_RECOVERY_PCT / 100.0
 
     if not domain_mix_by_year:
         # Générer un LOM simplifié sur 10 ans si pas de données

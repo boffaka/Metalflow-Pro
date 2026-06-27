@@ -24,11 +24,13 @@ try:
     from ..db import qone, qall, execute, conn, release
     from ..helpers import get_operating_hours_day, get_availability_pct, get_opex_defaults
     from ..constants import TROY_OZ_PER_GRAM
+    from .. import config as cfg
 except ImportError:  # pragma: no cover - supports direct script imports
     from auth import project_user
     from db import qone, qall, execute, conn, release
     from helpers import get_operating_hours_day, get_availability_pct, get_opex_defaults
     from constants import TROY_OZ_PER_GRAM
+    import config as cfg
 
 router = APIRouter(prefix="/api/v1/projects/{pid}", tags=["modules"])
 logger = logging.getLogger("mpdpms.modules")
@@ -628,7 +630,7 @@ def _compute_bfr_impl(pid: str, user):
     op_hours_day     = get_operating_hours_day(project)
     availability_pct = get_availability_pct(pid, project)
     gold_grade       = float(project.get("gold_grade_g_t") or 0)
-    gold_price       = float(project.get("gold_price_usd_oz") or 2340)
+    gold_price       = float(project.get("gold_price_usd_oz") or cfg.DEFAULT_GOLD_PRICE_USD_OZ)
 
     # Annual throughput
     annual_t = target_tph * op_hours_day * 365 * (availability_pct / 100)

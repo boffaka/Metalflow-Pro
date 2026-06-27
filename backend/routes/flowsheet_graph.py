@@ -27,10 +27,12 @@ try:
     from ..auth import project_user
     from ..db import qone, qall, execute
     from ..websocket_handlers import ws_authenticate, ws_check_project
+    from .. import config as cfg
 except ImportError:
     from auth import project_user
     from db import qone, qall, execute
     from websocket_handlers import ws_authenticate, ws_check_project
+    import config as cfg
 
 try:
     from ..engines.flowsheet_graph_engine import FlowsheetGraphEngine
@@ -95,7 +97,7 @@ def _get_project_context(pid: str) -> ProjectContext:
     # FIX: colonne correcte = gold_price_usd_oz (pas gold_price)
     row = qone("SELECT target_tph, gold_price_usd_oz FROM projects WHERE id=%s", (pid,))
     tph = float(row["target_tph"]) if row and row.get("target_tph") else 1000
-    price = float(row["gold_price_usd_oz"]) if row and row.get("gold_price_usd_oz") else 2000
+    price = float(row["gold_price_usd_oz"]) if row and row.get("gold_price_usd_oz") else cfg.DEFAULT_GOLD_PRICE_USD_OZ
     return ProjectContext(target_tph=tph, gold_price_usd=price)
 
 
