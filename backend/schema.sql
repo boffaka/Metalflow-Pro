@@ -256,13 +256,25 @@ CREATE TABLE IF NOT EXISTS lims_e1 (
     id                              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     project_id                      UUID REFERENCES projects(id) ON DELETE CASCADE,
     sample_id                       UUID REFERENCES lims_samples(id) ON DELETE CASCADE,
-    unit_area_m2_t_d                NUMERIC, flocculant_dosage_g_t NUMERIC,
+    unit_area_m2_t_d                NUMERIC,
+    flocculant_dosage_g_t           NUMERIC,
     underflow_density_pct_solids    NUMERIC,
-    isr_m_h NUMERIC, fsr_m_h NUMERIC,
-    underflow_sg NUMERIC, overflow_turbidity_ntu NUMERIC,
-    mass_flux_t_m2_d NUMERIC, underflow_viscosity_mpa_s NUMERIC,
+    isr_m_h                         NUMERIC,
+    fsr_m_h                         NUMERIC,
+    overflow_turbidity_ntu          NUMERIC,
+    -- Colonnes alignées avec template LIMS (migration 000029 + 000080)
+    uf_density_pct                  NUMERIC,
+    uf_density_t_m3                 NUMERIC,
+    flux_t_m2_d                     NUMERIC,
+    cn_overflow_ppm                 NUMERIC,
+    au_overflow_ppb                 NUMERIC,
+    viscosity_mpa_s                 NUMERIC,
     created_at                      TIMESTAMPTZ DEFAULT NOW()
 );
+-- Colonnes legacy (schema antérieur) maintenues pour compatibilité descendante
+ALTER TABLE IF EXISTS lims_e1 ADD COLUMN IF NOT EXISTS underflow_sg NUMERIC;
+ALTER TABLE IF EXISTS lims_e1 ADD COLUMN IF NOT EXISTS mass_flux_t_m2_d NUMERIC;
+ALTER TABLE IF EXISTS lims_e1 ADD COLUMN IF NOT EXISTS underflow_viscosity_mpa_s NUMERIC;
 
 CREATE TABLE IF NOT EXISTS lims_e2 (
     id                          UUID PRIMARY KEY DEFAULT gen_random_uuid(),

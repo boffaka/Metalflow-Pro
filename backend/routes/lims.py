@@ -111,7 +111,9 @@ _VALIDATION_RULES: dict[str, dict[str, tuple[float, float, str]]] = {
         "cao_consumption_kg_t":  (0, 20,  "CaO consumption kg/t"),
     },
     "e1": {
-        "underflow_density_pct": (0, 100, "Underflow density %"),
+        "underflow_density_pct_solids": (0, 100, "Underflow density % solids"),
+        "uf_density_pct": (0, 100, "Underflow density %"),
+        "uf_density_t_m3": (0.9, 2.5, "Underflow density t/m³"),
     },
     "g1": {
         "recovery_pct":  (0, 100, "Flotation recovery %"),

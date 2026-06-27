@@ -533,6 +533,17 @@ _LIMS_TABLE_FIXES: dict[str, list[tuple[str, str]]] = {
         ("temps_elution_h", "NUMERIC"),
         ("type_test", "TEXT"),
     ],
+    # lims_e1 (Épaississement): colonnes ajoutées par migration 029 absentes sur certaines DB prod.
+    # schema.sql utilise mass_flux_t_m2_d / underflow_viscosity_mpa_s / underflow_sg —
+    # migration 029 et le template LIMS utilisent flux_t_m2_d / viscosity_mpa_s / uf_density_pct.
+    "lims_e1": [
+        ("uf_density_pct", "NUMERIC"),
+        ("uf_density_t_m3", "NUMERIC"),
+        ("flux_t_m2_d", "NUMERIC"),
+        ("cn_overflow_ppm", "NUMERIC"),
+        ("au_overflow_ppb", "NUMERIC"),
+        ("viscosity_mpa_s", "NUMERIC"),
+    ],
 }
 
 
