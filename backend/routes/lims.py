@@ -55,7 +55,7 @@ def _signal_lims_change(pid: str, user_id: str = None) -> None:
         pass  # never block a LIMS write due to pipeline signalling
 
 LIMS_TABLES = {
-    "a1": "lims_a1", "a2": "lims_a2", "a3": "lims_a3", "m1": "lims_mineralogy",
+    "a1": "lims_a1", "a2": "lims_a2", "a3": "lims_a3", "m1": "lims_m1",
     "b1": "lims_b1",
     "c2": "lims_c2", "c2b": "lims_c2b", "c2c": "lims_c2c",
     "c3": "lims_c3", "d1": "lims_d1",

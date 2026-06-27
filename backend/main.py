@@ -74,6 +74,7 @@ try:
     from .routes.lims_outliers import router as lims_outliers_router
     from .routes.massbalance import router as massbalance_router
     from .routes.massbalance_v2 import router as massbalance_v2_router
+    from .routes.metallurgical_decision import router as metallurgical_decision_router
     from .routes.modules import router as modules_router
     from .routes.monitoring import router as monitoring_router
     from .routes.ni43101 import readiness_router as ni43101_readiness_router
@@ -91,6 +92,7 @@ try:
     from .routes.risks import router as risks_router
     from .routes.scenarios import router as scenarios_router
     from .routes.sim_module import router as sim_module_router
+    from .routes.sim_pro import router as sim_pro_router
     from .routes.simulation import router as simulation_router
     from .routes.simulation_compile import router as simulation_compile_router
     from .routes.simulation_defaults import router as simulation_defaults_router
@@ -153,6 +155,7 @@ except ImportError:  # pragma: no cover - supports direct script imports
     from routes.lims_outliers import router as lims_outliers_router
     from routes.massbalance import router as massbalance_router
     from routes.massbalance_v2 import router as massbalance_v2_router
+    from routes.metallurgical_decision import router as metallurgical_decision_router
     from routes.modules import router as modules_router
     from routes.monitoring import router as monitoring_router
     from routes.ni43101 import readiness_router as ni43101_readiness_router
@@ -170,6 +173,7 @@ except ImportError:  # pragma: no cover - supports direct script imports
     from routes.risks import router as risks_router
     from routes.scenarios import router as scenarios_router
     from routes.sim_module import router as sim_module_router
+    from routes.sim_pro import router as sim_pro_router
     from routes.simulation import router as simulation_router
     from routes.simulation_compile import router as simulation_compile_router
     from routes.simulation_defaults import router as simulation_defaults_router
@@ -620,7 +624,10 @@ app = FastAPI(title="MPDPMS API", version="4.0.0", lifespan=lifespan)
 
 # ── Rate limiter (slowapi) — doit être enregistré immédiatement après la création de l'app
 try:
-    from rate_limiter import limiter, RateLimitExceeded, _rate_limit_handler
+    try:
+        from .rate_limiter import limiter, RateLimitExceeded, _rate_limit_handler
+    except ImportError:
+        from rate_limiter import limiter, RateLimitExceeded, _rate_limit_handler
     app.state.limiter = limiter
     app.add_exception_handler(RateLimitExceeded, _rate_limit_handler)
     logger.info("rate limiter registered (slowapi)")
@@ -699,6 +706,7 @@ app.include_router(flowsheet_templates_router)
 # to ensure /simulation/runs/diff isn't shadowed by /simulation/runs/{run_id}.
 app.include_router(massbalance_v2_router)
 app.include_router(equipment_v2_router)
+app.include_router(metallurgical_decision_router)
 app.include_router(capex_router)
 app.include_router(simulation_v2_router)
 app.include_router(simulation_compile_router)
@@ -724,6 +732,7 @@ app.include_router(engineering_insights_router)
 app.include_router(geomet_intelligence_router, prefix="/api/v1/projects", tags=["geomet-intelligence"])
 app.include_router(geomet_v2_router, prefix="/api/v2/projects", tags=["geomet-v2"])
 app.include_router(sim_module_router)
+app.include_router(sim_pro_router)
 app.add_api_route("/metrics", metrics_endpoint, include_in_schema=False)
 
 

@@ -13,8 +13,8 @@ except ImportError:
     from backend.routes.lims import LIMS_FIELDS, LIMS_TABLES
 
 
-def test_m1_routes_to_bootstrap_mineralogy_table():
-    assert LIMS_TABLES["m1"] == "lims_mineralogy"
+def test_m1_routes_to_alembic_mineralogy_table():
+    assert LIMS_TABLES["m1"] == "lims_m1"
 
 
 def test_c2_knelson_template_columns_are_bootstrapped():

@@ -4,7 +4,7 @@ Extracted from main.py to keep the main module focused on route registration.
 """
 from __future__ import annotations
 
-from fastapi import WebSocket, WebSocketDisconnect
+from fastapi import HTTPException, WebSocket, WebSocketDisconnect
 from starlette.websockets import WebSocketState
 
 
@@ -31,18 +31,28 @@ async def ws_authenticate(websocket: WebSocket, token: str | None) -> dict | Non
         return None
 
 
-async def ws_check_project(websocket: WebSocket, project_id: str) -> bool:
-    """Verify the project exists.
+async def ws_check_project(websocket: WebSocket, project_id: str, user: dict | None = None) -> bool:
+    """Verify the project exists and the user may access it.
 
-    Closes the socket with 4404 if the project is not found, or 1011 on
-    server error.
+    Closes the socket with 4404 if the project is not found or access is denied,
+    or 1011 on server error.
     """
     try:
+        try:
+            from .auth import ensure_project_access
+        except ImportError:
+            from auth import ensure_project_access
+        if user:
+            ensure_project_access(project_id, user)
+            return True
         try:
             from .db import qone as _qone
         except ImportError:
             from db import qone as _qone
         proj = _qone("SELECT id FROM projects WHERE id=%s", (project_id,))
+    except HTTPException:
+        await websocket.close(code=4404, reason="project_not_found")
+        return False
     except Exception:
         await websocket.close(code=1011, reason="server_error")
         return False
@@ -63,7 +73,7 @@ async def ws_run_connection(
     user = await ws_authenticate(websocket, token)
     if not user:
         return
-    if not await ws_check_project(websocket, project_id):
+    if not await ws_check_project(websocket, project_id, user):
         return
     if websocket.client_state != WebSocketState.CONNECTED:
         return
@@ -88,7 +98,7 @@ async def ws_run_live_connection(
     user = await ws_authenticate(websocket, token)
     if not user:
         return
-    if not await ws_check_project(websocket, project_id):
+    if not await ws_check_project(websocket, project_id, user):
         return
     if websocket.client_state != WebSocketState.CONNECTED:
         return

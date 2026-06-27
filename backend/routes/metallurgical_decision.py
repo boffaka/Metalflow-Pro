@@ -816,6 +816,12 @@ def post_run_full(pid: str, body: dict = Body(default={}), user=Depends(project_
     return run_gold_process_simulation(pid, body, user)
 
 
+@router.post("/simulate")
+def post_simulate(pid: str, body: dict = Body(default={}), user=Depends(project_user)):
+    """Legacy alias used by the monolith frontend."""
+    return post_run_full(pid, body, user)
+
+
 # ─── Mode Faisabilité (Tranche 2) ───────────────────────────────────────────
 
 
