@@ -391,6 +391,13 @@ def ensure_schema_compatibility() -> None:
         # copy any existing data from lims_dtx.
         _ensure_lims_detox_table(cur)
 
+        # ── design_criteria_v2: fix crusher design vs nominal (migration 000082) ──
+        # The GIRATOIRE "Débit design alimentation" row had dag_key="target_tph"
+        # which caused the cascade to set design_value = target_tph (raw) while
+        # nominal_value stayed at the availability-corrected value → nominal > design.
+        # This fix recomputes design and nominal using the correct PDC formula.
+        _fix_crusher_design_nominal(cur)
+
         c.commit()
     except Exception:
         c.rollback()
@@ -605,6 +612,74 @@ def _ensure_lims_detox_table(cur) -> None:
         logger.info("schema drift: migrated rows from lims_dtx -> lims_detox")
 
     logger.info("schema drift: lims_detox created and populated")
+
+
+def _fix_crusher_design_nominal(cur) -> None:
+    """Recompute design_value and nominal_value for GIRATOIRE 'Débit design alimentation'.
+
+    Root cause: dag_key was 'target_tph' so the DAG cascade overwrote design_value
+    with raw target_tph (no availability correction), while nominal_value stayed at the
+    availability-corrected value → nominal > design displayed in UI.
+
+    Correct formulas (PDC workbook):
+        nominal = plant_tph × (grinding_avail / crushing_avail)
+        design  = nominal × (1 + design_factor_15%)
+
+    Safe to run every startup — idempotent, updates only broken or stale rows.
+    """
+    cur.execute("SELECT to_regclass('public.design_criteria_v2')")
+    if cur.fetchone()[0] is None:
+        return
+
+    # Fetch all GIRATOIRE feed rate rows with their project throughput + availability
+    # Using %% to escape literal % in psycopg2 raw SQL (no params in this query)
+    cur.execute(
+        "SELECT d.id, p.target_tph, p.availability_pct "
+        "FROM design_criteria_v2 d "
+        "JOIN circuit_templates t ON t.id = d.template_id "
+        "JOIN projects p ON p.id = t.project_id "
+        "WHERE d.enabled = TRUE "
+        "  AND UPPER(d.op_code) = 'GIRATOIRE' "
+        "  AND (LOWER(d.item) LIKE %s OR LOWER(d.item) LIKE %s) "
+        "  AND p.target_tph > 0 "
+        "  AND ("
+        "    d.design_value < COALESCE(d.nominal_value, 0) "  # broken: nominal > design
+        "    OR ABS(COALESCE(d.design_value, 0) - p.target_tph) < 1"  # wrong: design = raw tph
+        "  )",
+        ("%design%alimentation%", "%debit%design%"),
+    )
+    rows = cur.fetchall()
+    if not rows:
+        return
+
+    fixed = 0
+    for row in rows:
+        row_id = str(row[0])
+        target_tph = float(row[1] or 0)
+        avail_pct = float(row[2] or 92.0)
+        if target_tph <= 0:
+            continue
+        grinding_avail = avail_pct / 100.0
+        crushing_avail = 0.75   # primary gyratory standard operating factor
+        design_factor = 1.15    # 15% equipment design margin (PDC standard)
+        avail_ratio = grinding_avail / crushing_avail
+        nominal_val = round(target_tph * avail_ratio, 0)
+        design_val = round(nominal_val * design_factor, 0)
+        cur.execute(
+            "UPDATE design_criteria_v2 "
+            "SET design_value = %s, nominal_value = %s, "
+            "    source_code = 'C', dag_key = 'crusher_design_tph', updated_at = NOW() "
+            "WHERE id = %s",
+            (design_val, nominal_val, row_id),
+        )
+        fixed += 1
+
+    if fixed:
+        logger.warning(
+            "crusher design fix: corrected %d row(s) "
+            "(nominal=plant_tph×%.2f, design=nominal×1.15)",
+            fixed, grinding_avail / crushing_avail,
+        )
 
 
 def _ensure_all_lims_columns(cur) -> None:
