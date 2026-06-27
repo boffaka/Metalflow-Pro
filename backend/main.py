@@ -619,13 +619,23 @@ def _fix_crusher_design_nominal_safe() -> None:
         if cur.fetchone()[0] is None:
             return
 
-        # Single UPDATE using SQL arithmetic — avoids Python-side iteration issues
+        # Unconditional UPDATE — always recompute crusher design/nominal from project values.
+        # Formula: nominal = tph × (avail/75%), design = nominal × 1.15
+        # No condition on current values so the fix applies even if recalculate_all
+        # (called on every page load) previously overwrote our values.
         cur.execute("""
             UPDATE design_criteria_v2 d
-            SET design_value  = ROUND(p.target_tph * (COALESCE(p.availability_pct, 92) / 100.0)
-                                      / 0.75 * 1.15, 0),
-                nominal_value = ROUND(p.target_tph * (COALESCE(p.availability_pct, 92) / 100.0)
-                                      / 0.75, 0),
+            SET design_value  = ROUND(
+                                  p.target_tph
+                                  * (COALESCE(p.availability_pct, 92) / 100.0)
+                                  / 0.75
+                                  * 1.15,
+                                0),
+                nominal_value = ROUND(
+                                  p.target_tph
+                                  * (COALESCE(p.availability_pct, 92) / 100.0)
+                                  / 0.75,
+                                0),
                 source_code   = 'C',
                 dag_key       = 'crusher_design_tph',
                 updated_at    = NOW()
@@ -634,16 +644,9 @@ def _fix_crusher_design_nominal_safe() -> None:
             WHERE d.template_id = t.id
               AND d.enabled = TRUE
               AND UPPER(d.op_code) = 'GIRATOIRE'
-              AND (LOWER(d.item) LIKE '%%design%%alimentation%%'
-                   OR LOWER(d.item) LIKE '%%débit%%design%%')
+              AND LOWER(d.item) LIKE '%%design%%alimentation%%'
               AND p.target_tph > 0
               AND COALESCE(d.source_code, 'X') NOT IN ('M', 'O')
-              AND (
-                d.design_value < COALESCE(d.nominal_value, 0)
-                OR d.nominal_value IS NULL
-                OR (d.nominal_value > 0
-                    AND ABS(COALESCE(d.design_value, 0) - p.target_tph) < 5)
-              )
         """)
         n = cur.rowcount
         c.commit()

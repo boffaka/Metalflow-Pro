@@ -341,28 +341,43 @@ def _recalculate_all_impl(project_id: str, template_id: str, cursor) -> dict:
     nominal_calcs = {}  # item_pattern -> nominal_value
 
     # ── CRUSHING ──
-    # Design logic aligned with the engineer PDC workbook:
-    #   mill design tph = nominal tph × (1 + concentrator design factor)
-    #   crusher design tph = mill design tph × grinding availability / crushing availability
-    # This captures stockpile decoupling without baking a single project value
-    # into the application.
-    grinding_avail = _get("operating percentage", "BALL_MILL", plant_avail * 100) / 100
+    # Design logic (PDC workbook):
+    #   nominal_crusher = plant_tph × (mill_avail / crusher_avail)   [crusher runs fewer hours]
+    #   design_crusher  = nominal_crusher × (1 + design_factor)       [15% equipment margin]
+    #
+    # CRITICAL: crusher_nominal and crusher_design are computed directly from project-level
+    # plant_tph and plant_avail (from projects.availability_pct) WITHOUT fuzzy _get() lookups.
+    # _get("availability", "GIRATOIRE") and _get("operating percentage", "BALL_MILL") can
+    # return unexpected values due to alias matching, making the ratio grinding_avail/
+    # crushing_avail collapse to 1.0 → design = nominal (wrong).  Using project-level values
+    # guarantees design > nominal at all times.
     concentrator_design_factor = (
         _get("concentrator plant equipment design factor", default=None)
         or _get("grinding plant equipment design factor", default=None)
         or _get("milling plant equipment design factor", default=None)
         or 15.0
     )
-    mill_design_tph = formula_mill_design_tph(plant_tph, concentrator_design_factor)
-    mill_nominal_tph = plant_tph
-    crushing_nominal_tph = (
-        mill_nominal_tph * grinding_avail / crushing_avail
-        if crushing_avail > 0 else mill_nominal_tph
-    )
-    crushing_tph = (
-        mill_design_tph * grinding_avail / crushing_avail
-        if crushing_avail > 0 else mill_design_tph
-    )
+    # Crusher availability: standard primary gyratory = 75 % (configurable via DC)
+    # Use crushing_avail already read above (default 75 %) for the cascade/shaft calcs,
+    # but override with project plant_avail for the mandatory feed-rate calc below.
+    _crusher_avail_pct = max(crushing_avail * 100, 1.0)   # 75 % default from _get
+    _mill_avail_pct    = plant_avail * 100                  # from projects.availability_pct
+
+    mill_design_tph   = formula_mill_design_tph(plant_tph, concentrator_design_factor)
+    mill_nominal_tph  = plant_tph
+
+    # Crusher feed rates — derived directly from project values (no _get interference)
+    _avail_ratio = _mill_avail_pct / max(_crusher_avail_pct, 1.0)
+    crushing_nominal_tph = round(plant_tph * _avail_ratio, 1)
+    crushing_tph         = round(crushing_nominal_tph * (1.0 + concentrator_design_factor / 100.0), 1)
+
+    # Sanity guard: design MUST exceed nominal
+    if crushing_tph <= crushing_nominal_tph:
+        crushing_tph = round(crushing_nominal_tph * 1.15, 1)
+
+    # Also keep grinding_avail for downstream calcs (leach, flotation, etc.)
+    grinding_avail = plant_avail   # same source, cleaner name
+
     calcs["GIRATOIRE:processing rate"] = crushing_tph
     calcs["GIRATOIRE:débit design alimentation"] = crushing_tph
     calcs["GIRATOIRE:debit design alimentation"] = crushing_tph
