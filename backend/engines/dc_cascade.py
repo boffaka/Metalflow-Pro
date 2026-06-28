@@ -248,7 +248,7 @@ def _crusher_design_rate(p: dict) -> float:
     Where:
       grinding_avail  = mill availability (from project availability_pct, default 92%)
       crushing_avail  = crusher operating factor (typical 75% for primary gyratory)
-      design_factor   = concentrator equipment design margin (typical 15%)
+      design_factor   = CRUSHING equipment design margin (25%, workbook row 26)
 
     This ensures crusher capacity > plant nominal throughput to compensate for
     fewer crusher operating hours vs. the continuous mill circuit.
@@ -258,7 +258,8 @@ def _crusher_design_rate(p: dict) -> float:
         return 0.0
     grinding_avail = float(p.get("availability_pct") or 92) / 100
     crushing_avail = float(p.get("crushing_avail_pct") or 75) / 100
-    design_factor = float(p.get("concentrator_design_factor_pct") or 15) / 100
+    # CRUSHING design factor (workbook row 26 = 25 %), never the concentrator factor (row 27 = 15 %).
+    design_factor = float(p.get("crush_design_factor_pct") or 25) / 100
     if crushing_avail <= 0:
         crushing_avail = 0.75
     avail_ratio = grinding_avail / crushing_avail

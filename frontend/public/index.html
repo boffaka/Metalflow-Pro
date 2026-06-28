@@ -16142,7 +16142,11 @@ function dcBuildGeneralDesignBasis({ project, getParam, round }) {
   const designTphRaw = DC_GENERAL_FORMULAS.tphFromTpcd(designTpcdRaw, plantAvailPct);
   const minTphRaw = DC_GENERAL_FORMULAS.tphFromTpcd(minTpcdRaw, plantAvailPct);
   const maxTphRaw = DC_GENERAL_FORMULAS.tphFromTpcd(maxTpcdRaw, plantAvailPct);
-  const designTphCrushRaw = DC_GENERAL_FORMULAS.designTphFromNominal(nominalTphRaw, crushDesignFactorPct);
+  // Crusher runs fewer hours than the mill: nominal includes the availability ratio
+  // (plant_avail / crush_avail), then the CRUSHING design factor (25%). Workbook rows 26/162.
+  const crushAvailRatioRaw = Number(crushAvailPct) > 0 ? plantAvailPct / Number(crushAvailPct) : 1;
+  const nominalTphCrushRaw = nominalTphRaw != null ? nominalTphRaw * crushAvailRatioRaw : null;
+  const designTphCrushRaw = DC_GENERAL_FORMULAS.designTphFromNominal(nominalTphCrushRaw, crushDesignFactorPct);
   const nominalTpdRaw = nominalTphRaw != null ? nominalTphRaw * 24 * sagAvailPct / 100 * utilizationPct / 100 : null;
   const annualTargetRaw = nominalTphRaw != null ? nominalTphRaw * 8760 * plantAvailPct / 100 * utilizationPct / 100 : null;
   const designTpdGrindingRaw = designTphRaw != null ? designTphRaw * 24 * sagAvailPct / 100 : null;
@@ -16161,6 +16165,7 @@ function dcBuildGeneralDesignBasis({ project, getParam, round }) {
     minTph: minTphRaw != null ? round(minTphRaw, 1) : null,
     maxTph: maxTphRaw != null ? round(maxTphRaw, 1) : null,
     designTphCrush: designTphCrushRaw != null ? round(designTphCrushRaw, 1) : null,
+    nominalTphCrush: nominalTphCrushRaw != null ? round(nominalTphCrushRaw, 1) : null,
     crushDesignFactorPct,
     concDesignFactorPct,
     hydraulicDesignFactorPct,
@@ -16483,6 +16488,8 @@ function dcEquipmentFormulaContext({ basis, sp, b1Avg, a1Avg }) {
   return {
     designTph: basis.designTph,
     nominalTph: basis.nominalTph,
+    designTphCrush: basis.designTphCrush,
+    nominalTphCrush: basis.nominalTphCrush,
     availabilityPct: basis.plantAvailPct,
     cwi: dcFirstFinite(b1Avg('crushing_wi_kwh_t'), sp('ore', 'cwi_kwh_t', null), 12),
     bwi: dcFirstFinite(b1Avg('bwi_kwh_t'), b1Avg('brwi_kwh_t'), sp('ore', 'bwi_kwh_t', null), 14),
@@ -16500,9 +16507,12 @@ function dcEquipmentFormulaContext({ basis, sp, b1Avg, a1Avg }) {
 function dcApplyEquipmentFormulaGroup(group, ctx) {
   if (!group?.criteria?.length) return group;
   const op = String(group.op_code || group.section_title || '').toUpperCase();
+  // Primary crusher feed rate is availability-adjusted (plant/crush avail) + 25% factor,
+  // NOT the plant grinding design throughput. Workbook rows 26/162.
+  const isPrimaryCrusherOp = /GIRATOIRE|CONCASSEUR PRIMAIRE|PRIMARY CRUSH/.test(op);
   const rows = group.criteria.map(c => ({ ...c }));
   const st = {
-    feedTph: ctx.designTph,
+    feedTph: (isPrimaryCrusherOp && ctx.designTphCrush != null) ? ctx.designTphCrush : ctx.designTph,
     plantAvailabilityPct: ctx.availabilityPct,
     f80: null,
     f100: null,
