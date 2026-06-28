@@ -16539,7 +16539,7 @@ function dcApplyEquipmentFormulaGroup(group, ctx, useNominal = false) {
     else if (/p80|produit|cible/.test(label)) st.p80 = v;
     if (/cwi|crushing work/.test(label)) st.cwi = v;
     if (/bwi|bond bwi|work index/.test(label)) st.bwi = v;
-    if (/sg minerai|densité.*minerai|specific gravity/.test(label)) st.sg = v;
+    if (/sg minerai|densite.*minerai|specific gravity/.test(label)) st.sg = v;
   };
 
   for (let i = 0; i < rows.length; i++) {
@@ -16547,7 +16547,10 @@ function dcApplyEquipmentFormulaGroup(group, ctx, useNominal = false) {
     const label = dcNormalizeLabel(row.item);
     const unit = String(row.unit || '').toLowerCase();
 
-    if (/debit.*(design|alimentation|fresh|feed)|fresh feed|debit alimentation/.test(label) && unit.includes('t/h')) {
+    if (/feed cyclone/.test(label) && unit.includes('t/h')) {
+      const cl = dcFirstFinite(rows.slice(0, i).reverse().find(r => /charge circulante|circulating/.test(dcNormalizeLabel(r.item)))?.design_value, 0);
+      row = dcSetCalculatedCriterion(row, st.feedTph * (1 + cl / 100), 'Fresh feed × (1 + charge circulante)', 1);
+    } else if (/debit.*(design|alimentation|fresh|feed)|fresh feed|debit alimentation/.test(label) && unit.includes('t/h')) {
       row = dcSetCalculatedCriterion(row, st.feedTph, 'Débit design usine issu des critères généraux', 1);
     } else if (/ratio.*reduction|r80|rr =|rr\b/.test(label)) {
       row = dcSetCalculatedCriterion(row, st.f80 && st.p80 ? st.f80 / st.p80 : null, 'F80 / P80', 2);
@@ -16569,15 +16572,17 @@ function dcApplyEquipmentFormulaGroup(group, ctx, useNominal = false) {
       const efs = rows.filter(r => /^ef[1-8]/.test(dcNormalizeLabel(r.item))).map(r => dcCriterionNumber(r, 1));
       row = dcSetCalculatedCriterion(row, base != null ? base * efs.reduce((a, v) => a * (v || 1), 1) : null, 'W Bond × produit EF1-EF8', 3);
     } else if (/puissance arbre|p_shaft|shaft/.test(label)) {
-      const energy = dcFirstFinite(rows.slice(0, i).reverse().find(r => /energie.*(bond|corrigee|spécifique|e_v)/.test(dcNormalizeLabel(r.item)))?.design_value, null);
+      const energy = dcFirstFinite(rows.slice(0, i).reverse().find(r => /energie.*(bond|corrigee|specifique|e_v)/.test(dcNormalizeLabel(r.item)))?.design_value, null);
       row = dcSetCalculatedCriterion(row, energy != null && st.feedTph != null ? energy * st.feedTph : null, 'Énergie spécifique × débit', 1);
     } else if (/puissance installee|installed power/.test(label)) {
       const prev = rows.slice(0, i);
       const shaft = dcFirstFinite(prev.reverse().find(r => /puissance arbre|p_shaft|puissance nette/.test(dcNormalizeLabel(r.item)))?.design_value, null);
       const eff = dcFirstFinite(prev.find(r => /rendement/.test(dcNormalizeLabel(r.item)))?.design_value, 95);
       const margin = dcFirstFinite(prev.find(r => /marge/.test(dcNormalizeLabel(r.item)))?.design_value, 10);
-      row = dcSetCalculatedCriterion(row, dcInstalledPower(shaft, eff, margin), 'P_arbre / rendement × (1 + marge)', 1);
-    } else if (/surface.*roll|d.*l/.test(label) && op.includes('HPGR')) {
+      // HPGR twin-roll: net power covers both rolls; installed power PER ROLL divides by 2 (template 04 B33).
+      const rollDiv = (op.includes('HPGR') && /rouleau|roll/.test(label)) ? 2 : 1;
+      row = dcSetCalculatedCriterion(row, dcInstalledPower(shaft, eff, margin) / rollDiv, rollDiv === 2 ? '(P_nette / rendement / 2) × (1 + marge)' : 'P_arbre / rendement × (1 + marge)', 1);
+    } else if (/surface.*roll|surface.*rouleau/.test(label) && op.includes('HPGR')) {
       const d = dcFirstFinite(rows.find(r => /diametre rouleau|diameter roll/.test(dcNormalizeLabel(r.item)))?.design_value, 2.4);
       const l = dcFirstFinite(rows.find(r => /longueur rouleau|roll length/.test(dcNormalizeLabel(r.item)))?.design_value, 1.7);
       row = dcSetCalculatedCriterion(row, d * l, 'Diamètre rouleau × longueur rouleau', 2);
@@ -16589,7 +16594,7 @@ function dcApplyEquipmentFormulaGroup(group, ctx, useNominal = false) {
       const recycle = readInput(rows.find(r => /recycle/.test(dcNormalizeLabel(r.item))), 25);
       row = dcSetCalculatedCriterion(row, st.feedTph * (1 + recycle / 100), 'Fresh feed × (1 + recycle ratio)', 1);
     } else if (/capacite par unite/.test(label)) {
-      const mdot = readInput(rows.find(r => /debit spécifique/.test(dcNormalizeLabel(r.item))), 250);
+      const mdot = readInput(rows.find(r => /debit specifique/.test(dcNormalizeLabel(r.item))), 250);
       const d = readInput(rows.find(r => /diametre rouleau/.test(dcNormalizeLabel(r.item))), 2.4);
       const l = readInput(rows.find(r => /longueur rouleau/.test(dcNormalizeLabel(r.item))), 1.7);
       const u = dcFirstFinite(rows.find(r => /vitesse periph/.test(dcNormalizeLabel(r.item)))?.design_value, null);
@@ -16599,12 +16604,12 @@ function dcApplyEquipmentFormulaGroup(group, ctx, useNominal = false) {
       const cap = dcFirstFinite(rows.find(r => /capacite par unite/.test(dcNormalizeLabel(r.item)))?.design_value, null);
       row = dcSetCalculatedCriterion(row, cap ? dcCeil(total / cap) : null, 'ROUNDUP(débit total roll / capacité unitaire)', 0);
     } else if (/force totale/.test(label)) {
-      const fsp = readInput(rows.find(r => /force spécifique/.test(dcNormalizeLabel(r.item))), 4.5);
+      const fsp = readInput(rows.find(r => /force specifique/.test(dcNormalizeLabel(r.item))), 4.5);
       const d = readInput(rows.find(r => /diametre rouleau/.test(dcNormalizeLabel(r.item))), 2.4);
       const l = readInput(rows.find(r => /longueur rouleau/.test(dcNormalizeLabel(r.item))), 1.7);
       row = dcSetCalculatedCriterion(row, fsp * d * 1000 * l, 'F_sp × D × 1000 × L', 0);
     } else if (/puissance nette/.test(label) && op.includes('HPGR')) {
-      const esp = readInput(rows.find(r => /energie spécifique/.test(dcNormalizeLabel(r.item))), 2.3);
+      const esp = readInput(rows.find(r => /energie specifique/.test(dcNormalizeLabel(r.item))), 2.3);
       const cap = dcFirstFinite(rows.find(r => /capacite par unite/.test(dcNormalizeLabel(r.item)))?.design_value, null);
       row = dcSetCalculatedCriterion(row, esp * cap, 'Énergie spécifique × capacité unitaire', 1);
     } else if (/puissance totale hpgr/.test(label)) {
@@ -16638,9 +16643,9 @@ function dcApplyEquipmentFormulaGroup(group, ctx, useNominal = false) {
       const solids = dcFirstFinite(rows.find(r => /debit solides|feed cyclone|debit alimentation/.test(dcNormalizeLabel(r.item)))?.design_value, st.feedTph);
       const pct = readInput(rows.find(r => /% solides|solides feed/.test(dcNormalizeLabel(r.item))), 45);
       row = dcSetCalculatedCriterion(row, dcVolumetricSlurryFlow(solids, st.sg, pct), 'Solides/SG + solides×(100-%solides)/%solides', 1);
-    } else if (/densité pulpe/.test(label)) {
+    } else if (/densite pulpe/.test(label)) {
       const pct = readInput(rows.find(r => /% solides|solides feed/.test(dcNormalizeLabel(r.item))), 45);
-      row = dcSetCalculatedCriterion(row, dcSlurryDensity(st.sg, pct), '1 + (SG minerai - 1) × %solides / 100', 3);
+      row = dcSetCalculatedCriterion(row, (st.sg != null && pct) ? (1 + (st.sg - 1) * pct / 100) : null, '1 + (SG minerai - 1) × %solides / 100', 3);
     } else if (/nombre cyclones operationnels/.test(label)) {
       const qv = dcFirstFinite(rows.find(r => /debit volumique.*(pulpe|total)/.test(dcNormalizeLabel(r.item)))?.design_value, null);
       const cap = readInput(rows.find(r => /capacite unitaire/.test(dcNormalizeLabel(r.item))), 600);
@@ -16670,7 +16675,7 @@ function dcApplyEquipmentFormulaGroup(group, ctx, useNominal = false) {
       row = dcSetCalculatedCriterion(row, diameter, /epaississeur|thick/.test(label + op) ? '√(4 × surface / π)' : '√((4 × volume / π) / hauteur)', 2);
     } else if (/puissance par tank/.test(label)) {
       const vol = dcFirstFinite(rows.find(r => /volume unitaire/.test(dcNormalizeLabel(r.item)))?.design_value, null);
-      const kwm3 = readInput(rows.find(r => /puissance spécifique/.test(dcNormalizeLabel(r.item))), 0.1);
+      const kwm3 = readInput(rows.find(r => /puissance specifique/.test(dcNormalizeLabel(r.item))), 0.1);
       row = dcSetCalculatedCriterion(row, vol * kwm3, 'Volume unitaire × puissance spécifique agitation', 1);
     } else if (/puissance totale agitation/.test(label)) {
       const unit = dcFirstFinite(rows.find(r => /puissance par tank/.test(dcNormalizeLabel(r.item)))?.design_value, null);
@@ -16686,7 +16691,7 @@ function dcApplyEquipmentFormulaGroup(group, ctx, useNominal = false) {
       row = dcSetCalculatedCriterion(row, unit * n, 'Inventaire par tank × nombre de tanks avec charbon', 2);
     } else if (/surface.*requise|surface filtration/.test(label)) {
       const solids = dcFirstFinite(rows.find(r => /debit solides|debit alimentation/.test(dcNormalizeLabel(r.item)))?.design_value, st.feedTph);
-      const slr = readInput(rows.find(r => /slr|solids loading|capacite spécifique/.test(dcNormalizeLabel(r.item))), /filtration/.test(label) ? 250 : 1);
+      const slr = readInput(rows.find(r => /slr|solids loading|capacite specifique/.test(dcNormalizeLabel(r.item))), /filtration/.test(label) ? 250 : 1);
       row = dcSetCalculatedCriterion(row, /filtration/.test(label) ? solids * 1000 / slr : solids / slr, /filtration/.test(label) ? 'Solides × 1000 / capacité spécifique filtre' : 'Débit solides / SLR', 1);
     } else if (/consommation par jour/.test(label)) {
       const solids = dcFirstFinite(rows.find(r => /debit solides/.test(dcNormalizeLabel(r.item)))?.design_value, st.feedTph);
@@ -16700,13 +16705,23 @@ function dcApplyEquipmentFormulaGroup(group, ctx, useNominal = false) {
       const loading = readInput(rows.find(r => /charge au sur charbon/.test(dcNormalizeLabel(r.item))), 3000);
       row = dcSetCalculatedCriterion(row, carbonMass * loading / 1000, 'Masse charbon × charge Au / 1000', 2);
     } else if (/courant total/.test(label)) {
-      const density = readInput(rows.find(r => /densité courant/.test(dcNormalizeLabel(r.item))), 200);
+      const density = readInput(rows.find(r => /densite courant/.test(dcNormalizeLabel(r.item))), 200);
       const area = readInput(rows.find(r => /surface cathode/.test(dcNormalizeLabel(r.item))), 24);
       row = dcSetCalculatedCriterion(row, density * area, 'Densité courant × surface cathode', 0);
     } else if (/puissance ew/.test(label)) {
       const voltage = readInput(rows.find(r => /tension cellule/.test(dcNormalizeLabel(r.item))), 4);
       const current = dcFirstFinite(rows.find(r => /courant total/.test(dcNormalizeLabel(r.item)))?.design_value, null);
       row = dcSetCalculatedCriterion(row, voltage * current / 1000, 'Tension × courant / 1000', 2);
+    } else if (/puissance hydraulique/.test(label)) {
+      const qv = dcFirstFinite(rows.find(r => /debit volumique pulpe|debit volumique total/.test(dcNormalizeLabel(r.item)))?.design_value, null);
+      const rho = dcFirstFinite(rows.find(r => /densite pulpe/.test(dcNormalizeLabel(r.item)))?.design_value, 1.3);
+      const tdh = readInput(rows.find(r => /tdh|hauteur manometrique|head/.test(dcNormalizeLabel(r.item))), 25);
+      row = dcSetCalculatedCriterion(row, qv != null ? qv * rho * 9.81 * tdh / 3600 : null, 'Qv × ρ × 9.81 × TDH / 3600', 1);
+    } else if (/puissance pompe/.test(label)) {
+      const hyd = dcFirstFinite(rows.find(r => /puissance hydraulique/.test(dcNormalizeLabel(r.item)))?.design_value, null);
+      const eff = dcFirstFinite(rows.find(r => /rendement/.test(dcNormalizeLabel(r.item)))?.design_value, 65);
+      const margin = dcFirstFinite(rows.find(r => /marge/.test(dcNormalizeLabel(r.item)))?.design_value, 25);
+      row = dcSetCalculatedCriterion(row, hyd != null ? dcInstalledPower(hyd, eff, margin) : null, 'P_hydraulique / rendement × (1 + marge)', 1);
     }
 
     rows[i] = row;
