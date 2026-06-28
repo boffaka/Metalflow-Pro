@@ -621,9 +621,12 @@ def _fix_crusher_design_nominal_safe() -> None:
 
         # Unconditional UPDATE — always recompute crusher design/nominal from project values.
         # Formula: nominal = tph × (avail/75%), design = nominal × 1.15
-        # No condition on current values so the fix applies even if recalculate_all
-        # (called on every page load) previously overwrote our values.
-        cur.execute("""
+        #
+        # NOTE: Uses %s parameterized LIKE patterns to avoid the psycopg2 issue where
+        # '%%' in a no-param execute() call is sent literally to PostgreSQL (matching the
+        # '%' character, not acting as a wildcard). With params, '%%' → '%' correctly.
+        cur.execute(
+            """
             UPDATE design_criteria_v2 d
             SET design_value  = ROUND(
                                   p.target_tph
@@ -644,10 +647,12 @@ def _fix_crusher_design_nominal_safe() -> None:
             WHERE d.template_id = t.id
               AND d.enabled = TRUE
               AND UPPER(d.op_code) = 'GIRATOIRE'
-              AND LOWER(d.item) LIKE '%%design%%alimentation%%'
+              AND (LOWER(d.item) LIKE %s OR d.dag_key = 'crusher_design_tph')
               AND p.target_tph > 0
               AND COALESCE(d.source_code, 'X') NOT IN ('M', 'O')
-        """)
+            """,
+            ("%design%alimentation%",),
+        )
         n = cur.rowcount
         c.commit()
         if n:

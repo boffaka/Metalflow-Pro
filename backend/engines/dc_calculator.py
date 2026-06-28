@@ -122,10 +122,10 @@ def _recalculate_all_impl(project_id: str, template_id: str, cursor) -> dict:
             return row.get(key)
         return row[idx]
 
-    # 1. Read all criteria for this template
+    # 1. Read all criteria for this template (include dag_key for robust matching)
     cursor.execute(
         "SELECT id, op_code, ref_number, item, unit, design_value, nominal_value, "
-        "min_value, max_value, source_code "
+        "min_value, max_value, source_code, dag_key "
         "FROM design_criteria_v2 "
         "WHERE template_id = %s AND enabled = TRUE "
         "ORDER BY sort_order, ref_number",
@@ -137,11 +137,14 @@ def _recalculate_all_impl(project_id: str, template_id: str, cursor) -> dict:
 
     # Build lookup: item_lower -> row dict
     criteria = {}
+    # Secondary lookup by dag_key for robust matching when item text has encoding drift
+    by_dag_key: dict[str, dict] = {}
     for r in rows:
         op_code = _row_val(r, 1, "op_code")
         item = _row_val(r, 3, "item")
+        dag_key = _row_val(r, 10, "dag_key") if len(r) > 10 else (r.get("dag_key") if isinstance(r, dict) else None)
         key = (op_code or "").upper() + ":" + (item or "").lower()  # OP_CODE:item
-        criteria[key] = {
+        row_dict = {
             "id": str(_row_val(r, 0, "id")),
             "op_code": op_code,
             "ref": _row_val(r, 2, "ref_number"),
@@ -152,7 +155,11 @@ def _recalculate_all_impl(project_id: str, template_id: str, cursor) -> dict:
             "min": float(_row_val(r, 7, "min_value")) if _row_val(r, 7, "min_value") is not None else None,
             "max": float(_row_val(r, 8, "max_value")) if _row_val(r, 8, "max_value") is not None else None,
             "source": _row_val(r, 9, "source_code"),
+            "dag_key": dag_key,
         }
+        criteria[key] = row_dict
+        if dag_key:
+            by_dag_key[dag_key] = row_dict
 
     # Also build by item name only (for cross-operation lookups)
     by_item = {}
@@ -795,6 +802,14 @@ def _recalculate_all_impl(project_id: str, template_id: str, cursor) -> dict:
             if item_pattern in v_item or v_item in item_pattern:
                 matched_id = v["id"]
                 break
+
+        # Fallback: match by dag_key when item-text matching fails (Unicode NFC/NFD drift)
+        if matched_id is None:
+            _dk = _CALC_TO_DAG_KEY.get(calc_key)
+            if _dk:
+                fallback = by_dag_key.get(_dk)
+                if fallback and (not op_code or (fallback.get("op_code") or "").upper() == op_code.upper()):
+                    matched_id = fallback["id"]
 
         if matched_id:
             try:
