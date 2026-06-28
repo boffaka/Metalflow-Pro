@@ -16504,15 +16504,19 @@ function dcEquipmentFormulaContext({ basis, sp, b1Avg, a1Avg }) {
   };
 }
 
-function dcApplyEquipmentFormulaGroup(group, ctx) {
+function dcApplyEquipmentFormulaGroup(group, ctx, useNominal = false) {
   if (!group?.criteria?.length) return group;
   const op = String(group.op_code || group.section_title || '').toUpperCase();
   // Primary crusher feed rate is availability-adjusted (plant/crush avail) + 25% factor,
   // NOT the plant grinding design throughput. Workbook rows 26/162.
   const isPrimaryCrusherOp = /GIRATOIRE|CONCASSEUR PRIMAIRE|PRIMARY CRUSH/.test(op);
   const rows = group.criteria.map(c => ({ ...c }));
+  // Design pass uses design throughput; nominal pass uses nominal throughput so derived
+  // rows (energy/power/volumes) get a consistent nominal_value (<= design), not a stale seed.
+  const designFeedTph = (isPrimaryCrusherOp && ctx.designTphCrush != null) ? ctx.designTphCrush : ctx.designTph;
+  const nominalFeedTph = (isPrimaryCrusherOp && ctx.nominalTphCrush != null) ? ctx.nominalTphCrush : ctx.nominalTph;
   const st = {
-    feedTph: (isPrimaryCrusherOp && ctx.designTphCrush != null) ? ctx.designTphCrush : ctx.designTph,
+    feedTph: useNominal ? (nominalFeedTph != null ? nominalFeedTph : designFeedTph) : designFeedTph,
     plantAvailabilityPct: ctx.availabilityPct,
     f80: null,
     f100: null,
@@ -16708,7 +16712,17 @@ function dcApplyEquipmentFormulaGroup(group, ctx) {
     updateState(label, row);
   }
 
-  return { ...group, criteria: rows };
+  if (useNominal) return { ...group, criteria: rows };
+  // Second pass on the nominal throughput basis fills nominal_value for computed rows.
+  const nominalPass = dcApplyEquipmentFormulaGroup(group, ctx, true);
+  const mergedCriteria = rows.map((row, idx) => {
+    const nrow = nominalPass.criteria[idx];
+    if (row.source_code === 'C' && nrow && nrow.design_value != null && !dcManualOverride(row)) {
+      return { ...row, nominal_value: nrow.design_value };
+    }
+    return row;
+  });
+  return { ...group, criteria: mergedCriteria };
 }
 
 function dcApplyEquipmentFormulaEngine(groups, ctx) {
