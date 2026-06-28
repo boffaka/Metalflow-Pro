@@ -16458,14 +16458,23 @@ function dcEquipmentFormulaContext({ basis, sp, b1Avg, a1Avg }) {
 function dcApplyEquipmentFormulaGroup(group, ctx, useNominal = false) {
   if (!group?.criteria?.length) return group;
   const op = String(group.op_code || group.section_title || '').toUpperCase();
-  // Primary crusher feed rate is availability-adjusted (plant/crush avail) + 25% factor,
-  // NOT the plant grinding design throughput. Workbook rows 26/162.
+  // Crushing-circuit throughput basis (template sheet 01 B22 / sheet 03):
+  //  - primary crusher + scalping screen are fed by the crusher DESIGN rate
+  //  - secondary crusher (cone) is fed by the screen OVERSIZE
   const isPrimaryCrusherOp = /GIRATOIRE|CONCASSEUR PRIMAIRE|PRIMARY CRUSH/.test(op);
+  const isScreenOp = op === 'CRIBLE' || /SCALP/.test(op);
+  const isSecondaryCrusherOp = op === 'CONE' || /CONCASSEUR SECONDAIRE|SECONDARY CRUSH/.test(op);
   const rows = group.criteria.map(c => ({ ...c }));
   // Design pass uses design throughput; nominal pass uses nominal throughput so derived
   // rows (energy/power/volumes) get a consistent nominal_value (<= design), not a stale seed.
-  const designFeedTph = (isPrimaryCrusherOp && ctx.designTphCrush != null) ? ctx.designTphCrush : ctx.designTph;
-  const nominalFeedTph = (isPrimaryCrusherOp && ctx.nominalTphCrush != null) ? ctx.nominalTphCrush : ctx.nominalTph;
+  let designFeedTph = ctx.designTph, nominalFeedTph = ctx.nominalTph;
+  if (isPrimaryCrusherOp || isScreenOp) {
+    designFeedTph = ctx.designTphCrush != null ? ctx.designTphCrush : designFeedTph;
+    nominalFeedTph = ctx.nominalTphCrush != null ? ctx.nominalTphCrush : nominalFeedTph;
+  } else if (isSecondaryCrusherOp) {
+    designFeedTph = ctx.screenOversizeTphDesign != null ? ctx.screenOversizeTphDesign : designFeedTph;
+    nominalFeedTph = ctx.screenOversizeTphNominal != null ? ctx.screenOversizeTphNominal : nominalFeedTph;
+  }
   const st = {
     feedTph: useNominal ? (nominalFeedTph != null ? nominalFeedTph : designFeedTph) : designFeedTph,
     plantAvailabilityPct: ctx.availabilityPct,
@@ -16497,11 +16506,13 @@ function dcApplyEquipmentFormulaGroup(group, ctx, useNominal = false) {
     const label = dcNormalizeLabel(row.item);
     const unit = String(row.unit || '').toLowerCase();
 
-    if (/feed cyclone/.test(label) && unit.includes('t/h')) {
+    if (isSecondaryCrusherOp && /alim|feed|debit/.test(label) && /oversize|crible/.test(label) && unit.includes('t/h')) {
+      row = dcSetCalculatedCriterion(row, st.feedTph, 'Oversize crible → alim. concasseur secondaire', 1);
+    } else if (/feed cyclone/.test(label) && unit.includes('t/h')) {
       const cl = dcFirstFinite(rows.slice(0, i).reverse().find(r => /charge circulante|circulating/.test(dcNormalizeLabel(r.item)))?.design_value, 0);
       row = dcSetCalculatedCriterion(row, st.feedTph * (1 + cl / 100), 'Fresh feed × (1 + charge circulante)', 1);
-    } else if (/debit.*(design|alimentation|fresh|feed)|fresh feed|debit alimentation/.test(label) && unit.includes('t/h')) {
-      row = dcSetCalculatedCriterion(row, st.feedTph, 'Débit design usine issu des critères généraux', 1);
+    } else if (/debit.*(design|alimentation|fresh|feed)|fresh feed|debit alimentation/.test(label) && unit.includes('t/h') && !/undersize|oversize|recycle|recircul|circulante|concentre|sortie|decharge/.test(label)) {
+      row = dcSetCalculatedCriterion(row, st.feedTph, 'Débit design (issu du débit amont)', 1);
     } else if (/ratio.*reduction|r80|rr =|rr\b/.test(label)) {
       row = dcSetCalculatedCriterion(row, st.f80 && st.p80 ? st.f80 / st.p80 : null, 'F80 / P80', 2);
     } else if (!dcIsWorkIndexRow(label) && (/energie bond|energie.*non corrigee|\bw\s*=/.test(label))) {
@@ -16567,11 +16578,11 @@ function dcApplyEquipmentFormulaGroup(group, ctx, useNominal = false) {
       const n = dcFirstFinite(rows.find(r => /nombre hpgr/.test(dcNormalizeLabel(r.item)))?.design_value, 1);
       row = dcSetCalculatedCriterion(row, pRoll * 2 * n, 'Puissance par rouleau × 2 × nombre HPGR', 1);
     } else if (/debit undersize|undersize/.test(label)) {
-      const feed = dcFirstFinite(rows.slice(0, i).reverse().find(r => /debit.*(crible|feed|alimentation)/.test(dcNormalizeLabel(r.item)))?.design_value, st.feedTph);
+      const feed = dcFirstFinite(rows.slice(0, i).reverse().find(r => { const _l = dcNormalizeLabel(r.item); return /debit.*(crible|alimentation)|debit feed/.test(_l) && !/undersize|oversize/.test(_l); })?.design_value, st.feedTph);
       const passing = readInput(rows.find(r => /passant|passing/.test(dcNormalizeLabel(r.item))), 60);
       row = dcSetCalculatedCriterion(row, feed * passing / 100, 'Feed crible × % passant / 100', 1);
     } else if (/debit oversize|oversize/.test(label)) {
-      const feed = dcFirstFinite(rows.slice(0, i).reverse().find(r => /debit.*(crible|feed|alimentation)/.test(dcNormalizeLabel(r.item)))?.design_value, st.feedTph);
+      const feed = dcFirstFinite(rows.slice(0, i).reverse().find(r => { const _l = dcNormalizeLabel(r.item); return /debit.*(crible|alimentation)|debit feed/.test(_l) && !/undersize|oversize/.test(_l); })?.design_value, st.feedTph);
       const undersize = dcFirstFinite(rows.find(r => /undersize/.test(dcNormalizeLabel(r.item)))?.design_value, null);
       row = dcSetCalculatedCriterion(row, feed - undersize, 'Feed crible - undersize', 1);
     } else if (/surface utile requise/.test(label)) {
@@ -16692,7 +16703,37 @@ function dcApplyEquipmentFormulaGroup(group, ctx, useNominal = false) {
 }
 
 function dcApplyEquipmentFormulaEngine(groups, ctx) {
-  return (groups || []).map(group => dcApplyEquipmentFormulaGroup(group, ctx));
+  groups = groups || [];
+  // Crushing-circuit handoff: the scalping screen (CRIBLE) is fed by the crusher design
+  // rate; the secondary crusher (CONE) is fed by the screen oversize = crusher_design × (1 - %passant).
+  const crible = groups.find(g => String(g.op_code || '').toUpperCase() === 'CRIBLE');
+  if (crible) {
+    const pr = (crible.criteria || []).find(r => /passant|passing/.test(dcNormalizeLabel(r.item)));
+    const passing = (pr && Number(pr.design_value)) ? Number(pr.design_value) : 60;
+    ctx = {
+      ...ctx,
+      screenOversizeTphDesign: ctx.designTphCrush != null ? ctx.designTphCrush * (1 - passing / 100) : null,
+      screenOversizeTphNominal: ctx.nominalTphCrush != null ? ctx.nominalTphCrush * (1 - passing / 100) : null,
+    };
+  }
+  // Cluster groups by op_code so cross-section formulas (e.g. HPGR capacité references
+  // vitesse périph in a sibling card) resolve. Compute on merged criteria, split back.
+  const out = new Array(groups.length);
+  const clusters = new Map();
+  groups.forEach((g, idx) => {
+    const key = String(g.op_code || g.section_title || idx);
+    if (!clusters.has(key)) clusters.set(key, []);
+    clusters.get(key).push(idx);
+  });
+  for (const idxs of clusters.values()) {
+    if (idxs.length === 1) { out[idxs[0]] = dcApplyEquipmentFormulaGroup(groups[idxs[0]], ctx); continue; }
+    const merged = { op_code: groups[idxs[0]].op_code, section_title: groups[idxs[0]].section_title, criteria: [] };
+    const spans = [];
+    for (const i of idxs) { const crit = groups[i].criteria || []; spans.push([i, merged.criteria.length, crit.length]); merged.criteria.push(...crit); }
+    const computed = dcApplyEquipmentFormulaGroup(merged, ctx);
+    for (const [i, start, len] of spans) out[i] = { ...groups[i], criteria: computed.criteria.slice(start, start + len) };
+  }
+  return out;
 }
 
 function dcSetPhase(ph) { S.dcPhase = ph; rerenderSection(); }
