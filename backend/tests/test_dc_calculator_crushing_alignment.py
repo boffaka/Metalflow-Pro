@@ -86,11 +86,13 @@ def test_recalculate_all_applies_engineer_workbook_crusher_design_rate_and_power
     result = recalculate_all("project-1", "template-1", cur)
 
     assert result["errors"] == []
-    assert cur.updates["r1"] == pytest.approx(2251.424, abs=0.001)
+    # Crusher design rate uses the CRUSHING design factor (25 %, workbook row 26),
+    # not the concentrator factor (15 %): 1596 × (92/75) × 1.25 = 2447.2 t/h.
+    assert cur.updates["r1"] == pytest.approx(2447.2, abs=0.1)
     assert cur.updates["r2"] == pytest.approx(528000 / 135000, abs=0.001)
-    assert cur.updates["r3"] == pytest.approx(0.2394, abs=0.001)
-    assert cur.updates["r4"] == pytest.approx(537.1, abs=0.2)
-    assert cur.updates["r5"] == pytest.approx(671.3, abs=0.3)
+    assert cur.updates["r3"] == pytest.approx(0.2385, abs=0.001)
+    assert cur.updates["r4"] == pytest.approx(583.8, abs=0.3)
+    assert cur.updates["r5"] == pytest.approx(729.7, abs=0.3)
 
 
 def test_recalculate_all_updates_secondary_crusher_design_and_nominal_oversize():
@@ -99,7 +101,7 @@ def test_recalculate_all_updates_secondary_crusher_design_and_nominal_oversize()
     result = recalculate_all("project-1", "template-1", cur)
 
     assert result["errors"] == []
-    expected_design_crush = 1596 * 1.15 * 0.92 / 0.75
+    expected_design_crush = 1596 * 1.25 * 0.92 / 0.75
     expected_nominal_crush = 1596 * 0.92 / 0.75
     assert cur.updates["r16"] == pytest.approx(expected_design_crush * 0.35, abs=0.1)
     assert cur.nominal_updates["r16"] == pytest.approx(expected_nominal_crush * 0.35, abs=0.1)
@@ -148,4 +150,4 @@ def test_recalculate_all_accepts_realdictcursor_rows_from_routes():
     result = recalculate_all("project-1", "template-1", cur)
 
     assert result["errors"] == []
-    assert cur.updates["r1"] == pytest.approx(2251.424, abs=0.001)
+    assert cur.updates["r1"] == pytest.approx(2447.2, abs=0.1)

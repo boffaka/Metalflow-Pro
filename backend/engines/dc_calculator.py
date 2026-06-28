@@ -368,6 +368,16 @@ def _recalculate_all_impl(project_id: str, template_id: str, cursor) -> dict:
     if concentrator_design_factor and concentrator_design_factor < 1.0:
         concentrator_design_factor *= 100.0
 
+    # Crushing circuit uses its OWN design factor (workbook row 26 = 25 %),
+    # NOT the concentrator factor (row 27 = 15 %). The crusher/screen/cone
+    # design rate is sized with this margin (F162 = G162 × (1 + F26 %)).
+    crushing_design_factor = (
+        _get("crushing plant equipment design factor", default=None)
+        or 25.0
+    )
+    if crushing_design_factor and crushing_design_factor < 1.0:
+        crushing_design_factor *= 100.0
+
     # Crusher feed rates — computed ONLY from project-level values.
     # Hardcoded crusher availability = 75 % (standard primary gyratory operating factor).
     # This MUST NOT come from _get(): alias matching in _EN_FR_ALIASES can accidentally
@@ -382,7 +392,7 @@ def _recalculate_all_impl(project_id: str, template_id: str, cursor) -> dict:
     _avail_ratio         = _mill_avail_pct / _CRUSHER_AVAIL_PCT      # e.g. 92/75 = 1.227
     crushing_nominal_tph = round(plant_tph * _avail_ratio, 1)         # nominal when running
     crushing_tph         = round(                                       # design with margin
-        crushing_nominal_tph * (1.0 + concentrator_design_factor / 100.0), 1
+        crushing_nominal_tph * (1.0 + crushing_design_factor / 100.0), 1
     )
 
     # Sanity guard: design MUST strictly exceed nominal
@@ -583,7 +593,13 @@ def _recalculate_all_impl(project_id: str, template_id: str, cursor) -> dict:
     flot_conc_nominal_tph = flot_feed_nominal_tph * flot_mass_pull
     flot_tails_tph = flot_feed_tph - flot_conc_tph
     flot_feed_pulp_sg = 1 / (flot_feed_density / ore_sg + (1 - flot_feed_density) / 1.0)
-    flot_feed_m3h = flot_feed_tph / flot_feed_pulp_sg if flot_feed_pulp_sg > 0 else flot_feed_tph
+    # Pulp volumetric flow = pulp mass / pulp SG, where pulp mass = solids / %solids.
+    # Workbook F280 = (F248 / F278%) / F279. The %solids division was missing.
+    flot_feed_m3h = (
+        (flot_feed_tph / flot_feed_density) / flot_feed_pulp_sg
+        if flot_feed_pulp_sg > 0 and flot_feed_density > 0
+        else flot_feed_tph
+    )
 
     calcs["FLOTATION_ROUGHER:feed rate"] = flot_feed_tph
     nominal_calcs["FLOTATION_ROUGHER:feed rate"] = flot_feed_nominal_tph
@@ -594,7 +610,12 @@ def _recalculate_all_impl(project_id: str, template_id: str, cursor) -> dict:
     calcs["FLOTATION_ROUGHER:concentrate production"] = round(flot_conc_tph, 1)
     conc_grade_au = grade_au * flot_recovery / flot_mass_pull if flot_mass_pull > 0 else 0
     calcs["FLOTATION_ROUGHER:concentrate grade"] = round(conc_grade_au, 1)
-    tails_grade = grade_au * (1 - flot_recovery)
+    # Mass balance: tails_grade = head·(1−R) / (1 − mass_pull)  (workbook G320).
+    tails_grade = (
+        grade_au * (1 - flot_recovery) / (1 - flot_mass_pull)
+        if 0 <= flot_mass_pull < 1
+        else grade_au * (1 - flot_recovery)
+    )
     calcs["FLOTATION_ROUGHER:tailings grade"] = round(tails_grade, 3)
 
     # Flotation volume
@@ -646,7 +667,9 @@ def _recalculate_all_impl(project_id: str, template_id: str, cursor) -> dict:
     calcs["EPAISSISSEUR_CONC:feed rate"] = round(regrind_feed_tph, 1)
     thk_conc_ua = _get("settling flux", "EPAISSISSEUR_CONC") or _get("solids settling", "EPAISSISSEUR_CONC", 0.25)
     if thk_conc_ua and thk_conc_ua > 0:
-        thk_conc_area = (regrind_feed_tph * plant_hpd) / thk_conc_ua if thk_conc_ua > 0 else 500
+        # Area = feed (t/h) / settling flux (t/m²·h). Workbook F363 = F357 / F360.
+        # No plant operating-hours term — flux already carries the per-hour basis.
+        thk_conc_area = regrind_feed_tph / thk_conc_ua
         thk_conc_diam = circular_diameter_m(thk_conc_area)
         calcs["EPAISSISSEUR_CONC:thickening area"] = round(thk_conc_area, 0)
         calcs["EPAISSISSEUR_CONC:thickener diameter"] = round(thk_conc_diam, 1)
@@ -672,7 +695,8 @@ def _recalculate_all_impl(project_id: str, template_id: str, cursor) -> dict:
     # Leach tank sizing
     if leach_srt and leach_n_tanks:
         _air_holdup = _get("air hold", "LEACH_CUVES", 5) / 100
-        leach_vol_total = residence_volume_m3(leach_pulp_m3h, leach_srt)
+        # Workbook F407 = pulp × RT × (1 + air hold-up %).
+        leach_vol_total = residence_volume_m3(leach_pulp_m3h, leach_srt) * (1 + _air_holdup)
         leach_vol_per_tank = leach_vol_total / max(leach_n_tanks, 1)
         calcs["LEACH_CUVES:total live volume"] = round(leach_vol_total, 0)
         calcs["LEACH_CUVES:total live volume per tank"] = round(leach_vol_per_tank, 0)
@@ -714,7 +738,10 @@ def _recalculate_all_impl(project_id: str, template_id: str, cursor) -> dict:
         cip_pulp_m3h = cip_feed_tph * 3
 
     if cip_srt and cip_n_tanks:
-        cip_vol_total = residence_volume_m3(cip_pulp_m3h, cip_srt)
+        # Workbook F435 = pulp × RT × (1 + air hold-up % + carbon hold-up %).
+        _cip_air = _get("air hold", "CIP", 5) / 100
+        _cip_carbon = _get("carbon hold", "CIP", 5) / 100
+        cip_vol_total = residence_volume_m3(cip_pulp_m3h, cip_srt) * (1 + _cip_air + _cip_carbon)
         cip_vol_per_tank = cip_vol_total / max(cip_n_tanks, 1)
         calcs["CIP:total live volume"] = round(cip_vol_total, 0)
         calcs["CIP:total live volume per tank"] = round(cip_vol_per_tank, 0)
@@ -731,8 +758,9 @@ def _recalculate_all_impl(project_id: str, template_id: str, cursor) -> dict:
 
     # Gold units in solution
     overall_recovery = flot_recovery * leach_recovery
-    au_units_gh = cip_feed_tph * conc_grade_au * leach_recovery * 1000  # g/h
-    calcs["CIP:units of gold"] = round(au_units_gh / 1000, 2)  # kg/h
+    # Workbook F458: units of gold (g/h) = conc grade (g/t) × CIP feed (t/h) × extraction.
+    au_units_gh = cip_feed_tph * conc_grade_au * leach_recovery  # g/h
+    calcs["CIP:units of gold"] = round(au_units_gh, 2)  # g/h
 
     # ── DETOX ──
     detox_feed_tph = cip_feed_tph
@@ -741,37 +769,96 @@ def _recalculate_all_impl(project_id: str, template_id: str, cursor) -> dict:
     nominal_calcs["DETOX_INCO:circuit feed"] = round(detox_feed_nominal_tph, 1)
     so2_ratio = _get("so2 dosage", "DETOX_INCO", 6)  # g SO2 / g CN_WAD
     wad_cn = _get("feed wad", "DETOX_INCO", 575)  # mg/L
-    if so2_ratio and wad_cn and detox_feed_tph:
-        detox_pulp_m3h = detox_feed_tph / (0.33 * 1.27) if conc_sg else detox_feed_tph * 3
-        so2_kgh = so2_ratio * wad_cn * detox_pulp_m3h / 1e6 * 1000
+    # Detox pulp SG is taken at the FEED density (workbook F588 = CIP feed % solids),
+    # then the stream is diluted to the TARGET density (F589) for the volumetric flow.
+    detox_feed_density = _get("pulp density", "DETOX_INCO", None) or (cip_pct_solids * 100)
+    detox_feed_density = (
+        detox_feed_density / 100 if detox_feed_density and detox_feed_density > 1
+        else (detox_feed_density or 0.33)
+    )
+    detox_target_density = _get("target density", "DETOX_INCO", 30)
+    detox_target_density = (
+        detox_target_density / 100 if detox_target_density and detox_target_density > 1
+        else (detox_target_density or 0.30)
+    )
+    detox_pulp_sg = slurry_density_t_m3(ore_sg, detox_feed_density)
+    detox_pulp_m3h = (
+        (detox_feed_tph / detox_target_density) / detox_pulp_sg
+        if detox_pulp_sg > 0 and detox_target_density > 0 else detox_feed_tph * 3
+    )
+    # The INCO SO2 demand is driven by the SOLUTION volume (pulp − solids), not the
+    # whole pulp volume. Workbook F614 = WAD × ratio × (F592 − F583/F584) / 1000.
+    detox_solution_m3h = detox_pulp_m3h - (detox_feed_tph / ore_sg if ore_sg else 0)
+    detox_lime_kgh = 0.0  # lime consumed by cyanide destruction (reused in reagent block)
+    if so2_ratio and wad_cn and detox_solution_m3h > 0:
+        so2_kgh = wad_cn * so2_ratio * detox_solution_m3h / 1000.0
         calcs["DETOX_INCO:so2 required"] = round(so2_kgh, 0)
-        o2_kgh = so2_kgh * 3  # stoichiometry
+        o2_kgh = so2_kgh * 3   # workbook F612: 3 kg O2 / kg SO2
         calcs["DETOX_INCO:oxygen consumption"] = round(o2_kgh, 0)
+        detox_lime_kgh = so2_kgh * 2  # F611: 2 g Ca(OH)2 / g SO2
+        calcs["DETOX_INCO:lime dosage"] = round(detox_lime_kgh, 0)
 
     # ── FINAL TAILINGS THICKENER ──
     _tails_feed_tph = flot_tails_tph + detox_feed_tph  # combined
-    calcs["EPAISSISSEUR:feed rate"] = round(plant_tph, 0)  # total plant feed to final tails
+    # Final tails ≈ grinding throughput (concentrate pull is small). Workbook F628 = F248.
+    calcs["EPAISSISSEUR:feed rate"] = round(mill_design_tph, 0)
     nominal_calcs["EPAISSISSEUR:feed rate"] = round(mill_nominal_tph, 0)
     tails_ua = _get("settling flux", "EPAISSISSEUR") or _get("solids settling", "EPAISSISSEUR", 0.75)
     if tails_ua and tails_ua > 0:
-        tails_area = (plant_tph * plant_hpd) / tails_ua
+        # Area = feed (t/h) / settling flux (t/m²·h). Workbook F635 = F628 / F631.
+        tails_area = mill_design_tph / tails_ua
         tails_diam = circular_diameter_m(tails_area)
         calcs["EPAISSISSEUR:thickening area"] = round(tails_area, 0)
         calcs["EPAISSISSEUR:thickener diameter"] = round(tails_diam, 0)
 
     # ── REAGENT CONSUMPTION RATES ──
+    # "Total flow" is the make-up SOLUTION volumetric flow (m³/h), NOT a neat mass rate:
+    #   solution m³/h = neat reagent mass rate / mixing strength / solution density (≈1 t/m³)
+    # Workbook: PAX F671, MIBC F685, NaCN F731, Lime F715, Flocculant F697.
+    def _strength(op, default_pct):
+        s = _get("mixing strength", op, None) or _get("solution concentration", op, default_pct)
+        return (s / 100.0) if s and s > 1 else (s or default_pct / 100.0)
+
+    # Flotation collectors/frothers are dosed on whole-plant feed (g/t feed).
+    pax_strength = _strength("REACTIF_PAX", 15)
     calcs["REACTIF_PAX:total dosage"] = pax_gt
-    calcs["REACTIF_PAX:total flow"] = round(pax_gt * plant_tph / 1e6 * 1000, 1) if pax_gt else None
+    calcs["REACTIF_PAX:total flow"] = (
+        round(pax_gt * mill_design_tph / pax_strength / 1e6, 3) if pax_gt and pax_strength > 0 else None
+    )
 
+    mibc_strength = _strength("REACTIF_MIBC", 100)
     calcs["REACTIF_MIBC:total dosage"] = mibc_gt
-    calcs["REACTIF_MIBC:total flow"] = round(mibc_gt * plant_tph / 1e6 * 1000, 1) if mibc_gt else None
+    calcs["REACTIF_MIBC:total flow"] = (
+        round(mibc_gt * mill_design_tph / mibc_strength / 1e6, 3) if mibc_gt and mibc_strength > 0 else None
+    )
 
+    # Leach reagents are dosed on the concentrate stream (kg/t concentrate).
+    nacn_strength = _strength("REACTIF_NACN", 25)
     calcs["REACTIF_NACN:total dosage"] = nacn_kg_t
-    calcs["REACTIF_NACN:total flow"] = round(nacn_kg_t * leach_feed_tph / 1000, 1) if nacn_kg_t else None
+    calcs["REACTIF_NACN:total flow"] = (
+        round(nacn_kg_t * leach_feed_tph / nacn_strength / 1000, 3) if nacn_kg_t and nacn_strength > 0 else None
+    )
 
-    calcs["REACTIF_LIME:total dosage"] = round(cao_kg_t_leach + (so2_ratio * wad_cn / 1e6 * 2 if so2_ratio and wad_cn else 0), 3)
+    # Lime demand = leaching (on concentrate) + cyanide-destruction (detox) mass rate.
+    lime_strength = _strength("REACTIF_LIME", 6)
+    lime_total_kgh = cao_kg_t_leach * leach_feed_tph + detox_lime_kgh
+    calcs["REACTIF_LIME:total dosage"] = (
+        round(lime_total_kgh / mill_design_tph, 3) if mill_design_tph else round(cao_kg_t_leach, 3)
+    )  # kg/t plant feed (workbook F711)
+    calcs["REACTIF_LIME:total flow"] = (
+        round(lime_total_kgh / lime_strength / 1000, 3) if lime_strength > 0 else None
+    )
 
-    calcs["REACTIF_FLOCCULANT:total dosage"] = floc_gt_thk
+    # Flocculant: final-tailings thickener (on plant feed) + concentrate thickener.
+    floc_conc_gt = _get("flocculant", "EPAISSISSEUR_CONC", 35)
+    floc_total_gt = floc_gt_thk + (
+        floc_conc_gt * leach_feed_tph / mill_design_tph if mill_design_tph else 0
+    )
+    floc_strength = _strength("REACTIF_FLOCCULANT", 0.5)
+    calcs["REACTIF_FLOCCULANT:total dosage"] = round(floc_total_gt, 3)
+    calcs["REACTIF_FLOCCULANT:total flow"] = (
+        round(floc_total_gt * mill_design_tph / floc_strength / 1e6, 3) if floc_strength > 0 else None
+    )
 
     # ── GOLD PRODUCTION ──
     annual_hours = plant_hpd * 365 * plant_avail
