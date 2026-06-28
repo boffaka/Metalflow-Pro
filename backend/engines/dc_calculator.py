@@ -368,16 +368,6 @@ def _recalculate_all_impl(project_id: str, template_id: str, cursor) -> dict:
     if concentrator_design_factor and concentrator_design_factor < 1.0:
         concentrator_design_factor *= 100.0
 
-    # Crushing circuit uses its OWN design factor (workbook row 26 = 25 %),
-    # NOT the concentrator factor (row 27 = 15 %). The crusher/screen/cone
-    # design rate is sized with this margin (F162 = G162 × (1 + F26 %)).
-    crushing_design_factor = (
-        _get("crushing plant equipment design factor", default=None)
-        or 25.0
-    )
-    if crushing_design_factor and crushing_design_factor < 1.0:
-        crushing_design_factor *= 100.0
-
     # Crusher feed rates — computed ONLY from project-level values.
     # Hardcoded crusher availability = 75 % (standard primary gyratory operating factor).
     # This MUST NOT come from _get(): alias matching in _EN_FR_ALIASES can accidentally
@@ -389,15 +379,18 @@ def _recalculate_all_impl(project_id: str, template_id: str, cursor) -> dict:
     mill_design_tph  = formula_mill_design_tph(plant_tph, concentrator_design_factor)
     mill_nominal_tph = plant_tph
 
+    # Template 01_DESIGN_CRITERIA B22: crusher design = mill DESIGN rate × availability
+    # ratio (disp broyage / disp concassage). The crusher inherits the MILL 15% design
+    # factor (already in mill_design_tph), NOT a separate 25% crushing factor.
+    #   crusher_nominal = plant_tph × (mill_avail / crush_avail)
+    #   crusher_design  = mill_design_tph × (mill_avail / crush_avail) = crusher_nominal × 1.15
     _avail_ratio         = _mill_avail_pct / _CRUSHER_AVAIL_PCT      # e.g. 92/75 = 1.227
-    crushing_nominal_tph = round(plant_tph * _avail_ratio, 1)         # nominal when running
-    crushing_tph         = round(                                       # design with margin
-        crushing_nominal_tph * (1.0 + crushing_design_factor / 100.0), 1
-    )
+    crushing_nominal_tph = round(plant_tph * _avail_ratio, 1)
+    crushing_tph         = round(mill_design_tph * _avail_ratio, 1)
 
     # Sanity guard: design MUST strictly exceed nominal
     if crushing_tph <= crushing_nominal_tph:
-        crushing_tph = round(crushing_nominal_tph * 1.15, 1)
+        crushing_tph = round(crushing_nominal_tph * (1.0 + concentrator_design_factor / 100.0), 1)
 
     # grinding_avail used by downstream calcs (leach, flotation, etc.)
     grinding_avail = plant_avail

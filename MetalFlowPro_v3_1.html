@@ -16096,7 +16096,8 @@ function dcBuildGeneralDesignBasis({ project, getParam, round }) {
   // (plant_avail / crush_avail), then the CRUSHING design factor (25%). Workbook rows 26/162.
   const crushAvailRatioRaw = Number(crushAvailPct) > 0 ? plantAvailPct / Number(crushAvailPct) : 1;
   const nominalTphCrushRaw = nominalTphRaw != null ? nominalTphRaw * crushAvailRatioRaw : null;
-  const designTphCrushRaw = DC_GENERAL_FORMULAS.designTphFromNominal(nominalTphCrushRaw, crushDesignFactorPct);
+  // Template B22: crusher design = mill design rate x avail ratio, i.e. nominal_crush x (1+mill factor 15%).
+  const designTphCrushRaw = DC_GENERAL_FORMULAS.designTphFromNominal(nominalTphCrushRaw, concDesignFactorPct);
   const nominalTpdRaw = nominalTphRaw != null ? nominalTphRaw * 24 * sagAvailPct / 100 * utilizationPct / 100 : null;
   const annualTargetRaw = nominalTphRaw != null ? nominalTphRaw * 8760 * plantAvailPct / 100 * utilizationPct / 100 : null;
   const designTpdGrindingRaw = designTphRaw != null ? designTphRaw * 24 * sagAvailPct / 100 : null;

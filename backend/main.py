@@ -607,9 +607,10 @@ def _fix_crusher_design_nominal_safe() -> None:
     with raw target_tph (no availability uplift) while nominal_value kept the
     correct availability-adjusted value → nominal > design in the UI.
 
-    Correct PDC formula (reference workbook rows 26 & 162):
+    Correct formula (template 01_DESIGN_CRITERIA B22):
         nominal = plant_tph × (grinding_avail / crushing_avail)     [crushing runs fewer hours]
-        design  = nominal × 1.25                                     [CRUSHING design factor 25%]
+        design  = nominal × 1.15                                     [MILL design factor 15%]
+    The crusher inherits the mill 15% design factor (B22 = B21×B12/B11), NOT a 25% factor.
     """
     c = conn()
     cur = None
@@ -620,7 +621,7 @@ def _fix_crusher_design_nominal_safe() -> None:
             return
 
         # Unconditional UPDATE — always recompute crusher design/nominal from project values.
-        # Formula: nominal = tph × (avail/75%), design = nominal × 1.25 (crushing factor)
+        # Formula: nominal = tph × (avail/75%), design = nominal × 1.15 (mill design factor)
         #
         # NOTE: Uses %s parameterized LIKE patterns to avoid the psycopg2 issue where
         # '%%' in a no-param execute() call is sent literally to PostgreSQL (matching the
@@ -632,7 +633,7 @@ def _fix_crusher_design_nominal_safe() -> None:
                                   p.target_tph
                                   * (COALESCE(p.availability_pct, 92) / 100.0)
                                   / 0.75
-                                  * 1.25,
+                                  * 1.15,
                                 0),
                 nominal_value = ROUND(
                                   p.target_tph
@@ -658,7 +659,7 @@ def _fix_crusher_design_nominal_safe() -> None:
         if n:
             logger.warning(
                 "crusher design fix: recalculated %d row(s) "
-                "(design = tph × avail/75%% × 1.25, nominal = tph × avail/75%%)", n
+                "(design = tph × avail/75%% × 1.15, nominal = tph × avail/75%%)", n
             )
     except Exception:
         c.rollback()
