@@ -2063,6 +2063,10 @@ const S = {
   pid: null,              // current project id
   section: 'dashboard',   // current section in project
   limsTab: 'samples',     // current tab in LIMS
+  limsStats: {},          // cached LIMS statistics by test code (server-computed)
+  limsStatsCode: null,    // selected test family in the Statistiques tab
+  limsKinetics: {},       // cached leach-kinetics fits by sample id (server-computed)
+  limsKineticsSample: null, // selected sample in the Cinétique tab
   modal: null,
   // cached data (null = not loaded)
   projects: null,
@@ -2110,6 +2114,10 @@ function resetProjectScopedState() {
   S.completeness = null;
   S.samples = null;
   S.tests = {};
+  S.limsStats = {};
+  S.limsStatsCode = null;
+  S.limsKinetics = {};
+  S.limsKineticsSample = null;
   S.flowsheets = null;
   S.flowsheet = null;
   S.dc = null;
@@ -3618,6 +3626,26 @@ async function loadTests(code) {
     const resp = await api('GET', `/projects/${S.pid}/lims/tests/${code}`);
     S.tests[code] = resp.items || resp;
   } catch(e) { S.tests[code] = []; }
+}
+
+async function loadLimsStats(code) {
+  if (!S.pid || !code) return;
+  try {
+    S.limsStats[code] = await api('GET', `/projects/${S.pid}/lims/statistics/${code}`);
+  } catch(e) { S.limsStats[code] = { code, count: 0, fields: {} }; }
+}
+
+async function loadLimsKinetics(sid) {
+  if (!S.pid || !sid) return;
+  try {
+    S.limsKinetics[sid] = await api('GET', `/projects/${S.pid}/lims/kinetics/${sid}`);
+  } catch(e) {
+    // 404 = no D1 leach data for this sample; 422 = <2 kinetic points (real detail).
+    const msg = e.status === 404
+      ? "Aucune donnée cinétique D1 pour cet échantillon (essai de lixiviation par paliers requis)."
+      : (e.message || "Ajustement impossible.");
+    S.limsKinetics[sid] = { error: msg };
+  }
 }
 
 async function loadFlowsheets() {
@@ -10423,6 +10451,8 @@ function renderLIMSTabContent() {
   if (S.limsTab === 'samples') return renderSamples();
   if (S.limsTab === 'qaqc')        return renderLimsQaqcTab();
   if (S.limsTab === 'sufficiency') return renderLimsSufficiencyTab();
+  if (S.limsTab === 'statistics')  return renderLimsStatisticsTab();
+  if (S.limsTab === 'kinetics')    return renderLimsKineticsTab();
   if (S.limsTab === 'matrix')      return renderLimsMatrixTab();
   if (S.limsTab === '3d')          return renderLims3DTab();
   return renderTestsTab(S.limsTab);
@@ -10531,10 +10561,156 @@ ${tests.length === 0 ? `<div class="empty card"><div class="empty-icon">📋</di
 </div>`}`;
 }
 
+/* ── LIMS Statistiques (descriptive stats + outlier detection, server-side) ──
+   Surfaces GET /lims/statistics/{code} (engines/lims_statistics.py): per-field
+   mean/median/std/cv/percentiles + modified-z-score outlier flags. */
+function switchLimsStatsCode(code) {
+  S.limsStatsCode = code;
+  _refreshLIMSView('statistics');
+}
+
+function renderLimsStatisticsTab() {
+  if (!S.limsStatsCode) {
+    const withData = CFG.lims_types.find(lt => ((S.completeness || {})[lt.code] || 0) > 0);
+    S.limsStatsCode = withData ? withData.code : (CFG.lims_types[0]?.code || 'a1');
+  }
+  const code = S.limsStatsCode;
+  const selector = `<select class="select" style="max-width:280px" onchange="switchLimsStatsCode(this.value)">
+    ${CFG.lims_types.map(x => {
+      const n = (S.completeness || {})[x.code] || 0;
+      return `<option value="${x.code}" ${x.code === code ? 'selected' : ''}>${x.code.toUpperCase()} — ${x.name}${n ? ` (${n})` : ''}</option>`;
+    }).join('')}
+  </select>`;
+  const header = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:8px;flex-wrap:wrap">
+    <span class="t-dim" style="font-size:12px">Statistiques descriptives & détection d'anomalies (z-score modifié)</span>
+    ${selector}
+  </div>`;
+
+  const data = S.limsStats[code];
+  if (data === undefined) {
+    loadLimsStats(code).then(() => _refreshLIMSView('statistics'));
+    return header + `<div class="loading-block"><div class="spinner"></div>Calcul des statistiques ${code.toUpperCase()}...</div>`;
+  }
+
+  const entries = Object.entries(data.fields || {}).filter(([, v]) => (v.count || 0) > 0);
+  if (!entries.length) {
+    return header + `<div class="empty card"><div class="empty-icon">📊</div><div class="empty-title">Aucune donnée numérique</div><div class="empty-sub">n = ${data.count || 0} résultat(s) ${code.toUpperCase()}. Saisissez des essais pour générer les statistiques.</div></div>`;
+  }
+
+  const fieldDefs = CFG.test_fields[code] || [];
+  const labelFor = k => (fieldDefs.find(f => f.k === k)?.label) || k;
+
+  const cards = entries.map(([k, s]) => {
+    const cvAlert = s.cv != null && s.cv > 15;
+    const out = s.outlier_count || 0;
+    const rows = [
+      ['Moyenne', fmtN(s.mean)],
+      ['Médiane', fmtN(s.median)],
+      ['Écart-type', '± ' + fmtN(s.std)],
+      ['CV', s.cv != null ? fmtN(s.cv) + ' %' : '—'],
+      ['Min – Max', fmtN(s.min) + ' – ' + fmtN(s.max)],
+      ['P10 / P90', fmtN(s.p10) + ' / ' + fmtN(s.p90)],
+    ];
+    return `<div class="card" style="padding:12px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <span class="fw6" style="font-size:13px;">${labelFor(k)}</span>
+        <span class="mono t-dim" style="font-size:10px;">n=${s.count}</span>
+      </div>
+      ${rows.map(([lbl, val], i) => `<div style="display:flex;justify-content:space-between;font-size:12px;padding:3px 0;${i < rows.length - 1 ? 'border-bottom:1px solid var(--border2);' : ''}">
+        <span class="t-dim">${lbl}</span>
+        <span class="mono" style="${lbl === 'CV' && cvAlert ? 'color:var(--gold);font-weight:600;' : ''}">${val}</span>
+      </div>`).join('')}
+      <div style="margin-top:8px;">
+        ${out > 0
+          ? `<span class="badge badge-gold" style="font-size:10px;">⚠ ${out} outlier${out > 1 ? 's' : ''} · ${fmtN(s.outlier_pct)}%</span>`
+          : `<span class="badge badge-green" style="font-size:10px;">✓ Aucun outlier</span>`}
+      </div>
+    </div>`;
+  }).join('');
+
+  return header + `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;">${cards}</div>`;
+}
+
+/* ── LIMS Cinétique (server-side leach-kinetics fit, per sample) ──────────────
+   Surfaces GET /lims/kinetics/{sample_id} (engines/leaching.fit_kinetic_params):
+   fits R(t) = R∞·(1−exp(−k·t)) from D1 leach_rec_2h..48h columns. */
+function switchLimsKineticsSample(sid) {
+  S.limsKineticsSample = sid || null;
+  _refreshLIMSView('kinetics');
+}
+
+function renderLimsKineticsTab() {
+  if (!S.samples) {
+    loadSamplesIfNeeded();
+    return `<div class="loading-block"><div class="spinner"></div>Chargement des échantillons...</div>`;
+  }
+  const samples = S.samples || [];
+  const sid = S.limsKineticsSample;
+  const selector = `<select class="select" style="max-width:280px" onchange="switchLimsKineticsSample(this.value)">
+    <option value="">— Sélectionner un échantillon —</option>
+    ${samples.map(s => {
+      const lbl = s.sample_id_display || s.sample_id || s.id;
+      return `<option value="${s.id}" ${s.id === sid ? 'selected' : ''}>${esc(lbl)}</option>`;
+    }).join('')}
+  </select>`;
+  const header = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:8px;flex-wrap:wrap">
+    <span class="t-dim" style="font-size:12px">Ajustement cinétique de lixiviation (serveur, données D1)</span>
+    ${selector}
+  </div>`;
+
+  if (!sid) {
+    return header + `<div class="empty card"><div class="empty-icon">⏱️</div><div class="empty-title">Sélectionnez un échantillon</div><div class="empty-sub">L'ajustement R(t) = R∞ × (1 − e<sup>−k·t</sup>) utilise les récupérations D1 (2 / 4 / 8 / 12 / 24 / 48 h).</div></div>`;
+  }
+
+  const data = S.limsKinetics[sid];
+  if (data === undefined) {
+    loadLimsKinetics(sid).then(() => _refreshLIMSView('kinetics'));
+    return header + `<div class="loading-block"><div class="spinner"></div>Ajustement cinétique...</div>`;
+  }
+  if (data.error) {
+    return header + `<div class="empty card"><div class="empty-icon">📭</div><div class="empty-title">Cinétique indisponible</div><div class="empty-sub">${esc(data.error)}</div></div>`;
+  }
+
+  const curve = data.fitted_curve || [];
+  const pts = data.data_points || [];
+  const r24 = curve.find(p => p.time_h === 24)?.recovery_pct;
+  const maxRec = Math.max(1, ...curve.map(p => p.recovery_pct || 0));
+
+  const kpis = `<div style="display:flex;gap:22px;flex-wrap:wrap;padding:12px;border:1px solid var(--border2);border-radius:var(--r6);margin-bottom:12px;background:var(--bg2);">
+    <div><div class="t-dim" style="font-size:10px;">R∞ ajusté</div><div class="mono fw6" style="font-size:18px;color:var(--teal);">${fmtN(data.r_inf_pct)}%</div></div>
+    <div><div class="t-dim" style="font-size:10px;">Constante k</div><div class="mono fw6" style="font-size:18px;color:var(--blue);">${fmtN(data.k_per_h)} h⁻¹</div></div>
+    <div><div class="t-dim" style="font-size:10px;">R @ 24h</div><div class="mono fw6" style="font-size:18px;color:var(--gold);">${r24 != null ? fmtN(r24) + '%' : '—'}</div></div>
+  </div>`;
+
+  const bars = curve.filter(p => p.time_h > 0).map(p => `<div style="display:flex;align-items:center;gap:8px;margin-bottom:3px;">
+    <span class="mono t-dim" style="width:34px;text-align:right;font-size:10px;">${p.time_h}h</span>
+    <div style="flex:1;height:14px;background:var(--border);border-radius:3px;overflow:hidden;"><div style="width:${(p.recovery_pct / maxRec) * 100}%;height:100%;background:var(--teal);border-radius:3px;"></div></div>
+    <span class="mono" style="width:48px;font-size:10px;color:var(--teal);">${fmtN(p.recovery_pct)}%</span>
+  </div>`).join('');
+
+  const tbl = `<div class="card" style="padding:12px;">
+    <div class="fw6" style="font-size:12px;margin-bottom:8px;">Points mesurés (D1)</div>
+    <table class="tbl"><thead><tr><th class="num">Temps (h)</th><th class="num">Mesuré (%)</th><th class="num">Modèle (%)</th></tr></thead><tbody>
+    ${pts.map(p => {
+      const model = curve.find(c => c.time_h === p.time_h)?.recovery_pct;
+      const dev = model != null ? Math.abs((p.recovery_pct || 0) - model) : 0;
+      return `<tr><td class="num mono">${p.time_h}</td><td class="num mono" style="color:var(--teal)">${fmtN(p.recovery_pct)}</td><td class="num mono" style="${dev > 3 ? 'color:var(--gold)' : ''}">${model != null ? fmtN(model) : '—'}</td></tr>`;
+    }).join('')}
+    </tbody></table>
+  </div>`;
+
+  return header + kpis + `<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start;">
+    <div class="card" style="padding:12px;"><div class="fw6" style="font-size:12px;margin-bottom:4px;">Courbe ajustée</div><div class="t-dim" style="font-size:10px;margin-bottom:8px;">${esc(data.model || '')}</div>${bars}</div>
+    ${tbl}
+  </div>`;
+}
+
 /* ── LIMS Extra Tabs ─────────────────────────────── */
 const LIMS_EXTRA_TABS = [
   { code: 'qaqc',       name: 'QA/QC' },
   { code: 'sufficiency', name: 'Suffisance' },
+  { code: 'statistics', name: 'Statistiques' },
+  { code: 'kinetics',   name: 'Cinétique' },
   { code: 'matrix',     name: 'Matrice' },
   { code: '3d',         name: 'Vue 3D' },
 ];
