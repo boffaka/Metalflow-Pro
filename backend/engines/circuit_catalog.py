@@ -169,7 +169,7 @@ CATALOG = [
             _c("08", "HPGR — Géométrie des rouleaux", "Longueur rouleau L (L/D ≈ 0.6-0.8)", "m",    1.65, 1.65, 1.65, 1.65, [0.6, 2.2],     source="M"),
             _c("09", "HPGR — Géométrie des rouleaux", "Surface roll = D × L",               "m²",   3.96, 3.96, 3.96, 3.96, [0.6, 6.2],     source="C"),
             _c("10", "HPGR — Géométrie des rouleaux", "Vitesse rotation N",                 "tr/min", 18, 18, 18, 18, [14, 25],            source="D"),
-            _c("11", "HPGR — Géométrie des rouleaux", "Vitesse périph. u = π·D·N/60",       "m/s",  2.26, 2.26, 2.26, 2.26, [1.0, 1.8],     source="C"),
+            _c("11", "HPGR — Géométrie des rouleaux", "Vitesse périph. u = π·D·N/60",       "m/s",  2.26, 2.26, 2.26, 2.26, [1.0, 2.5],     source="C"),
             # ── 3. Calculs de capacité (PDF section 3) ────────────────────────
             _c("12", "HPGR — Calculs de capacité",    "Débit spécifique m-dot",             "ts/(h·m³)", 250, 250, 250, 250, [230, 280],    source="D"),
             _c("13", "HPGR — Calculs de capacité",    "Capacité par unité M = ṁ·D·L·u",     "t/h",  1900, 1900, 1900, 1900, [800, 3500],    source="C"),

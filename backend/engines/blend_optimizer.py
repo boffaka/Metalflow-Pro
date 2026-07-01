@@ -26,7 +26,11 @@ except ImportError:  # pragma: no cover - supports direct script imports
     from constants import TROY_OZ_PER_GRAM
 
 DEFAULT_BWI_MAX = 16.0
-DEFAULT_CU_MAX_PPM = 50.0
+# Deleterious-copper watch level for gold cyanidation. 50 ppm (0.005%) was far
+# below the default assumed ore copper (0.02% = 200 ppm), so every default blend
+# was infeasible on copper. Cyanide-soluble Cu typically only matters above
+# ~0.05% (500 ppm); use that as the default cap so the constraint is meaningful.
+DEFAULT_CU_MAX_PPM = 500.0
 DEFAULT_S_MAX_PCT = 2.0
 DEFAULT_MIN_RECOVERY_PCT = 88.0
 DEFAULT_DISCOUNT_RATE = 0.08
@@ -144,7 +148,7 @@ def _build_blend_result(
         binding.append("bwi_max")
     if blended_s >= constraints.get("s_max_pct", DEFAULT_S_MAX_PCT) * 0.98:
         binding.append("s_max")
-    if blended_cu >= constraints.get("cu_max_pct", 0.005) * 0.98:
+    if blended_cu >= constraints.get("cu_max_pct", DEFAULT_CU_MAX_PPM / 10000.0) * 0.98:
         binding.append("cu_max")
     if blended_recovery <= constraints.get("min_recovery_pct", DEFAULT_MIN_RECOVERY_PCT) / 100 * 1.02:
         binding.append("min_recovery")

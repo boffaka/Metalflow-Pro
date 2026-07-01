@@ -188,9 +188,21 @@ def _evaluate_individual(x: np.ndarray, project_id: str,
         co2_per_oz,        # f3: minimize CO2 per oz
     ]
 
+    # Guard against NaN/inf objectives (a failed sub-simulation can yield NaN).
+    # NaN never compares True in _dominates, so a NaN individual would neither
+    # dominate nor be dominated and could survive into the Pareto front as a
+    # garbage recommendation. Replace non-finite objectives with a large penalty
+    # and force infeasibility so constraint-domination sorts them to the back.
+    if not all(np.isfinite(o) for o in objectives) or not np.isfinite(violation):
+        objectives = [float(o) if np.isfinite(o) else 1e12 for o in objectives]
+        violation = float(violation) if np.isfinite(violation) else 1e6
+        feasible = False
+    else:
+        feasible = violation == 0.0
+
     return {
         "objectives": objectives,
-        "feasible": violation == 0.0,
+        "feasible": feasible,
         "violation": violation,
         "metrics": {
             "npv_musd": npv_musd,

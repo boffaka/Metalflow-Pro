@@ -787,16 +787,23 @@ def _sim_gravity(stream: dict, dc: dict, lims: dict,
 
 
 def _sim_flotation(stream: dict, dc: dict, lims: dict,
-                   override: dict, warnings: list) -> dict:
-    """Simulate flotation using first-order kinetic model."""
+                   override: dict, warnings: list,
+                   op_code: str = "FLOTATION_ROUGHER") -> dict:
+    """Simulate flotation using first-order kinetic model.
+
+    ``op_code`` selects which stage's design criteria to read so a scavenger
+    (FLOTATION_SCAVENGER) uses its own k/r_max/mass-pull instead of re-applying
+    the rougher's recovery to the rougher tails. Falls back to industry defaults
+    when the stage has no dedicated DC.
+    """
     defaults = INDUSTRY_DEFAULTS["flotation"]
-    k_rate, _ = _get_param("FLOTATION_ROUGHER", "flotation k rate", dc, lims,
+    k_rate, _ = _get_param(op_code, "flotation k rate", dc, lims,
                            defaults["k_rate"])
-    res_time, _ = _get_param("FLOTATION_ROUGHER", "flotation residence time", dc, lims,
+    res_time, _ = _get_param(op_code, "flotation residence time", dc, lims,
                              defaults["residence_time_min"])
-    r_max, _ = _get_param("FLOTATION_ROUGHER", "g1.au_recovery_pct", dc, lims,
+    r_max, _ = _get_param(op_code, "g1.au_recovery_pct", dc, lims,
                           defaults["r_max_pct"])
-    mass_pull_pct, _ = _get_param("FLOTATION_ROUGHER", "g1.mass_pull_pct", dc, lims,
+    mass_pull_pct, _ = _get_param(op_code, "g1.mass_pull_pct", dc, lims,
                                   defaults["mass_pull_pct"])
 
     rec_pct = flotation_recovery(k_rate, res_time, r_max)
@@ -1349,7 +1356,8 @@ def _simulate_flotation_bank_loop(
         combined = _merge_feed_recirc(feed_stream, recirc_stream)
         rough_result = _sim_flotation(combined, dc_params, lims_data, override, warnings)
         scav_in = rough_result.get("product_stream", combined)
-        scav_result = _sim_flotation(scav_in, dc_params, lims_data, override, warnings)
+        scav_result = _sim_flotation(scav_in, dc_params, lims_data, override, warnings,
+                                     op_code="FLOTATION_SCAVENGER")
         recirc_tph = float(scav_in.get("solids_tph", 0)) * recirc_fraction
         if prev_recirc_tph is not None and prev_recirc_tph > 0:
             if abs(recirc_tph - prev_recirc_tph) / prev_recirc_tph < inner_tol:

@@ -16608,11 +16608,11 @@ function dcApplyEquipmentFormulaGroup(group, ctx, useNominal = false) {
       const pRoll = dcFirstFinite(rows.find(r => /puissance installee.*rouleau/.test(dcNormalizeLabel(r.item)))?.design_value, null);
       const n = dcFirstFinite(rows.find(r => /nombre hpgr/.test(dcNormalizeLabel(r.item)))?.design_value, 1);
       row = dcSetCalculatedCriterion(row, pRoll != null ? pRoll * 2 * n : null, 'Puissance par rouleau × 2 × nombre HPGR', 1);
-    } else if (/debit undersize|undersize/.test(label)) {
+    } else if (/debit undersize|undersize/.test(label) && unit.includes('t/h')) {
       const feed = dcFirstFinite(rows.slice(0, i).reverse().find(r => { const _l = dcNormalizeLabel(r.item); return /debit.*(crible|alimentation)|debit feed/.test(_l) && !/undersize|oversize/.test(_l); })?.design_value, st.feedTph);
       const passing = readInput(rows.find(r => /passant|passing/.test(dcNormalizeLabel(r.item))), 60);
       row = dcSetCalculatedCriterion(row, feed * passing / 100, 'Feed crible × % passant / 100', 1);
-    } else if (/debit oversize|oversize/.test(label)) {
+    } else if (/debit oversize|oversize/.test(label) && unit.includes('t/h')) {
       const feed = dcFirstFinite(rows.slice(0, i).reverse().find(r => { const _l = dcNormalizeLabel(r.item); return /debit.*(crible|alimentation)|debit feed/.test(_l) && !/undersize|oversize/.test(_l); })?.design_value, st.feedTph);
       const undersize = dcFirstFinite(rows.find(r => /undersize/.test(dcNormalizeLabel(r.item)))?.design_value, null);
       row = dcSetCalculatedCriterion(row, undersize != null ? feed - undersize : null, 'Feed crible - undersize', 1);
