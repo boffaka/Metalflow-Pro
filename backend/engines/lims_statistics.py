@@ -29,6 +29,24 @@ from typing import Any
 logger = logging.getLogger(__name__)
 
 
+def _percentile_interp(sorted_vals: list[float], p: float) -> float:
+    """Linear-interpolation percentile (p in 0-100) on an already-sorted list.
+
+    Matches the method used by descriptive_stats so quartiles/fences are
+    consistent across the module.
+    """
+    n = len(sorted_vals)
+    if n == 0:
+        return 0.0
+    if n == 1:
+        return float(sorted_vals[0])
+    idx = (p / 100.0) * (n - 1)
+    lo = int(idx)
+    hi = min(lo + 1, n - 1)
+    frac = idx - lo
+    return sorted_vals[lo] * (1 - frac) + sorted_vals[hi] * frac
+
+
 # ─── Z-Score Outlier Detection ───────────────────────────────────────────────
 
 def zscore_outliers(
@@ -96,18 +114,24 @@ def modified_zscore_outliers(
         median = statistics.median(values)
         deviations = [abs(v - median) for v in values]
         mad = statistics.median(deviations)
+        center = median
+        const = 0.6745  # MAD ≈ 0.6745·σ (0.75-quantile of N(0,1))
 
         if mad == 0:
-            # Fall back to mean absolute deviation
+            # Fall back to the mean absolute deviation about the MEAN. MeanAD ≈
+            # 0.7979·σ, so the consistency constant is 0.7979, not the MAD 0.6745
+            # (using 0.6745 here would deflate the scores ~15% and under-flag).
             mean = statistics.mean(values)
             mad = statistics.mean([abs(v - mean) for v in values])
+            center = mean
+            const = 0.7979
             if mad == 0:
                 return [{"index": i, "value": v, "modified_zscore": 0.0, "is_outlier": False}
                         for i, v in enumerate(values)]
 
         results = []
         for i, v in enumerate(values):
-            mz = abs(0.6745 * (v - median) / mad)
+            mz = abs(const * (v - center) / mad)
             results.append({
                 "index": i,
                 "value": v,
@@ -143,9 +167,11 @@ def iqr_outliers(
 
     try:
         sorted_vals = sorted(values)
-        n = len(sorted_vals)
-        q1 = sorted_vals[n // 4]
-        q3 = sorted_vals[3 * n // 4]
+        # Linear-interpolation quartiles (same method as descriptive_stats.percentile),
+        # instead of nearest-rank sorted_vals[n//4] which mislocates Q1/Q3 and yields
+        # fences inconsistent with the reported percentiles.
+        q1 = _percentile_interp(sorted_vals, 25.0)
+        q3 = _percentile_interp(sorted_vals, 75.0)
         iqr = q3 - q1
         fence_low = q1 - k * iqr
         fence_high = q3 + k * iqr

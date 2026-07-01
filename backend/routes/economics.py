@@ -113,6 +113,10 @@ def _dcf_core(pid: str, payload: dict | None = None) -> dict:
         mine_life_years=mine_life, annual_oz=annual_oz, au_price=au_price,
         royalty_pct=royalty_pct, opex_annual=opex_annual,
         sustaining_capex_annual=sustaining, tax_rate=tax_rate, discount_rate=discount_rate,
+        # Without initial_capex the straight-line depreciation is 0, dropping the
+        # depreciation tax shield → tax overstated, FCF/NPV understated. Pass it so
+        # the FCF stream matches the capex used in compute_npv/compute_irr below.
+        initial_capex=initial_capex,
     )
     fcf_values = [cf["fcf"] for cf in cfs]
     npv = compute_npv(fcf_values, discount_rate=discount_rate / 100.0, initial_capex=initial_capex)

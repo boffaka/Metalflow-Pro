@@ -16216,6 +16216,10 @@ function dcNormalizeLabel(value) {
 
 function dcFirstFinite(...values) {
   for (const value of values) {
+    // Skip null/undefined explicitly: Number(null) === 0 is "finite", so a `null`
+    // sentinel argument would otherwise return 0 and (a) mask a missing lookup as
+    // a real 0, and (b) short-circuit a later numeric fallback. Treat null as absent.
+    if (value === null || value === undefined) continue;
     const num = Number(value);
     if (Number.isFinite(num)) return num;
   }
@@ -16568,7 +16572,8 @@ function dcApplyEquipmentFormulaGroup(group, ctx, useNominal = false) {
       const margin = dcFirstFinite(prev.find(r => /marge|installation margin|margin/.test(dcNormalizeLabel(r.item)))?.design_value, 10);
       // HPGR twin-roll: net power covers both rolls; installed power PER ROLL divides by 2 (template 04 B33).
       const rollDiv = (op.includes('HPGR') && /rouleau|roll/.test(label)) ? 2 : 1;
-      row = dcSetCalculatedCriterion(row, dcInstalledPower(shaft, eff, margin) / rollDiv, rollDiv === 2 ? '(P_nette / rendement / 2) × (1 + marge)' : 'P_arbre / rendement × (1 + marge)', 1);
+      const _ip = shaft != null ? dcInstalledPower(shaft, eff, margin) : null;
+      row = dcSetCalculatedCriterion(row, _ip != null ? _ip / rollDiv : null, rollDiv === 2 ? '(P_nette / rendement / 2) × (1 + marge)' : 'P_arbre / rendement × (1 + marge)', 1);
     } else if (/surface.*roll|surface.*rouleau/.test(label) && op.includes('HPGR')) {
       const d = dcFirstFinite(rows.find(r => /diametre rouleau|diameter roll/.test(dcNormalizeLabel(r.item)))?.design_value, 2.4);
       const l = dcFirstFinite(rows.find(r => /longueur rouleau|roll length/.test(dcNormalizeLabel(r.item)))?.design_value, 1.7);
@@ -16602,7 +16607,7 @@ function dcApplyEquipmentFormulaGroup(group, ctx, useNominal = false) {
     } else if (/puissance totale hpgr/.test(label)) {
       const pRoll = dcFirstFinite(rows.find(r => /puissance installee.*rouleau/.test(dcNormalizeLabel(r.item)))?.design_value, null);
       const n = dcFirstFinite(rows.find(r => /nombre hpgr/.test(dcNormalizeLabel(r.item)))?.design_value, 1);
-      row = dcSetCalculatedCriterion(row, pRoll * 2 * n, 'Puissance par rouleau × 2 × nombre HPGR', 1);
+      row = dcSetCalculatedCriterion(row, pRoll != null ? pRoll * 2 * n : null, 'Puissance par rouleau × 2 × nombre HPGR', 1);
     } else if (/debit undersize|undersize/.test(label)) {
       const feed = dcFirstFinite(rows.slice(0, i).reverse().find(r => { const _l = dcNormalizeLabel(r.item); return /debit.*(crible|alimentation)|debit feed/.test(_l) && !/undersize|oversize/.test(_l); })?.design_value, st.feedTph);
       const passing = readInput(rows.find(r => /passant|passing/.test(dcNormalizeLabel(r.item))), 60);
@@ -16610,7 +16615,7 @@ function dcApplyEquipmentFormulaGroup(group, ctx, useNominal = false) {
     } else if (/debit oversize|oversize/.test(label)) {
       const feed = dcFirstFinite(rows.slice(0, i).reverse().find(r => { const _l = dcNormalizeLabel(r.item); return /debit.*(crible|alimentation)|debit feed/.test(_l) && !/undersize|oversize/.test(_l); })?.design_value, st.feedTph);
       const undersize = dcFirstFinite(rows.find(r => /undersize/.test(dcNormalizeLabel(r.item)))?.design_value, null);
-      row = dcSetCalculatedCriterion(row, feed - undersize, 'Feed crible - undersize', 1);
+      row = dcSetCalculatedCriterion(row, undersize != null ? feed - undersize : null, 'Feed crible - undersize', 1);
     } else if (/surface utile requise/.test(label)) {
       const flow = dcFirstFinite(rows.slice(0, i).reverse().find(r => /undersize|debit feed crible|debit alimentation crible/.test(dcNormalizeLabel(r.item)))?.design_value, st.feedTph);
       const capacity = readInput(rows.find(r => /capacite base/.test(dcNormalizeLabel(r.item))), op.includes('HPGR') ? 22 : 40);

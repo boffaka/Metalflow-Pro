@@ -480,8 +480,18 @@ def _build_rf_model(X_raw: np.ndarray, y: np.ndarray) -> dict:
         ss_tot = float(np.sum((y - np.mean(y)) ** 2))
         r2 = 1 - ss_res / ss_tot if ss_tot > 0 else 0.0
         rmse = float(np.sqrt(ss_res / n))
+        # The fitted RandomForest estimator is not JSON-serializable and is not
+        # persisted, so predict_recovery cannot call it. Fit a serializable linear
+        # model on the SAME predictors and store its coefficients so per-block
+        # predictions are feature-sensitive (grade/S/As/BWi) instead of collapsing
+        # to the domain average. RF r²/feature_importance are kept as diagnostics.
+        X_aug = np.column_stack([np.ones(n), X_pred])
+        beta, _, _, _ = np.linalg.lstsq(X_aug, y, rcond=None)
+        coeff_names = ["intercept"] + feat_names
         return {
             "method": "random_forest",
+            "coefficients": {coeff_names[i]: float(beta[i]) for i in range(len(beta))},
+            "intercept": float(beta[0]),
             "r_squared": round(r2, 4),
             "r_squared_loo_cv": round(r2_cv, 4) if r2_cv is not None else None,
             "rmse": round(rmse, 3),
@@ -694,9 +704,11 @@ def predict_recovery(domain_result: dict, ore_features: dict) -> dict:
         for f in PREDICTOR_FEATURES if f in ore_features
     )
 
-    if model.get("method") == "random_forest":
-        pred = float(best_domain["avg_recovery_pct"])
-    elif model.get("coefficients"):
+    # Use the stored linear coefficients (random_forest and multivariate_regression
+    # both carry them) so the prediction responds to the block's ore features.
+    # Only the small-sample "domain_average" method (no coefficients) falls back
+    # to the domain mean.
+    if model.get("coefficients"):
         pred = model.get("intercept", 0)
         for feat in model.get("predictor_features", []):
             pred += model["coefficients"].get(feat, 0) * float(ore_features.get(feat, 0))

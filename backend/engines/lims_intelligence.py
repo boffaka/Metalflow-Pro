@@ -47,7 +47,9 @@ def detect_outliers(
             return []
 
         mean = sum(nums) / len(nums)
-        variance = sum((x - mean) ** 2 for x in nums) / len(nums)
+        # Sample variance (n-1): with the small n typical of LIMS testwork the
+        # population divisor (n) under-estimates σ and inflates every z-score.
+        variance = sum((x - mean) ** 2 for x in nums) / (len(nums) - 1)
         std = math.sqrt(variance) if variance > 0 else 0
 
         if std == 0:
@@ -55,7 +57,12 @@ def detect_outliers(
 
         alerts = []
         for raw_val, sample in values:
-            transformed = math.log(raw_val) if (use_log and raw_val > 0) else raw_val
+            # For log-scaled fields a non-positive value cannot be log-transformed
+            # and is not part of the log-space mean/std; skip it rather than
+            # comparing a linear value against a log-space distribution (bogus z).
+            if use_log and raw_val <= 0:
+                continue
+            transformed = math.log(raw_val) if use_log else raw_val
             z_score = abs(transformed - mean) / std
             if z_score > sigma:
                 alerts.append({

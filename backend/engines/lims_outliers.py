@@ -132,15 +132,20 @@ def modified_zscore_test(
     arr = np.array(values, dtype=float)
     median = np.median(arr)
     mad = np.median(np.abs(arr - median))
+    center = median
+    const = 0.6745  # 0.75-quantile of N(0,1): MAD ≈ 0.6745·σ
 
     if mad < 1e-12:
-        # MAD is zero — use mean absolute deviation as fallback
-        mad = np.mean(np.abs(arr - median))
+        # MAD is zero — fall back to the mean absolute deviation about the MEAN.
+        # MeanAD ≈ 0.7979·σ, so use the 0.7979 consistency constant, not the MAD
+        # 0.6745 (which would deflate the scores ~15% and under-flag outliers).
+        center = float(np.mean(arr))
+        mad = np.mean(np.abs(arr - center))
+        const = 0.7979
         if mad < 1e-12:
             return []  # All values identical
 
-    # Modified Z-score: 0.6745 is the 0.75th quantile of the standard normal
-    modified_z = 0.6745 * (arr - median) / mad
+    modified_z = const * (arr - center) / mad
 
     results: list[OutlierResult] = []
     for i, (val, mz) in enumerate(zip(values, modified_z)):
