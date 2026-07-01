@@ -257,8 +257,9 @@ def _recalculate_all_impl(project_id: str, template_id: str, cursor) -> dict:
                     if alias not in patterns:
                         patterns.append(alias)
 
+        # Op-scoped match takes priority across ALL patterns (literal first, then
+        # aliases in specificity order) before any item-only global fallback.
         for pat in patterns:
-            # Try exact op:item match first
             if op:
                 key = op.upper() + ":" + pat
                 # exact key
@@ -268,10 +269,13 @@ def _recalculate_all_impl(project_id: str, template_id: str, cursor) -> dict:
                 for k, v in by_item.items():
                     if k.startswith(op.upper() + ":") and pat in k.lower() and v["design"] is not None:
                         return v["design"]
-            # Item-only fuzzy
-        for k, v in by_item.items():
-            if pat in k.lower() and v["design"] is not None:
-                return v["design"]
+        # Item-only fuzzy fallback — only after every op-scoped attempt failed.
+        # Iterate ALL patterns (literal first) so the most specific alias wins;
+        # previously this ran once with only the LAST alias bound (dedent bug).
+        for pat in patterns:
+            for k, v in by_item.items():
+                if pat in k.lower() and v["design"] is not None:
+                    return v["design"]
         return default
 
     def _to_um(value, default_um=None, *, convert_small_mm: bool = False):
@@ -322,8 +326,12 @@ def _recalculate_all_impl(project_id: str, template_id: str, cursor) -> dict:
     flot_feed_density = _get("feed density", "FLOTATION_ROUGHER", 35) / 100
 
     leach_recovery = _get("recovery", "CIP") or _get("extraction", "CIP", 92)
-    if leach_recovery and leach_recovery > 1: leach_recovery /= 100
-    else: leach_recovery = 0.92
+    # Normalize: percent (>1) → fraction; keep a legitimate fraction (e.g. 0.95)
+    # as-is; only fall back to the 0.92 default when the value is missing/invalid.
+    if not leach_recovery or leach_recovery <= 0:
+        leach_recovery = 0.92
+    elif leach_recovery > 1:
+        leach_recovery /= 100
 
     cip_pct_solids = _get("feed % solids", "CIP") or _get("% solids", "CIP", 33)
     cip_pct_solids = cip_pct_solids / 100 if cip_pct_solids > 1 else cip_pct_solids

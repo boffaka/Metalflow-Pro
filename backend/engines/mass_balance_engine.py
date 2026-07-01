@@ -645,7 +645,18 @@ def _gen_comminution_ball(pp: dict, dc: dict, carry: dict) -> list[dict]:
     ins.append(pb_water)
     outs = [cyc_overflow] + ([bleed] if bleed else [])
 
-    streams.append(balance_check(ins, outs))
+    bc = balance_check(ins, outs)
+    if not converged:
+        # Surface the non-convergence to the caller/UI: the pump-box water is
+        # back-calculated to force water closure, so the balance residual reads
+        # ~0 even though the circulating load is not converged. Flag it instead
+        # of presenting an approximate result as a clean, closed balance.
+        bc["stream_name"] = "Balance check (⚠ circuit non convergé)"
+        bc.setdefault("extras", {})["convergence_warning"] = (
+            f"Solveur charge circulante non convergé après {max_iter} itérations — "
+            "valeurs de recirculation approximatives"
+        )
+    streams.append(bc)
 
     # Carry forward product to next section
     carry["bm_product_tph"] = tph
