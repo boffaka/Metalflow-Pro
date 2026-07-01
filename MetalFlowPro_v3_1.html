@@ -16509,10 +16509,21 @@ function dcApplyEquipmentFormulaGroup(group, ctx, useNominal = false) {
 
     if (isSecondaryCrusherOp && /alim|feed|debit/.test(label) && /oversize|crible/.test(label) && unit.includes('t/h')) {
       row = dcSetCalculatedCriterion(row, st.feedTph, 'Oversize crible → alim. concasseur secondaire', 1);
+    } else if (/feed gravim|gravimetrie.*detourne/.test(label) && unit.includes('t/h')) {
+      // Gravity bleed = mill fresh feed × % of cyclone underflow diverted to gravity.
+      // NOT the full plant throughput — must precede the generic /debit.*feed/ rule.
+      const pct = readInput(rows.find(r => /detourne|% uf cyclone/.test(dcNormalizeLabel(r.item))), 30);
+      row = dcSetCalculatedCriterion(row, st.feedTph * pct / 100, 'Débit fresh feed broyage × % UF cyclone détourné', 1);
+    } else if (/circuit grav.*global|recuperation.*grav.*global/.test(label)) {
+      // Overall gravity-circuit recovery = GRG × η_unit (Knelson per pass) × η_ILR.
+      const grg = dcFirstFinite(rows.find(r => /grg.*minerai|grg dans/.test(dcNormalizeLabel(r.item)))?.design_value, null);
+      const etaUnit = dcFirstFinite(rows.find(r => /unitaire knelson|recuperation unitaire/.test(dcNormalizeLabel(r.item)))?.design_value, null);
+      const etaIlr = dcFirstFinite(rows.find(r => /sur conc/.test(dcNormalizeLabel(r.item)))?.design_value, null);
+      row = dcSetCalculatedCriterion(row, (grg != null && etaUnit != null && etaIlr != null) ? grg * etaUnit * etaIlr / 10000 : null, 'GRG × η_unit × η_ILR', 1);
     } else if (/feed cyclone/.test(label) && unit.includes('t/h')) {
       const cl = dcFirstFinite(rows.slice(0, i).reverse().find(r => /charge circulante|circulating/.test(dcNormalizeLabel(r.item)))?.design_value, 0);
       row = dcSetCalculatedCriterion(row, st.feedTph * (1 + cl / 100), 'Fresh feed × (1 + charge circulante)', 1);
-    } else if (/debit.*(design|alimentation|fresh|feed)|fresh feed|debit alimentation/.test(label) && unit.includes('t/h') && !/undersize|oversize|recycle|recircul|circulante|concentre|sortie|decharge/.test(label)) {
+    } else if (/debit.*(design|alimentation|fresh|feed)|fresh feed|debit alimentation/.test(label) && unit.includes('t/h') && !/undersize|oversize|recycle|recircul|circulante|concentre|sortie|decharge|gravim/.test(label)) {
       row = dcSetCalculatedCriterion(row, st.feedTph, 'Débit design (issu du débit amont)', 1);
     } else if (/debit solides/.test(label) && unit.includes('t/h')) {
       const fc = dcFirstFinite(rows.slice(0, i).reverse().find(r => /feed cyclone|debit feed/.test(dcNormalizeLabel(r.item)) && /t\/h/.test(String(r.unit || '').toLowerCase()))?.design_value, st.feedTph);
